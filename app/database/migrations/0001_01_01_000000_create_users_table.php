@@ -16,9 +16,31 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
+            
+            // Password Security & Pepper Versioning
             $table->string('password');
+            $table->string('pepper_version', 10)->default('v1');
+            $table->timestamp('password_changed_at')->nullable();
+            $table->boolean('require_password_change')->default(false);
+
+            // Account Status & Brute-Force Lockout Defense
+            $table->enum('status', ['active', 'suspended', 'locked', 'pending_verification'])->default('active')->index();
+            $table->unsignedInteger('failed_login_attempts')->default(0);
+            $table->timestamp('lockout_until')->nullable()->index();
+            
+            // 2FA TOTP & Hashed Single-Use Recovery Codes
+            $table->text('two_factor_secret')->nullable();
+            $table->timestamp('two_factor_confirmed_at')->nullable();
+            $table->text('two_factor_recovery_codes')->nullable();
+
+            // Session Tracking & Forensics
+            $table->timestamp('last_login_at')->nullable();
+            $table->string('last_login_ip', 45)->nullable();
             $table->rememberToken();
             $table->timestamps();
+
+            // Compound Indexes for fast threat detection and querying
+            $table->index(['status', 'lockout_until']);
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
