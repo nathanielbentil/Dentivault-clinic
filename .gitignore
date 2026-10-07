@@ -1,0 +1,51 @@
+# Root Git Ignore for SecureAuthProject
+# STRICT SECURITY POLICIES - NO SECRETS OR DUMPS COMMITTED
+
+# Environment & Secret Configurations
+.env
+.env.*
+!.env.example
+
+# Database Dumps & Backups
+*.dump
+*.sql
+*.sql.gz
+*.age
+*.tar.gz
+backups/local/
+backups/restore-tests/
+
+# Asymmetric Private Keys (Must remain offline)
+*.key
+*.pem
+*.priv
+*.id_rsa
+*.agekey
+age-keys/
+
+# Application Dependencies & Caches
+app/vendor/
+app/node_modules/
+app/public/build/
+app/public/hot
+app/public/storage
+app/storage/*.key
+app/storage/framework/cache/*
+app/storage/framework/sessions/*
+app/storage/framework/views/*
+app/storage/logs/*
+!app/storage/framework/cache/.gitignore
+!app/storage/framework/sessions/.gitignore
+!app/storage/framework/views/.gitignore
+!app/storage/logs/.gitignore
+
+# PHP & System Temp Files
+.phpunit.result.cache
+.php-cs-fixer.cache
+Thumbs.db
+[Dd]esktop.ini
+*.tmp
+*.log
+.DS_Store
+.idea/
+.vscode/

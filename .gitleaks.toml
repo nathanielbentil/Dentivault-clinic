@@ -1,0 +1,16 @@
+[extend]
+# Use default gitleaks baseline rules
+
+[allowlist]
+description = "Ignore vendor dependencies, third-party libraries, and documentation templates"
+paths = [
+    '''app/vendor/.*''',
+    '''app/node_modules/.*''',
+    '''app/storage/.*''',
+    '''\.git/.*'''
+]
+regexes = [
+    '''replace-with-.*''',
+    '''your-.*''',
+    '''example\.com'''
+]
