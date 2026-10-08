@@ -305,6 +305,7 @@
     </div>
   </div>
 
+  <script src="js/qrcode.min.js"></script>
   <script src="js/app.js"></script>
   <script>
     let activeRecoveryCodes = [];
@@ -442,7 +443,18 @@
     async function start2FaSetup() {
       const response = await apiRequest('2fa/setup', { method: 'POST' });
       if (response.ok && response.data.success) {
-        document.getElementById('qr-code-wrapper').innerHTML = response.data.qr_code_svg;
+        const wrapper = document.getElementById('qr-code-wrapper');
+        wrapper.innerHTML = '';
+        if (typeof QRCode !== 'undefined' && response.data.otpauth_url) {
+          new QRCode(wrapper, {
+            text: response.data.otpauth_url,
+            width: 220,
+            height: 220
+          });
+        } else {
+          wrapper.innerHTML = response.data.qr_code_svg || '';
+        }
+        
         document.getElementById('manual-secret-key').innerText = response.data.secret;
         
         activeRecoveryCodes = response.data.recovery_codes || [];
