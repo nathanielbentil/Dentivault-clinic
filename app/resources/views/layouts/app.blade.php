@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title ?? 'Dashboard' }} - SecureAuth Banking & Disaster Recovery</title>
+    <title>{{ $title ?? 'Dashboard' }} - SecureAuth & Disaster Recovery</title>
     
     <!-- Tailwind CSS CDN & Alpine.js -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -15,20 +15,10 @@
             theme: {
                 extend: {
                     colors: {
-                        bank: {
-                            50: '#f0fdf4',
+                        shield: {
                             500: '#22c55e',
                             600: '#16a34a',
-                            700: '#15803d',
-                            900: '#14532d',
                             950: '#052e16',
-                        },
-                        cyber: {
-                            50: '#f0f9ff',
-                            500: '#0ea5e9',
-                            600: '#0284c7',
-                            700: '#0369a1',
-                            900: '#0c4a6e',
                         }
                     }
                 }
@@ -50,7 +40,7 @@
 </head>
 <body class="h-full font-sans antialiased selection:bg-emerald-500 selection:text-slate-950 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(16,185,129,0.1),rgba(255,255,255,0))] flex flex-col min-h-screen">
     
-    <!-- Top Banking & Security Navbar -->
+    <!-- Top Security Navbar -->
     <header class="sticky top-0 z-40 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-xl" x-data="{ mobileMenuOpen: false }">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="flex h-16 items-center justify-between">
@@ -66,34 +56,25 @@
                         </div>
                         <div>
                             <span class="text-lg font-black tracking-tight text-white block">Secure<span class="text-emerald-400">Auth</span></span>
-                            <span class="text-[9px] uppercase font-bold tracking-widest text-emerald-500 block">Bank-Grade Protocol</span>
+                            <span class="text-[9px] uppercase font-bold tracking-widest text-emerald-500 block">Security & DR Shield</span>
                         </div>
                     </a>
 
-                    <!-- Navigation Links Based on Roles -->
+                    <!-- Navigation Links Based on 2 Roles: Admin & User -->
                     <nav class="hidden md:flex items-center gap-1 text-sm font-medium">
                         <a href="{{ route('dashboard') }}" class="px-3 py-2 rounded-lg transition-colors {{ request()->routeIs('dashboard') ? 'bg-slate-800/80 text-emerald-400 font-semibold' : 'text-slate-300 hover:text-white hover:bg-slate-900' }}">
-                            Banking Overview
+                            Dashboard
                         </a>
 
-                        @if(Auth::user()->hasRole('SuperAdmin'))
+                        @if(Auth::user()->hasRole(['Admin', 'SuperAdmin']))
                             <a href="{{ route('admin.dashboard') }}" class="px-3 py-2 rounded-lg transition-colors {{ request()->routeIs('admin.dashboard') ? 'bg-purple-950/60 border border-purple-500/30 text-purple-300 font-semibold' : 'text-slate-300 hover:text-purple-300 hover:bg-slate-900' }}">
-                                SuperAdmin Zone
+                                User Management
                             </a>
                             <a href="{{ route('admin.backups') }}" class="px-3 py-2 rounded-lg transition-colors {{ request()->routeIs('admin.backups') ? 'bg-cyan-950/60 border border-cyan-500/30 text-cyan-300 font-semibold' : 'text-slate-300 hover:text-cyan-300 hover:bg-slate-900' }}">
                                 3-2-1 Backups & DR
                             </a>
-                        @endif
-
-                        @if(Auth::user()->hasAnyRole(['SecurityAuditor', 'SuperAdmin']))
                             <a href="{{ route('audit.dashboard') }}" class="px-3 py-2 rounded-lg transition-colors {{ request()->routeIs('audit.*') ? 'bg-amber-950/60 border border-amber-500/30 text-amber-300 font-semibold' : 'text-slate-300 hover:text-amber-300 hover:bg-slate-900' }}">
-                                Auditor Forensics Hub
-                            </a>
-                        @endif
-
-                        @if(Auth::user()->hasAnyRole(['BranchManager', 'SuperAdmin']))
-                            <a href="{{ route('branch.dashboard') }}" class="px-3 py-2 rounded-lg transition-colors {{ request()->routeIs('branch.*') ? 'bg-blue-950/60 border border-blue-500/30 text-blue-300 font-semibold' : 'text-slate-300 hover:text-blue-300 hover:bg-slate-900' }}">
-                                Branch Ops
+                                Audit Forensics
                             </a>
                         @endif
                     </nav>
@@ -109,11 +90,9 @@
 
                     <!-- User Role Badge -->
                     @php
-                        $primaryRole = Auth::user()->roles->first()?->name ?? 'Customer';
+                        $primaryRole = Auth::user()->roles->first()?->name ?? 'Standard User';
                         $badgeColor = match($primaryRole) {
-                            'SuperAdmin' => 'bg-purple-950 text-purple-300 border-purple-500/30',
-                            'SecurityAuditor' => 'bg-amber-950 text-amber-300 border-amber-500/30',
-                            'BranchManager' => 'bg-blue-950 text-blue-300 border-blue-500/30',
+                            'Administrator', 'Admin', 'SuperAdmin' => 'bg-purple-950 text-purple-300 border-purple-500/30',
                             default => 'bg-slate-900 text-slate-300 border-slate-700',
                         };
                     @endphp
@@ -204,10 +183,10 @@
         <div class="mx-auto max-w-7xl px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
             <div class="flex items-center gap-2">
                 <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span>Supabase PostgreSQL 17.11 & Pooler • Live Cloud Connection Active</span>
+                <span>Supabase PostgreSQL 17.11 • Encrypted Database Connection</span>
             </div>
             <div>
-                <span>Argon2id (64MB) + Pepper • Asymmetric age X25519 • Zero-Knowledge Cloud</span>
+                <span>Argon2id (64MB) + Pepper • Asymmetric age X25519 • Append-Only Audit</span>
             </div>
         </div>
     </footer>

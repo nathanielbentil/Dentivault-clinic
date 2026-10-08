@@ -5,6 +5,8 @@ namespace Database\Seeders;
 use App\Models\AuditLog;
 use App\Models\Permission;
 use App\Models\Role;
+use App\Models\User;
+use App\Services\PasswordService;
 use Illuminate\Database\Seeder;
 
 class RoleAndPermissionSeeder extends Seeder
@@ -14,7 +16,7 @@ class RoleAndPermissionSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Define Granular Permissions across 6 security modules
+        // 1. Define Granular Permissions across core modules
         $permissions = [
             // User Management Module
             ['name' => 'View Users', 'slug' => 'users.view', 'module' => 'users', 'description' => 'View list of user accounts and profile details'],
@@ -23,7 +25,7 @@ class RoleAndPermissionSeeder extends Seeder
             ['name' => 'Lock / Unlock Users', 'slug' => 'users.status', 'module' => 'users', 'description' => 'Suspend or unlock locked user accounts'],
             ['name' => 'Delete Users', 'slug' => 'users.delete', 'module' => 'users', 'description' => 'Permanently remove user accounts'],
 
-            // Role & Permission Management Module
+            // Role Management Module
             ['name' => 'View Roles', 'slug' => 'roles.view', 'module' => 'roles', 'description' => 'View roles and their permission matrix'],
             ['name' => 'Manage Roles', 'slug' => 'roles.manage', 'module' => 'roles', 'description' => 'Assign and revoke user roles'],
 
@@ -39,9 +41,9 @@ class RoleAndPermissionSeeder extends Seeder
             // Security Forensics Module
             ['name' => 'View Security Events', 'slug' => 'security.view_attacks', 'module' => 'security', 'description' => 'Inspect blocked SQLi, XSS, and Brute Force incidents'],
 
-            // Customer Banking Module
-            ['name' => 'View Own Account', 'slug' => 'account.view_own', 'module' => 'customer', 'description' => 'View personal banking dashboard'],
-            ['name' => 'Manage Own 2FA', 'slug' => 'account.manage_2fa', 'module' => 'customer', 'description' => 'Enable, disable, or regenerate TOTP 2FA'],
+            // User Self-Service Module
+            ['name' => 'View Own Profile', 'slug' => 'account.view_own', 'module' => 'user', 'description' => 'View personal user dashboard'],
+            ['name' => 'Manage Own 2FA', 'slug' => 'account.manage_2fa', 'module' => 'user', 'description' => 'Enable, disable, or regenerate TOTP 2FA'],
         ];
 
         $permissionModels = [];
@@ -52,74 +54,74 @@ class RoleAndPermissionSeeder extends Seeder
             );
         }
 
-        // 2. Define Enterprise Tiered Roles
-        $roles = [
-            'SuperAdmin' => [
-                'name' => 'Super Administrator',
-                'slug' => 'SuperAdmin',
-                'description' => 'Full unrestricted system access, role administration, and disaster recovery orchestration',
+        // 2. Define the 2 Core Enterprise Roles: Admin and User
+        $adminRole = Role::updateOrCreate(
+            ['slug' => 'Admin'],
+            [
+                'name' => 'Administrator',
+                'description' => 'Full system access, user management, audit verification, and 3-2-1 backup/DR management',
                 'is_system' => true,
-                'permissions' => array_keys($permissionModels), // All permissions
-            ],
-            'SecurityAuditor' => [
-                'name' => 'Security Auditor',
-                'slug' => 'SecurityAuditor',
-                'description' => 'Read-only forensics officer with audit log inspection, cryptographic hash verification, and attack analysis',
+            ]
+        );
+        $adminRole->permissions()->sync(array_values(array_map(fn($p) => $p->id, $permissionModels)));
+
+        $userRole = Role::updateOrCreate(
+            ['slug' => 'User'],
+            [
+                'name' => 'Standard User',
+                'description' => 'Standard user account with self-service profile and two-factor authentication controls',
                 'is_system' => true,
-                'permissions' => [
-                    'users.view',
-                    'roles.view',
-                    'audit.view',
-                    'audit.verify',
-                    'security.view_attacks',
-                    'account.view_own',
-                    'account.manage_2fa',
-                ],
-            ],
-            'BranchManager' => [
-                'name' => 'Branch Manager',
-                'slug' => 'BranchManager',
-                'description' => 'Operational manager responsible for user onboarding, customer support, and account unlocking',
-                'is_system' => true,
-                'permissions' => [
-                    'users.view',
-                    'users.create',
-                    'users.edit',
-                    'users.status',
-                    'account.view_own',
-                    'account.manage_2fa',
-                ],
-            ],
-            'Customer' => [
-                'name' => 'Customer',
-                'slug' => 'Customer',
-                'description' => 'Standard banking customer with self-service dashboard and two-factor authentication controls',
-                'is_system' => true,
-                'permissions' => [
-                    'account.view_own',
-                    'account.manage_2fa',
-                ],
-            ],
-        ];
+            ]
+        );
+        $userRole->permissions()->sync([
+            $permissionModels['account.view_own']->id,
+            $permissionModels['account.manage_2fa']->id,
+        ]);
 
-        foreach ($roles as $r) {
-            $permSlugs = $r['permissions'];
-            unset($r['permissions']);
+        // Clean up any legacy roles if present
+        Role::whereNotIn('slug', ['Admin', 'User'])->delete();
 
-            $role = Role::updateOrCreate(['slug' => $r['slug']], $r);
+        // 3. Seed Exactly 2 Users: 1 Admin and 1 Standard User
+        // User 1: Administrator
+        $adminPass = PasswordService::hash('Admin@SecureAuth2026!');
+        $adminUser = User::updateOrCreate(
+            ['email' => 'admin@secureauth.com'],
+            [
+                'name' => 'System Administrator',
+                'password' => $adminPass['hash'],
+                'pepper_version' => $adminPass['pepper_version'],
+                'status' => 'active',
+                'email_verified_at' => now(),
+            ]
+        );
+        $adminUser->roles()->sync([$adminRole->id => ['assigned_by' => null, 'created_at' => now()]]);
 
-            $permIds = collect($permSlugs)->map(fn($slug) => $permissionModels[$slug]->id ?? null)->filter();
-            $role->permissions()->sync($permIds);
-        }
+        // User 2: Standard User
+        $userPass = PasswordService::hash('User@SecureAuth2026!');
+        $standardUser = User::updateOrCreate(
+            ['email' => 'user@secureauth.com'],
+            [
+                'name' => 'Standard User',
+                'password' => $userPass['hash'],
+                'pepper_version' => $userPass['pepper_version'],
+                'status' => 'active',
+                'email_verified_at' => now(),
+            ]
+        );
+        $standardUser->roles()->sync([$userRole->id => ['assigned_by' => $adminUser->id, 'created_at' => now()]]);
 
-        // Record Initial Genesis Audit Log
-        if (AuditLog::count() === 0) {
-            AuditLog::record(
-                eventType: 'system.genesis',
-                description: 'Database schema initialized and RBAC role-permission matrix seeded.',
-                severity: 'info',
-                payload: ['roles_count' => count($roles), 'permissions_count' => count($permissions)]
-            );
-        }
+        // Clean up any other test users so database has exactly the 2 defined users
+        User::whereNotIn('email', ['admin@secureauth.com', 'user@secureauth.com'])->delete();
+
+        // 4. Record Genesis/Seed Audit Log
+        AuditLog::record(
+            eventType: 'system.roles_seeded',
+            description: 'Seeded 2 core roles (Admin, User) and 2 system user accounts.',
+            severity: 'notice',
+            payload: [
+                'roles' => ['Admin', 'User'],
+                'users' => ['admin@secureauth.com', 'user@secureauth.com'],
+            ]
+        );
     }
 }

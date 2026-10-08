@@ -51,13 +51,12 @@ class TestFrontendViews extends Command
             'Forgot Password' => fn() => View::make('auth.forgot-password')->render(),
             'Reset Password' => fn() => View::make('auth.reset-password', ['token' => 'test-token', 'email' => 'test@bank.com'])->render(),
             'Verify Email' => fn() => View::make('auth.verify-email')->render(),
-            'Customer Dashboard' => fn() => View::make('dashboard', [
+            'User Dashboard' => fn() => View::make('dashboard', [
                 'user' => $user,
                 'accountData' => [
-                    'account_number' => 'SA-00000001',
-                    'account_type' => 'Checking',
-                    'available_balance' => '$10,000.00',
-                    'security_level' => 'Tier 3',
+                    'user_id' => 'USR-000001',
+                    'account_status' => 'Active',
+                    'security_level' => 'Tier 2 (2FA Protected)',
                     'recent_logins' => AuditLog::take(3)->get(),
                 ],
             ])->render(),

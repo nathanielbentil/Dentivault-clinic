@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>SecureAuth - Bank-Grade Authentication & 3-2-1 Disaster Recovery System</title>
+    <title>SecureAuth - Enterprise Authentication & 3-2-1 Disaster Recovery System</title>
     
     <!-- Tailwind CSS CDN & Alpine.js -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -14,7 +14,7 @@
             theme: {
                 extend: {
                     colors: {
-                        bank: {
+                        shield: {
                             500: '#22c55e',
                             600: '#16a34a',
                             950: '#052e16',
@@ -48,21 +48,21 @@
                     </div>
                     <div>
                         <span class="text-xl font-black tracking-tight text-white block">Secure<span class="text-emerald-400">Auth</span></span>
-                        <span class="text-[10px] uppercase font-bold tracking-widest text-emerald-500 block">Core Banking Shield</span>
+                        <span class="text-[10px] uppercase font-bold tracking-widest text-emerald-500 block">Security & DR System</span>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-3">
                     @auth
                         <a href="{{ route('dashboard') }}" class="rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 px-5 py-2.5 text-xs font-bold text-slate-950 shadow-md hover:from-emerald-500 hover:to-teal-400 transition-all">
-                            Enter Banking Dashboard →
+                            Enter Dashboard →
                         </a>
                     @else
                         <a href="{{ route('login') }}" class="rounded-xl border border-slate-700 bg-slate-900/80 px-4 py-2.5 text-xs font-bold text-slate-200 hover:border-emerald-500/40 hover:text-emerald-400 transition-all">
                             Sign In
                         </a>
                         <a href="{{ route('register') }}" class="rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 px-5 py-2.5 text-xs font-bold text-slate-950 shadow-lg shadow-emerald-500/20 hover:from-emerald-500 hover:to-teal-400 transition-all">
-                            Open Account
+                            Create Account
                         </a>
                     @endauth
                 </div>
@@ -74,15 +74,15 @@
     <section class="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center space-y-8">
         <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-emerald-950/80 border border-emerald-500/40 text-emerald-400 shadow-xl shadow-emerald-950/50">
             <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span>PostgreSQL 17.11 (Supabase Cloud) • Argon2id (64MB) • age X25519</span>
+            <span>PostgreSQL 17.11 (Supabase Cloud) • Argon2id (64MB) • Asymmetric age X25519</span>
         </div>
 
         <h1 class="text-4xl sm:text-6xl font-black tracking-tight text-white max-w-4xl mx-auto leading-tight sm:leading-tight">
-            Bank-Grade Authentication & <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">3-2-1 Disaster Recovery</span>
+            Enterprise Authentication & <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">3-2-1 Disaster Recovery</span>
         </h1>
 
         <p class="text-base sm:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
-            Enterprise multi-tenant authentication, 4-tier Role-Based Access Control, RFC 6238 TOTP two-factor security, cryptographic append-only audit trails, and automated ransomware-proof backups.
+            Enterprise RBAC access control, RFC 6238 TOTP two-factor security, cryptographic append-only audit trails, and automated ransomware-proof backups with sub-second restore drills.
         </p>
 
         <!-- CTA Action Buttons -->
@@ -91,7 +91,7 @@
                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
                 </svg>
-                <span>Explore Live Banking Portal</span>
+                <span>Launch Application Portal</span>
             </a>
             <a href="{{ route('register') }}" class="rounded-xl border border-slate-700 bg-slate-900/90 px-8 py-4 text-sm font-bold text-slate-200 hover:border-emerald-500/40 hover:text-emerald-400 hover:scale-[1.02] transition-all">
                 Test NIST SP 800-63B Registration
@@ -99,11 +99,11 @@
         </div>
     </section>
 
-    <!-- Architecture Pillars Grid (3x3) -->
+    <!-- Architecture Pillars Grid (3x2) -->
     <section class="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div class="text-center mb-12">
             <h2 class="text-2xl sm:text-3xl font-bold text-white">Defense-in-Depth Core Architecture</h2>
-            <p class="text-sm text-slate-400 mt-2">Verified against OWASP Top 10 and STRIDE threat modeling.</p>
+            <p class="text-sm text-slate-400 mt-2">Verified against OWASP Top 10 and STRIDE threat vectors.</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -133,16 +133,16 @@
                 </p>
             </div>
 
-            <!-- 3. 4-Tier RBAC -->
+            <!-- 3. Enterprise RBAC -->
             <div class="glass-card p-6 rounded-3xl space-y-3 hover:border-emerald-500/30 transition-all">
                 <div class="h-10 w-10 rounded-xl bg-emerald-950 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                 </div>
-                <h3 class="text-base font-bold text-white">Strict 4-Tier RBAC</h3>
+                <h3 class="text-base font-bold text-white">Strict RBAC Authorization</h3>
                 <p class="text-xs text-slate-400 leading-relaxed">
-                    SuperAdmin, SecurityAuditor, BranchManager, and Customer segregation enforced via middleware gates and DB policies.
+                    Granular role definitions (Administrator and Standard User) enforced via middleware gates and DB policies.
                 </p>
             </div>
 
@@ -187,41 +187,27 @@
         </div>
     </section>
 
-    <!-- Pre-seeded Role Showcase for Presentation Panel -->
+    <!-- Pre-seeded 2 User Accounts Showcase -->
     <section class="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-slate-800">
         <div class="glass-card p-8 rounded-3xl border border-slate-800 space-y-6 text-center">
-            <h3 class="text-xl font-bold text-white">Live Role Demo Switcher (Viva Defense Ready)</h3>
+            <h3 class="text-xl font-bold text-white">System User Accounts (Ready for Panel Demo)</h3>
             <p class="text-xs text-slate-400 max-w-xl mx-auto">
-                Pre-seeded test accounts with tiered privileges ready for immediate panel demonstration.
+                2 pre-seeded accounts with tiered privileges ready for immediate live demonstration.
             </p>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-left">
-                <!-- SuperAdmin -->
-                <div class="p-4 rounded-2xl bg-purple-950/40 border border-purple-500/30 space-y-2">
-                    <span class="text-xs font-bold text-purple-300 block">SuperAdmin</span>
-                    <span class="font-mono text-[11px] text-purple-200 block truncate">admin@secureauth.bank</span>
-                    <p class="text-[11px] text-slate-400">Full system governance, RBAC assignment, 3-2-1 backup controls.</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-left max-w-2xl mx-auto">
+                <!-- Administrator -->
+                <div class="p-5 rounded-2xl bg-purple-950/40 border border-purple-500/30 space-y-2">
+                    <span class="text-sm font-bold text-purple-300 block">Administrator</span>
+                    <span class="font-mono text-xs text-purple-200 block truncate">admin@secureauth.com</span>
+                    <p class="text-xs text-slate-400">Full system governance, user directory, 3-2-1 backup & DR hub, audit forensics.</p>
                 </div>
 
-                <!-- Auditor -->
-                <div class="p-4 rounded-2xl bg-amber-950/40 border border-amber-500/30 space-y-2">
-                    <span class="text-xs font-bold text-amber-300 block">Security Auditor</span>
-                    <span class="font-mono text-[11px] text-amber-200 block truncate">auditor@secureauth.bank</span>
-                    <p class="text-[11px] text-slate-400">Forensics explorer, cryptographic hash chain validator, export reports.</p>
-                </div>
-
-                <!-- Branch Manager -->
-                <div class="p-4 rounded-2xl bg-blue-950/40 border border-blue-500/30 space-y-2">
-                    <span class="text-xs font-bold text-blue-300 block">Branch Manager</span>
-                    <span class="font-mono text-[11px] text-blue-200 block truncate">branch@secureauth.bank</span>
-                    <p class="text-[11px] text-slate-400">Customer directory, account verification, lockout resets.</p>
-                </div>
-
-                <!-- Customer -->
-                <div class="p-4 rounded-2xl bg-emerald-950/40 border border-emerald-500/30 space-y-2">
-                    <span class="text-xs font-bold text-emerald-300 block">Customer</span>
-                    <span class="font-mono text-[11px] text-emerald-200 block truncate">customer@secureauth.bank</span>
-                    <p class="text-[11px] text-slate-400">Checking balance, TOTP setup, transaction security telemetry.</p>
+                <!-- Standard User -->
+                <div class="p-5 rounded-2xl bg-emerald-950/40 border border-emerald-500/30 space-y-2">
+                    <span class="text-sm font-bold text-emerald-300 block">Standard User</span>
+                    <span class="font-mono text-xs text-emerald-200 block truncate">user@secureauth.com</span>
+                    <p class="text-xs text-slate-400">User dashboard, self-service 2FA management, session security history.</p>
                 </div>
             </div>
         </div>

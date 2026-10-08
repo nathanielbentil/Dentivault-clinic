@@ -1,12 +1,12 @@
 <x-guest-layout>
     <x-slot name="heading">
-        Banking Portal Login
+        SecureAuth Portal Login
     </x-slot>
     <x-slot name="subheading">
-        Sign in with your enterprise credentials
+        Sign in to your account with enterprise protection
     </x-slot>
 
-    <!-- Quick Demo Credential Selectors for Viva Examiners -->
+    <!-- Quick Demo Credential Selectors for the 2 Users -->
     <div class="mb-6 p-3 rounded-xl bg-slate-900/90 border border-slate-800 text-xs" x-data="{
         fill(email, pass) {
             document.getElementById('email').value = email;
@@ -14,25 +14,17 @@
         }
     }">
         <div class="flex items-center justify-between text-slate-400 font-semibold mb-2">
-            <span>⚡ Quick Demo Credentials:</span>
-            <span class="text-[10px] text-emerald-400 uppercase tracking-wider">Viva Ready</span>
+            <span>⚡ Test User Accounts:</span>
+            <span class="text-[10px] text-emerald-400 uppercase tracking-wider">1-Click Fill</span>
         </div>
-        <div class="grid grid-cols-2 gap-1.5">
-            <button type="button" @click="fill('admin@secureauth.bank', 'Admin@SecureAuth2026!')" class="text-left px-2.5 py-1.5 rounded-lg bg-purple-950/50 hover:bg-purple-900/50 border border-purple-500/30 text-purple-200 transition-colors">
-                <span class="font-bold block text-[11px]">SuperAdmin</span>
-                <span class="text-[10px] text-purple-300/70 truncate block">admin@secureauth.bank</span>
+        <div class="grid grid-cols-2 gap-2">
+            <button type="button" @click="fill('admin@secureauth.com', 'Admin@SecureAuth2026!')" class="text-left px-3 py-2 rounded-lg bg-purple-950/50 hover:bg-purple-900/50 border border-purple-500/30 text-purple-200 transition-colors">
+                <span class="font-bold block text-xs">Administrator</span>
+                <span class="text-[10px] text-purple-300/70 truncate block">admin@secureauth.com</span>
             </button>
-            <button type="button" @click="fill('auditor@secureauth.bank', 'Auditor@SecureAuth2026!')" class="text-left px-2.5 py-1.5 rounded-lg bg-amber-950/50 hover:bg-amber-900/50 border border-amber-500/30 text-amber-200 transition-colors">
-                <span class="font-bold block text-[11px]">Auditor</span>
-                <span class="text-[10px] text-amber-300/70 truncate block">auditor@secureauth.bank</span>
-            </button>
-            <button type="button" @click="fill('branch@secureauth.bank', 'Branch@SecureAuth2026!')" class="text-left px-2.5 py-1.5 rounded-lg bg-blue-950/50 hover:bg-blue-900/50 border border-blue-500/30 text-blue-200 transition-colors">
-                <span class="font-bold block text-[11px]">Branch Manager</span>
-                <span class="text-[10px] text-blue-300/70 truncate block">branch@secureauth.bank</span>
-            </button>
-            <button type="button" @click="fill('customer@secureauth.bank', 'Customer@SecureAuth2026!')" class="text-left px-2.5 py-1.5 rounded-lg bg-emerald-950/50 hover:bg-emerald-900/50 border border-emerald-500/30 text-emerald-200 transition-colors">
-                <span class="font-bold block text-[11px]">Customer</span>
-                <span class="text-[10px] text-emerald-300/70 truncate block">customer@secureauth.bank</span>
+            <button type="button" @click="fill('user@secureauth.com', 'User@SecureAuth2026!')" class="text-left px-3 py-2 rounded-lg bg-emerald-950/50 hover:bg-emerald-900/50 border border-emerald-500/30 text-emerald-200 transition-colors">
+                <span class="font-bold block text-xs">Standard User</span>
+                <span class="text-[10px] text-emerald-300/70 truncate block">user@secureauth.com</span>
             </button>
         </div>
     </div>
@@ -48,7 +40,7 @@
             <div class="relative">
                 <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username"
                     class="w-full rounded-xl border border-slate-700 bg-slate-900/90 px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
-                    placeholder="name@secureauth.bank">
+                    placeholder="user@secureauth.com">
             </div>
         </div>
 
@@ -103,7 +95,7 @@
     <div class="mt-6 text-center border-t border-slate-800 pt-4 text-xs text-slate-400">
         Need a new account?
         <a href="{{ route('register') }}" class="font-semibold text-emerald-400 hover:text-emerald-300">
-            Open an account with NIST validation
+            Register with NIST validation
         </a>
     </div>
 </x-guest-layout>
