@@ -35,6 +35,7 @@ class NormalizeAuditChain extends Command
                 'prev_hash' => $prev,
                 'event_type' => $log->event_type,
                 'severity' => $log->severity,
+                'description' => $log->description,
                 'user_id' => $log->user_id,
                 'ip' => $log->ip_address,
                 'timestamp' => $log->created_at->toIso8601String(),
