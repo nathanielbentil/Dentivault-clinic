@@ -28,7 +28,7 @@
             if (this.score < 40) return { label: 'Weak', color: 'bg-red-500', text: 'text-red-400' };
             if (this.score < 70) return { label: 'Medium', color: 'bg-amber-500', text: 'text-amber-400' };
             if (this.score < 90) return { label: 'Strong', color: 'bg-blue-500', text: 'text-blue-400' };
-            return { label: 'Bank-Grade (Argon2id Ready)', color: 'bg-emerald-500', text: 'text-emerald-400' };
+            return { label: 'Enterprise-Grade (Argon2id Ready)', color: 'bg-emerald-500', text: 'text-emerald-400' };
         }
     }">
         @csrf
@@ -50,7 +50,7 @@
             </label>
             <input id="email" type="email" name="email" value="{{ old('email') }}" required autocomplete="email"
                 class="w-full rounded-xl border border-slate-700 bg-slate-900/90 px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
-                placeholder="jane@secureauth.bank">
+                placeholder="jane@secureauth.com">
         </div>
 
         <!-- Password -->

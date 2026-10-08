@@ -20,10 +20,11 @@ class SecurityHeadersMiddleware
         // 1. Content Security Policy (CSP): Restricts resource loading to approved origins only
         $csp = implode('; ', [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
-            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net",
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdn.jsdelivr.net",
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdn.tailwindcss.com",
             "font-src 'self' https://fonts.gstatic.com data:",
             "img-src 'self' data: https:",
+            "connect-src 'self' https://cdn.tailwindcss.com",
             "frame-ancestors 'none'", // Anti-Clickjacking Defense
             "base-uri 'self'",
             "form-action 'self'",
