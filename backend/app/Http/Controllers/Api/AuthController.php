@@ -408,4 +408,124 @@ class AuthController extends Controller
             'message' => 'Logged out successfully.',
         ]);
     }
+
+    /**
+     * Update authenticated user profile name
+     */
+    public function updateProfile(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $validator = Validator::make($request->all(), [
+            'name' => ['required', 'string', 'max:255'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $oldName = $user->name;
+        $user->name = $request->name;
+        $user->save();
+
+        AuditLog::record(
+            eventType: 'auth.profile_updated',
+            description: "User [{$user->email}] changed profile name from [{$oldName}] to [{$user->name}].",
+            userId: $user->id,
+            severity: 'info',
+            payload: ['ip' => $request->ip(), 'old_name' => $oldName, 'new_name' => $user->name]
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Profile name updated successfully.',
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'roles' => $user->roles->pluck('name'),
+                'is_admin' => $user->hasRole('Admin') || $user->hasRole('SuperAdmin'),
+                'two_factor_enabled' => !is_null($user->two_factor_confirmed_at),
+            ],
+        ]);
+    }
+
+    /**
+     * Change authenticated user password (NIST SP 800-63B compliant)
+     */
+    public function updatePassword(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $validator = Validator::make($request->all(), [
+            'current_password' => ['required', 'string'],
+            'new_password' => [
+                'required',
+                'string',
+                Password::min(12)
+                    ->letters()
+                    ->mixedCase()
+                    ->numbers()
+                    ->symbols()
+                    ->uncompromised(3),
+                'confirmed',
+            ],
+        ], [
+            'new_password.min' => 'New password must be at least 12 characters long according to NIST SP 800-63B guidelines.',
+            'new_password.confirmed' => 'New password confirmation does not match.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        // Verify current password with Argon2id + HMAC pepper
+        $isValid = PasswordService::verify(
+            $request->current_password,
+            $user->password,
+            $user->pepper_version
+        );
+
+        if (!$isValid) {
+            AuditLog::record(
+                eventType: 'auth.password_change_failed',
+                description: "Password change rejected for user [{$user->email}]: current password incorrect.",
+                userId: $user->id,
+                severity: 'warning',
+                payload: ['ip' => $request->ip()]
+            );
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Current password is incorrect.',
+            ], 422);
+        }
+
+        // Hash new password with active pepper
+        $hashed = PasswordService::hash($request->new_password);
+        $user->forceFill([
+            'password' => $hashed['hash'],
+            'pepper_version' => $hashed['pepper_version'],
+            'password_changed_at' => now(),
+        ])->save();
+
+        AuditLog::record(
+            eventType: 'auth.password_changed',
+            description: "User [{$user->email}] successfully changed account password.",
+            userId: $user->id,
+            severity: 'notice',
+            payload: ['ip' => $request->ip()]
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Password updated successfully.',
+        ]);
+    }
 }

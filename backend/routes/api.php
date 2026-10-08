@@ -25,8 +25,10 @@ Route::prefix('auth')->group(function () {
 
 // Authenticated Routes (Requires Bearer Token)
 Route::middleware('auth:sanctum')->group(function () {
-    // Current User Profile & Logout
+    // Current User Profile, Update & Logout
     Route::get('auth/user', [AuthController::class, 'user']);
+    Route::post('auth/profile', [AuthController::class, 'updateProfile']);
+    Route::post('auth/password', [AuthController::class, 'updatePassword']);
     Route::post('auth/logout', [AuthController::class, 'logout']);
 
     // Two-Factor Authentication Management

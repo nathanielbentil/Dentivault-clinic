@@ -61,6 +61,15 @@
             <span style="color: var(--text-secondary);">Password Last Updated:</span>
             <span id="profile-password-date" style="color: var(--text-muted);">-</span>
           </div>
+
+          <div style="display: flex; gap: 0.75rem; margin-top: 0.5rem; pt: 0.5rem; border-top: 1px solid var(--border-color); flex-wrap: wrap;">
+            <button onclick="openEditProfileModal()" class="btn btn-secondary btn-sm" style="flex: 1;">
+              ✏️ Change Name
+            </button>
+            <button onclick="openChangePasswordModal()" class="btn btn-secondary btn-sm" style="flex: 1;">
+              🔑 Change Password
+            </button>
+          </div>
         </div>
       </div>
 
@@ -234,13 +243,77 @@
     </div>
   </div>
 
+  <!-- Edit Profile / Change Name Modal -->
+  <div id="edit-profile-modal" class="modal-overlay">
+    <div class="modal-box" style="max-width: 450px;">
+      <div class="card-header">
+        <h3 class="card-title">Change Display Name</h3>
+        <button onclick="closeModal('edit-profile-modal')" style="background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;">×</button>
+      </div>
+      <form id="edit-profile-form">
+        <div class="form-group">
+          <label for="edit-name" class="form-label">Full Name</label>
+          <input type="text" id="edit-name" class="form-input" required placeholder="Enter new name">
+        </div>
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+          <button type="button" onclick="closeModal('edit-profile-modal')" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Change Password Modal -->
+  <div id="change-password-modal" class="modal-overlay">
+    <div class="modal-box" style="max-width: 500px;">
+      <div class="card-header">
+        <h3 class="card-title">Change Password</h3>
+        <button onclick="closeModal('change-password-modal')" style="background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;">×</button>
+      </div>
+      <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1rem;">
+        Passwords must meet NIST SP 800-63B standards: minimum 12 characters with uppercase, lowercase, numbers, and symbols.
+      </p>
+      <form id="change-password-form">
+        <div class="form-group">
+          <label for="current-password" class="form-label">Current Password</label>
+          <input type="password" id="current-password" class="form-input" required placeholder="Enter current password">
+        </div>
+        <div class="form-group">
+          <label for="new-password" class="form-label">New Password</label>
+          <input type="password" id="new-password" class="form-input" required placeholder="Min 12 chars (e.g. Admin@SecureAuth2026!)">
+          
+          <!-- Live Strength Indicators -->
+          <div style="margin-top: 0.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.25rem; font-size: 0.75rem;">
+            <div id="rule-len" style="color: var(--text-muted);">✕ 12+ Characters</div>
+            <div id="rule-upper" style="color: var(--text-muted);">✕ Uppercase Letter</div>
+            <div id="rule-lower" style="color: var(--text-muted);">✕ Lowercase Letter</div>
+            <div id="rule-num-sym" style="color: var(--text-muted);">✕ Number &amp; Symbol</div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="new-password-confirm" class="form-label">Confirm New Password</label>
+          <input type="password" id="new-password-confirm" class="form-input" required placeholder="Re-type new password">
+        </div>
+        
+        <div id="change-pw-error" style="display: none; background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.3); color: #fb7185; padding: 0.5rem; border-radius: var(--radius-sm); font-size: 0.85rem; margin-bottom: 1rem;"></div>
+
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+          <button type="button" onclick="closeModal('change-password-modal')" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary">Update Password</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script src="js/app.js"></script>
   <script>
     let activeRecoveryCodes = [];
+    let currentUserProfile = null;
 
     async function loadUserProfile() {
       const response = await apiRequest('auth/user');
       if (response.ok && response.data.success) {
+        currentUserProfile = response.data.user;
         const user = response.data.user;
         document.getElementById('user-display-name').innerText = user.name;
         document.getElementById('profile-name').innerText = user.name;
@@ -269,6 +342,102 @@
         }
       }
     }
+
+    function openEditProfileModal() {
+      if (currentUserProfile) {
+        document.getElementById('edit-name').value = currentUserProfile.name || '';
+      }
+      document.getElementById('edit-profile-modal').classList.add('active');
+    }
+
+    function openChangePasswordModal() {
+      document.getElementById('change-password-form').reset();
+      document.getElementById('change-pw-error').style.display = 'none';
+      updatePasswordRules('');
+      document.getElementById('change-password-modal').classList.add('active');
+    }
+
+    // Live password strength validator
+    function updatePasswordRules(pw) {
+      const ruleLen = document.getElementById('rule-len');
+      const ruleUpper = document.getElementById('rule-upper');
+      const ruleLower = document.getElementById('rule-lower');
+      const ruleNumSym = document.getElementById('rule-num-sym');
+
+      const isLen = pw.length >= 12;
+      const isUpper = /[A-Z]/.test(pw);
+      const isLower = /[a-z]/.test(pw);
+      const isNumSym = /[0-9]/.test(pw) && /[^A-Za-z0-9]/.test(pw);
+
+      ruleLen.style.color = isLen ? '#34d399' : 'var(--text-muted)';
+      ruleLen.innerText = (isLen ? '✓' : '✕') + ' 12+ Characters';
+
+      ruleUpper.style.color = isUpper ? '#34d399' : 'var(--text-muted)';
+      ruleUpper.innerText = (isUpper ? '✓' : '✕') + ' Uppercase Letter';
+
+      ruleLower.style.color = isLower ? '#34d399' : 'var(--text-muted)';
+      ruleLower.innerText = (isLower ? '✓' : '✕') + ' Lowercase Letter';
+
+      ruleNumSym.style.color = isNumSym ? '#34d399' : 'var(--text-muted)';
+      ruleNumSym.innerText = (isNumSym ? '✓' : '✕') + ' Number & Symbol';
+    }
+
+    document.getElementById('new-password').addEventListener('input', (e) => {
+      updatePasswordRules(e.target.value);
+    });
+
+    document.getElementById('edit-profile-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('edit-name').value.trim();
+      const response = await apiRequest('auth/profile', {
+        method: 'POST',
+        body: JSON.stringify({ name })
+      });
+
+      if (response.ok && response.data.success) {
+        closeModal('edit-profile-modal');
+        showToast('Name updated successfully!', 'success');
+        loadUserProfile();
+      } else {
+        showToast(response.data.message || 'Failed to update profile.', 'error');
+      }
+    });
+
+    document.getElementById('change-password-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const current_password = document.getElementById('current-password').value;
+      const new_password = document.getElementById('new-password').value;
+      const new_password_confirmation = document.getElementById('new-password-confirm').value;
+      const errorDiv = document.getElementById('change-pw-error');
+      errorDiv.style.display = 'none';
+
+      if (new_password !== new_password_confirmation) {
+        errorDiv.innerText = 'New password confirmation does not match.';
+        errorDiv.style.display = 'block';
+        return;
+      }
+
+      const response = await apiRequest('auth/password', {
+        method: 'POST',
+        body: JSON.stringify({
+          current_password,
+          new_password,
+          new_password_confirmation
+        })
+      });
+
+      if (response.ok && response.data.success) {
+        closeModal('change-password-modal');
+        showToast('Password updated successfully!', 'success');
+        loadUserProfile();
+      } else {
+        const errorMsg = response.data.errors 
+          ? Object.values(response.data.errors).flat().join(' ') 
+          : (response.data.message || 'Failed to update password.');
+        errorDiv.innerText = errorMsg;
+        errorDiv.style.display = 'block';
+      }
+    });
 
     async function start2FaSetup() {
       const response = await apiRequest('2fa/setup', { method: 'POST' });

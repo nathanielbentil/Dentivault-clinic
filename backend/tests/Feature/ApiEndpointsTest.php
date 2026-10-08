@@ -34,12 +34,49 @@ class ApiEndpointsTest extends TestCase
         $response->assertJsonFragment(['success' => false]);
     }
 
-    public function test_authenticated_user_can_access_user_profile(): void
+    public function test_authenticated_user_can_update_profile_name(): void
+    {
+        $user = User::where('email', 'admin@secureauth.com')->first();
+
+        $response = $this->actingAs($user, 'sanctum')->postJson('/api/auth/profile', [
+            'name' => 'Administrator Updated',
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJsonFragment(['success' => true]);
+        $this->assertEquals('Administrator Updated', $user->fresh()->name);
+
+        // Revert back
+        $user->update(['name' => 'Administrator']);
+    }
+
+    public function test_authenticated_user_can_update_password(): void
     {
         $user = User::where('email', 'user@secureauth.com')->first();
 
-        $response = $this->actingAs($user, 'sanctum')->getJson('/api/auth/user');
-        $response->assertStatus(200);
-        $response->assertJsonFragment(['email' => 'user@secureauth.com']);
+        // 1. Wrong current password fails
+        $badResponse = $this->actingAs($user, 'sanctum')->postJson('/api/auth/password', [
+            'current_password' => 'WrongPassword123!',
+            'new_password' => 'NewSecuredPass2026!#',
+            'new_password_confirmation' => 'NewSecuredPass2026!#',
+        ]);
+        $badResponse->assertStatus(422);
+
+        // 2. Correct current password succeeds
+        $goodResponse = $this->actingAs($user, 'sanctum')->postJson('/api/auth/password', [
+            'current_password' => 'User@SecureAuth2026!',
+            'new_password' => 'NewSecuredPass2026!#',
+            'new_password_confirmation' => 'NewSecuredPass2026!#',
+        ]);
+        $goodResponse->assertStatus(200);
+        $goodResponse->assertJsonFragment(['success' => true]);
+
+        // Restore original password
+        $restoreResponse = $this->actingAs($user, 'sanctum')->postJson('/api/auth/password', [
+            'current_password' => 'NewSecuredPass2026!#',
+            'new_password' => 'User@SecureAuth2026!',
+            'new_password_confirmation' => 'User@SecureAuth2026!',
+        ]);
+        $restoreResponse->assertStatus(200);
     }
 }
