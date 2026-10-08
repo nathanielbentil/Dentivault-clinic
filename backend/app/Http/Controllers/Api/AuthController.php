@@ -1,0 +1,411 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
+use App\Models\Role;
+use App\Models\User;
+use App\Services\PasswordService;
+use App\Services\TotpService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rules\Password;
+
+class AuthController extends Controller
+{
+    /**
+     * Handle API User Authentication (Login)
+     */
+    public function login(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => ['required', 'string', 'email'],
+            'password' => ['required', 'string'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $user = User::where('email', strtolower($request->email))->first();
+
+        if (!$user) {
+            AuditLog::record(
+                eventType: 'auth.login_failed',
+                description: "Login failed: account not found for [{$request->email}].",
+                severity: 'warning',
+                payload: ['ip' => $request->ip(), 'attempted_email' => $request->email]
+            );
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid credentials provided.',
+            ], 401);
+        }
+
+        // 1. Sliding Lockout Check (NIST SP 800-63B / OWASP)
+        if ($user->isLockedOut()) {
+            $lockoutRemainingMinutes = $user->lockout_until ? max(1, now()->diffInMinutes($user->lockout_until, false) + 1) : 15;
+            AuditLog::record(
+                eventType: 'auth.lockout_blocked',
+                description: "Authentication attempt blocked: account [{$user->email}] is currently locked.",
+                userId: $user->id,
+                severity: 'warning',
+                payload: ['ip' => $request->ip()]
+            );
+
+            return response()->json([
+                'success' => false,
+                'message' => "Account is temporarily locked due to excessive failed attempts. Please try again in {$lockoutRemainingMinutes} minutes.",
+                'locked' => true,
+                'lockout_remaining_minutes' => $lockoutRemainingMinutes,
+            ], 423);
+        }
+
+        // 2. Argon2id + HMAC Pepper Password Verification
+        $isValid = PasswordService::verify(
+            $request->password,
+            $user->password,
+            $user->pepper_version
+        );
+
+        if (!$isValid) {
+            $user->recordFailedLogin(
+                maxAttempts: config('security.lockout.max_attempts', 5),
+                lockoutMinutes: config('security.lockout.duration_minutes', 15)
+            );
+
+            $attemptsLeft = max(0, config('security.lockout.max_attempts', 5) - $user->failed_login_attempts);
+
+            AuditLog::record(
+                eventType: 'auth.password_mismatch',
+                description: "Failed login attempt for [{$user->email}]. Attempts left before lockout: {$attemptsLeft}.",
+                userId: $user->id,
+                severity: 'warning',
+                payload: ['ip' => $request->ip(), 'attempts_left' => $attemptsLeft]
+            );
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid credentials provided.',
+                'attempts_left' => $attemptsLeft,
+            ], 401);
+        }
+
+        // Reset failed login attempts upon valid password
+        $user->resetFailedLogins($request->ip());
+
+        // 3. Zero-Downtime Pepper Migration Check
+        if (PasswordService::needsRehash($user->password, $user->pepper_version)) {
+            $rehashed = PasswordService::hash($request->password);
+            $user->update([
+                'password' => $rehashed['hash'],
+                'pepper_version' => $rehashed['pepper_version'],
+            ]);
+
+            AuditLog::record(
+                eventType: 'auth.rehashed',
+                description: "Password automatically rehashed to active pepper version [{$rehashed['pepper_version']}].",
+                userId: $user->id,
+                severity: 'info'
+            );
+        }
+
+        // 4. Two-Factor Authentication Check
+        if ($user->two_factor_confirmed_at) {
+            $tempToken = Crypt::encryptString(json_encode([
+                'user_id' => $user->id,
+                'expires_at' => now()->addMinutes(5)->timestamp,
+            ]));
+
+            AuditLog::record(
+                eventType: 'auth.2fa_prompted',
+                description: "User [{$user->email}] prompted for 2FA TOTP code.",
+                userId: $user->id,
+                severity: 'info',
+                payload: ['ip' => $request->ip()]
+            );
+
+            return response()->json([
+                'success' => true,
+                'two_factor_required' => true,
+                'message' => 'Two-Factor Authentication is required.',
+                'temp_token' => $tempToken,
+            ]);
+        }
+
+        // 5. Successful Authentication -> Generate Sanctum Bearer Token
+        $token = $user->createToken('auth-token')->plainTextToken;
+
+        AuditLog::record(
+            eventType: 'auth.login_success',
+            description: "User [{$user->email}] successfully authenticated.",
+            userId: $user->id,
+            severity: 'info',
+            payload: ['ip' => $request->ip()]
+        );
+
+        return response()->json([
+            'success' => true,
+            'two_factor_required' => false,
+            'token' => $token,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'roles' => $user->roles->pluck('name'),
+                'is_admin' => $user->hasRole('Admin') || $user->hasRole('SuperAdmin'),
+                'two_factor_enabled' => !is_null($user->two_factor_confirmed_at),
+                'last_login_at' => $user->last_login_at,
+            ],
+        ]);
+    }
+
+    /**
+     * Handle 2FA Challenge for Token Issuance
+     */
+    public function twoFactorChallenge(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'temp_token' => ['required', 'string'],
+            'code' => ['nullable', 'string'],
+            'recovery_code' => ['nullable', 'string'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        try {
+            $payload = json_decode(Crypt::decryptString($request->temp_token), true);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'The 2FA authentication session has expired or is invalid. Please log in again.',
+            ], 401);
+        }
+
+        if (now()->timestamp > $payload['expires_at']) {
+            return response()->json([
+                'success' => false,
+                'message' => '2FA authentication challenge expired. Please log in again.',
+            ], 401);
+        }
+
+        $user = User::find($payload['user_id']);
+        if (!$user || !$user->two_factor_confirmed_at) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User account not found or 2FA not configured.',
+            ], 404);
+        }
+
+        $code = $request->code;
+        $recoveryCode = $request->recovery_code;
+        $authenticated = false;
+        $isRecoveryUsed = false;
+
+        // 1. Verify TOTP 6-digit code
+        if (!empty($code)) {
+            $authenticated = TotpService::verifyCode(
+                $user->two_factor_secret,
+                $code,
+                window: config('security.two_factor.window', 1)
+            );
+        }
+
+        // 2. Verify single-use recovery code
+        if (!$authenticated && !empty($recoveryCode)) {
+            $hashedCodes = $user->two_factor_recovery_codes ?? [];
+            $authenticated = TotpService::verifyAndConsumeRecoveryCode($recoveryCode, $hashedCodes);
+
+            if ($authenticated) {
+                $isRecoveryUsed = true;
+                $user->forceFill([
+                    'two_factor_recovery_codes' => $hashedCodes,
+                ])->save();
+
+                AuditLog::record(
+                    eventType: 'auth.2fa_recovery_used',
+                    description: "User [{$user->email}] authenticated using a single-use recovery code.",
+                    userId: $user->id,
+                    severity: 'notice',
+                    payload: ['ip' => $request->ip()]
+                );
+            }
+        }
+
+        if (!$authenticated) {
+            AuditLog::record(
+                eventType: 'auth.2fa_failed',
+                description: "2FA challenge verification failed for user [{$user->email}].",
+                userId: $user->id,
+                severity: 'warning',
+                payload: ['ip' => $request->ip()]
+            );
+
+            return response()->json([
+                'success' => false,
+                'message' => 'The provided Two-Factor Authentication code is invalid or expired.',
+            ], 422);
+        }
+
+        $token = $user->createToken('auth-token')->plainTextToken;
+
+        AuditLog::record(
+            eventType: 'auth.2fa_success',
+            description: "User [{$user->email}] successfully completed 2FA challenge.",
+            userId: $user->id,
+            severity: 'info',
+            payload: ['is_recovery_code' => $isRecoveryUsed, 'ip' => $request->ip()]
+        );
+
+        return response()->json([
+            'success' => true,
+            'token' => $token,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'roles' => $user->roles->pluck('name'),
+                'is_admin' => $user->hasRole('Admin') || $user->hasRole('SuperAdmin'),
+                'two_factor_enabled' => true,
+                'last_login_at' => $user->last_login_at,
+            ],
+        ]);
+    }
+
+    /**
+     * Handle NIST SP 800-63B Compliant User Registration
+     */
+    public function register(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email'],
+            'password' => [
+                'required',
+                'string',
+                Password::min(12)
+                    ->letters()
+                    ->mixedCase()
+                    ->numbers()
+                    ->symbols()
+                    ->uncompromised(3),
+            ],
+        ], [
+            'password.min' => 'Password must be at least 12 characters long according to NIST SP 800-63B guidelines.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        // Hash with active pepper + Argon2id
+        $hashed = PasswordService::hash($request->password);
+
+        $user = User::create([
+            'name' => $request->name,
+            'email' => strtolower($request->email),
+            'password' => $hashed['hash'],
+            'pepper_version' => $hashed['pepper_version'],
+            'status' => 'active',
+            'password_changed_at' => now(),
+        ]);
+
+        // Assign standard User role
+        $userRole = Role::where('slug', 'user')->orWhere('slug', 'User')->first();
+        if ($userRole) {
+            $user->roles()->attach($userRole->id, ['assigned_by' => $user->id, 'created_at' => now()]);
+        }
+
+        AuditLog::record(
+            eventType: 'auth.registered',
+            description: "New user account registered for [{$user->email}].",
+            userId: $user->id,
+            severity: 'notice',
+            payload: ['ip' => $request->ip()]
+        );
+
+        $token = $user->createToken('auth-token')->plainTextToken;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Registration successful.',
+            'token' => $token,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'roles' => $user->roles->pluck('name'),
+                'is_admin' => false,
+                'two_factor_enabled' => false,
+                'last_login_at' => null,
+            ],
+        ], 201);
+    }
+
+    /**
+     * Get the authenticated user profile
+     */
+    public function user(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        return response()->json([
+            'success' => true,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'status' => $user->status,
+                'roles' => $user->roles->pluck('name'),
+                'is_admin' => $user->hasRole('Admin') || $user->hasRole('SuperAdmin'),
+                'two_factor_enabled' => !is_null($user->two_factor_confirmed_at),
+                'last_login_at' => $user->last_login_at,
+                'last_login_ip' => $user->last_login_ip,
+                'password_changed_at' => $user->password_changed_at,
+            ],
+        ]);
+    }
+
+    /**
+     * Terminate the API token session (Logout)
+     */
+    public function logout(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if ($user) {
+            AuditLog::record(
+                eventType: 'auth.logout',
+                description: "User [{$user->email}] logged out.",
+                userId: $user->id,
+                severity: 'info',
+                payload: ['ip' => $request->ip()]
+            );
+
+            $user->currentAccessToken()->delete();
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Logged out successfully.',
+        ]);
+    }
+}

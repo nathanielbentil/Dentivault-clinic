@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Registration - Enterprise Security System</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container nav-container"></div>
+  </nav>
+
+  <main class="container" style="padding-top: 3rem; padding-bottom: 4rem; display: flex; justify-content: center;">
+    <div style="max-width: 520px; width: 100%;">
+      <div class="card">
+        <div class="card-header" style="text-align: center; display: block;">
+          <div class="brand-icon" style="margin: 0 auto 1rem auto; width: 2.75rem; height: 2.75rem; font-size: 1.4rem;">
+            📝
+          </div>
+          <h2 class="card-title">Register New Account</h2>
+          <p class="card-subtitle">NIST SP 800-63B Complexity & Argon2id Hashing</p>
+        </div>
+
+        <form id="register-form">
+          <div class="form-group">
+            <label for="name" class="form-label">Full Name</label>
+            <input type="text" id="name" class="form-input" placeholder="e.g. Alex Hunter" required autocomplete="name">
+          </div>
+
+          <div class="form-group">
+            <label for="email" class="form-label">Email Address</label>
+            <input type="email" id="email" class="form-input" placeholder="alex@secureauth.com" required autocomplete="email">
+          </div>
+
+          <div class="form-group">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" id="password" class="form-input" placeholder="Min. 12 characters" required autocomplete="new-password">
+            
+            <!-- Real-time NIST Password Strength Meter -->
+            <div class="meter-bar-container">
+              <div id="meter-bar" class="meter-bar"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.35rem;">
+              <span id="strength-label" style="font-size: 0.75rem; color: var(--text-muted);">Enter password</span>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">NIST SP 800-63B</span>
+            </div>
+
+            <div class="criteria-list">
+              <div id="crit-length" class="criteria-item invalid">✕ At least 12 characters</div>
+              <div id="crit-upper" class="criteria-item invalid">✕ Uppercase letter (A-Z)</div>
+              <div id="crit-lower" class="criteria-item invalid">✕ Lowercase letter (a-z)</div>
+              <div id="crit-number" class="criteria-item invalid">✕ Number digit (0-9)</div>
+              <div id="crit-symbol" class="criteria-item invalid" style="grid-column: span 2;">✕ Special symbol (!@#$%^&*)</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="password_confirmation" class="form-label">Confirm Password</label>
+            <input type="password" id="password_confirmation" class="form-input" placeholder="Re-enter password" required autocomplete="new-password">
+          </div>
+
+          <div id="error-alert" style="display: none; background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.3); color: #fb7185; padding: 0.75rem 1rem; border-radius: var(--radius-md); font-size: 0.85rem; margin-bottom: 1.25rem;">
+          </div>
+
+          <button type="submit" id="submit-btn" class="btn btn-primary btn-block">
+            Create Account
+          </button>
+        </form>
+
+        <div style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-secondary);">
+          Already have an account? <a href="login.html" style="color: var(--accent-cyan); text-decoration: none; font-weight: 500;">Sign In</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/app.js"></script>
+  <script>
+    const passwordInput = document.getElementById('password');
+    const meterBar = document.getElementById('meter-bar');
+    const strengthLabel = document.getElementById('strength-label');
+
+    passwordInput.addEventListener('input', () => {
+      const pwd = passwordInput.value;
+      const res = evaluatePasswordStrength(pwd);
+
+      // Update Meter Bar
+      meterBar.className = `meter-bar ${res.level}`;
+      strengthLabel.innerText = pwd ? res.label : 'Enter password';
+      strengthLabel.style.color = res.level === 'strong' ? 'var(--accent-emerald)' : res.level === 'good' ? 'var(--accent-blue)' : res.level === 'fair' ? 'var(--accent-amber)' : 'var(--accent-rose)';
+
+      // Update Individual Criteria Ticks
+      updateCriteria('crit-length', res.checks.length, 'At least 12 characters');
+      updateCriteria('crit-upper', res.checks.uppercase, 'Uppercase letter (A-Z)');
+      updateCriteria('crit-lower', res.checks.lowercase, 'Lowercase letter (a-z)');
+      updateCriteria('crit-number', res.checks.number, 'Number digit (0-9)');
+      updateCriteria('crit-symbol', res.checks.symbol, 'Special symbol (!@#$%^&*)');
+    });
+
+    function updateCriteria(id, isValid, text) {
+      const el = document.getElementById(id);
+      el.className = `criteria-item ${isValid ? 'valid' : 'invalid'}`;
+      el.innerText = `${isValid ? '✓' : '✕'} ${text}`;
+    }
+
+    document.getElementById('register-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const password_confirmation = document.getElementById('password_confirmation').value;
+      const submitBtn = document.getElementById('submit-btn');
+      const errorAlert = document.getElementById('error-alert');
+
+      if (password !== password_confirmation) {
+        errorAlert.innerText = 'Passwords do not match.';
+        errorAlert.style.display = 'block';
+        return;
+      }
+
+      if (password.length < 12) {
+        errorAlert.innerText = 'Password must be at least 12 characters (NIST SP 800-63B).';
+        errorAlert.style.display = 'block';
+        return;
+      }
+
+      errorAlert.style.display = 'none';
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'Creating account...';
+
+      const response = await apiRequest('auth/register', {
+        method: 'POST',
+        body: JSON.stringify({ name, email, password }),
+        skipAuthRedirect: true
+      });
+
+      submitBtn.disabled = false;
+      submitBtn.innerText = 'Create Account';
+
+      if (response.ok && response.data.success) {
+        Auth.setToken(response.data.token);
+        Auth.setUser(response.data.user);
+        showToast('Account registered successfully!', 'success');
+        setTimeout(() => {
+          window.location.href = 'dashboard.html';
+        }, 600);
+      } else {
+        let msg = response.data.message || 'Registration failed.';
+        if (response.data.errors) {
+          msg = Object.values(response.data.errors).flat().join(' ');
+        }
+        errorAlert.innerText = msg;
+        errorAlert.style.display = 'block';
+        showToast(msg, 'error');
+      }
+    });
+  </script>
+</body>
+</html>

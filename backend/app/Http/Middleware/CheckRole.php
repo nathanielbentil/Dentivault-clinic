@@ -21,6 +21,9 @@ class CheckRole
         $user = $request->user();
 
         if (!$user) {
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return response()->json(['success' => false, 'message' => 'Unauthenticated.'], 401);
+            }
             return redirect()->route('login');
         }
 
@@ -54,6 +57,13 @@ class CheckRole
             payload: ['target' => $request->path(), 'required_roles' => $roles]
         );
 
-        abort(Response::HTTP_FORBIDDEN, 'Security Exception (403 Forbidden): Your account role does not have authorization to access this banking resource.');
+        if ($request->expectsJson() || $request->is('api/*')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Security Exception (403 Forbidden): Access denied. Required role: ' . $requiredRoles,
+            ], 403);
+        }
+
+        abort(Response::HTTP_FORBIDDEN, 'Security Exception (403 Forbidden): Your account role does not have authorization to access this resource.');
     }
 }

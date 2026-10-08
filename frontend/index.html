@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enterprise Security & Disaster Recovery System</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container nav-container"></div>
+  </nav>
+
+  <main class="container" style="padding-top: 3rem; padding-bottom: 4rem;">
+    <!-- Hero Section -->
+    <div style="text-align: center; max-width: 850px; margin: 0 auto 3.5rem auto;">
+      <div style="display: inline-flex; align-items: center; gap: 0.5rem; margin-bottom: 1.25rem;">
+        <span class="badge badge-blue">Enterprise Security Architecture</span>
+        <span class="badge badge-emerald">Disaster Recovery Ready</span>
+        <span class="badge badge-purple">Viva Academic Defense</span>
+      </div>
+      <h1 style="font-size: 2.75rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1.2; margin-bottom: 1rem;">
+        Enterprise Authentication, Cryptographic Audit & 3-2-1 DR System
+      </h1>
+      <p style="font-size: 1.15rem; color: var(--text-secondary); margin-bottom: 2rem;">
+        A decoupled, defense-in-depth security infrastructure engineered with Argon2id + HMAC pepper password hashing, RFC 6238 TOTP 2FA, SHA-256 append-only tamper-evident audit logs, and asymmetric <code class="font-mono" style="color: var(--accent-cyan);">age</code> X25519 backups replicated to Supabase Cloud.
+      </p>
+      <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+        <a href="login.html" class="btn btn-primary" style="font-size: 1rem; padding: 0.85rem 1.75rem;">
+          🔐 Sign In to Console
+        </a>
+        <a href="register.html" class="btn btn-secondary" style="font-size: 1rem; padding: 0.85rem 1.75rem;">
+          📝 Register User
+        </a>
+        <a href="backups.html" class="btn btn-secondary" style="font-size: 1rem; padding: 0.85rem 1.75rem;">
+          💾 3-2-1 Backups & DR
+        </a>
+      </div>
+    </div>
+
+    <!-- Security Architecture Grid -->
+    <div class="grid grid-cols-3" style="margin-bottom: 3.5rem;">
+      <div class="card">
+        <div style="font-size: 1.75rem; margin-bottom: 0.75rem;">🔒</div>
+        <h3 class="card-title" style="font-size: 1.1rem; margin-bottom: 0.5rem;">NIST SP 800-63B Authentication</h3>
+        <p style="color: var(--text-secondary); font-size: 0.875rem;">
+          Argon2id (64MB memory, 3 iterations) combined with out-of-database HMAC-SHA256 pepper. Zero-downtime pepper key rotation and sliding account lockouts (5 attempts = 15m lockout).
+        </p>
+      </div>
+
+      <div class="card">
+        <div style="font-size: 1.75rem; margin-bottom: 0.75rem;">🛡️</div>
+        <h3 class="card-title" style="font-size: 1.1rem; margin-bottom: 0.5rem;">Two-Factor Auth (RFC 6238)</h3>
+        <p style="color: var(--text-secondary); font-size: 0.875rem;">
+          Offline vector SVG QR code generation for Google Authenticator / 1Password, plus 8 cryptographically secure single-use recovery codes hashed before database persistence.
+        </p>
+      </div>
+
+      <div class="card">
+        <div style="font-size: 1.75rem; margin-bottom: 0.75rem;">⛓️</div>
+        <h3 class="card-title" style="font-size: 1.1rem; margin-bottom: 0.5rem;">SHA-256 Tamper-Evident Logs</h3>
+        <p style="color: var(--text-secondary); font-size: 0.875rem;">
+          Cryptographic blockchain-style SHA-256 hash chaining. Real-time integrity verification with immediate detection and alerting upon any unauthorized database modification.
+        </p>
+      </div>
+
+      <div class="card">
+        <div style="font-size: 1.75rem; margin-bottom: 0.75rem;">💾</div>
+        <h3 class="card-title" style="font-size: 1.1rem; margin-bottom: 0.5rem;">3-2-1 Asymmetric Backups</h3>
+        <p style="color: var(--text-secondary); font-size: 0.875rem;">
+          Automated database dumps encrypted with <code class="font-mono" style="color: var(--accent-cyan);">age</code> X25519 public key. Server never holds private decryption key; air-gapped recovery keys enable zero-knowledge security.
+        </p>
+      </div>
+
+      <div class="card">
+        <div style="font-size: 1.75rem; margin-bottom: 0.75rem;">☁️</div>
+        <h3 class="card-title" style="font-size: 1.1rem; margin-bottom: 0.5rem;">Supabase Cloud Mirroring</h3>
+        <p style="color: var(--text-secondary); font-size: 0.875rem;">
+          Dual offsite replication to Supabase Cloud Storage. Automated integrity checksum validation matches local and remote SHA-256 digests with automated 30-day lifecycle pruning.
+        </p>
+      </div>
+
+      <div class="card">
+        <div style="font-size: 1.75rem; margin-bottom: 0.75rem;">⚡</div>
+        <h3 class="card-title" style="font-size: 1.1rem; margin-bottom: 0.5rem;">Sub-Second Disaster Recovery</h3>
+        <p style="color: var(--text-secondary); font-size: 0.875rem;">
+          Automated Disaster Recovery drills benchmark RTO (&lt;4 seconds) and RPO (zero data loss) with atomic table rebuilds and automated verification reporting.
+        </p>
+      </div>
+    </div>
+
+    <!-- Live Test Users Box -->
+    <div class="card" style="background: rgba(17, 24, 39, 0.6); border: 1px dashed var(--border-color); text-align: center;">
+      <h3 style="font-size: 1.1rem; margin-bottom: 0.75rem; color: var(--accent-cyan);">👥 Seeded Test Credentials (2 Roles / 2 Users)</h3>
+      <div style="display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; font-size: 0.9rem;">
+        <div style="text-align: left; background: var(--bg-primary); padding: 0.85rem 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+          <div style="font-weight: 700; color: #a78bfa; margin-bottom: 0.25rem;">Administrator (Admin Role)</div>
+          <div style="color: var(--text-secondary);"><strong style="color: var(--text-primary);">Email:</strong> <code class="font-mono">admin@secureauth.com</code></div>
+          <div style="color: var(--text-secondary);"><strong style="color: var(--text-primary);">Password:</strong> <code class="font-mono">Admin@SecureAuth2026!</code></div>
+        </div>
+
+        <div style="text-align: left; background: var(--bg-primary); padding: 0.85rem 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+          <div style="font-weight: 700; color: #60a5fa; margin-bottom: 0.25rem;">Standard User (User Role)</div>
+          <div style="color: var(--text-secondary);"><strong style="color: var(--text-primary);">Email:</strong> <code class="font-mono">user@secureauth.com</code></div>
+          <div style="color: var(--text-secondary);"><strong style="color: var(--text-primary);">Password:</strong> <code class="font-mono">User@SecureAuth2026!</code></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer style="margin-top: auto; border-top: 1px solid var(--border-color); padding: 2rem 0; text-align: center; color: var(--text-muted); font-size: 0.85rem;">
+    <div class="container">
+      Enterprise Security & Disaster Recovery System • Viva Panel Defense • Decoupled Pure HTML Frontend & Laravel 11 REST Engine
+    </div>
+  </footer>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

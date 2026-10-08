@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Command Center - Enterprise Security System</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container nav-container"></div>
+  </nav>
+
+  <main class="container" style="padding-top: 2.5rem; padding-bottom: 4rem;">
+    <!-- Header -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+      <div>
+        <h1 style="font-size: 1.85rem; font-weight: 700; margin-bottom: 0.25rem;">
+          👑 Administrator Command Center
+        </h1>
+        <p style="color: var(--text-secondary); font-size: 0.9rem;">
+          Role-Based Access Control, Cryptographic Audit Forensics &amp; Attack Simulation
+        </p>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem;">
+        <a href="backups.html" class="btn btn-secondary">💾 3-2-1 Backups &amp; DR</a>
+        <button onclick="verifyChainIntegrity()" class="btn btn-primary">⛓️ Verify Hash Chain</button>
+      </div>
+    </div>
+
+    <!-- Security Statistics Grid -->
+    <div class="grid grid-cols-4" style="margin-bottom: 2rem;">
+      <div class="card" style="padding: 1.25rem;">
+        <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Total Accounts</div>
+        <div id="stat-total-users" style="font-size: 1.85rem; font-weight: 800; color: var(--text-primary); margin-top: 0.25rem;">-</div>
+      </div>
+
+      <div class="card" style="padding: 1.25rem;">
+        <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Active Users</div>
+        <div id="stat-active-users" style="font-size: 1.85rem; font-weight: 800; color: var(--accent-emerald); margin-top: 0.25rem;">-</div>
+      </div>
+
+      <div class="card" style="padding: 1.25rem;">
+        <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Locked Accounts</div>
+        <div id="stat-locked-users" style="font-size: 1.85rem; font-weight: 800; color: var(--accent-amber); margin-top: 0.25rem;">-</div>
+      </div>
+
+      <div class="card" style="padding: 1.25rem;">
+        <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Tamper-Evident Records</div>
+        <div id="stat-audit-count" style="font-size: 1.85rem; font-weight: 800; color: var(--accent-cyan); margin-top: 0.25rem;">-</div>
+      </div>
+    </div>
+
+    <!-- User Management Section -->
+    <div class="card" style="margin-bottom: 2rem;">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">User Management &amp; Role-Based Access Control</h2>
+          <p class="card-subtitle">Exact 2 Users &amp; 2 Roles (<code class="font-mono">Admin</code>, <code class="font-mono">User</code>)</p>
+        </div>
+        <span class="badge badge-purple">Strict RBAC</span>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>User</th>
+              <th>Status</th>
+              <th>2FA</th>
+              <th>Current Role</th>
+              <th>Assign Role</th>
+              <th>Last Sign In</th>
+            </tr>
+          </thead>
+          <tbody id="users-table-body">
+            <tr>
+              <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading user database...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Cryptographic Audit Log Forensics Section -->
+    <div class="card">
+      <div class="card-header" style="flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h2 class="card-title">Cryptographic SHA-256 Audit Trail</h2>
+          <p class="card-subtitle">Append-only blockchain-style hash chaining (<code class="font-mono">hash = SHA-256(prev_hash + payload)</code>)</p>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+          <button onclick="simulateTamperAttack()" class="btn btn-danger btn-sm">
+            🚨 Simulate Forensic Tampering (Viva Demo)
+          </button>
+          <button onclick="loadAuditLogs()" class="btn btn-secondary btn-sm">
+            🔄 Refresh Trail
+          </button>
+        </div>
+      </div>
+
+      <div id="integrity-banner" style="display: none; padding: 1rem 1.25rem; border-radius: var(--radius-md); margin-bottom: 1.5rem;">
+      </div>
+
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Log ID</th>
+              <th>Event Type</th>
+              <th>Severity</th>
+              <th>Actor / Target</th>
+              <th>Description</th>
+              <th>Cryptographic Hash</th>
+              <th>Timestamp</th>
+            </tr>
+          </thead>
+          <tbody id="audit-table-body">
+            <tr>
+              <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading audit trail...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/app.js"></script>
+  <script>
+    async function loadAdminData() {
+      const response = await apiRequest('admin/users');
+      if (response.ok && response.data.success) {
+        const stats = response.data.stats;
+        document.getElementById('stat-total-users').innerText = stats.total_users;
+        document.getElementById('stat-active-users').innerText = stats.active_users;
+        document.getElementById('stat-locked-users').innerText = stats.locked_users;
+        document.getElementById('stat-audit-count').innerText = stats.audit_events_count;
+
+        const tbody = document.getElementById('users-table-body');
+        tbody.innerHTML = response.data.users.map(u => `
+          <tr>
+            <td class="font-mono" style="color: var(--text-muted);">#${u.id}</td>
+            <td>
+              <div style="font-weight: 600;">${u.name}</div>
+              <div class="font-mono" style="font-size: 0.8rem; color: var(--text-secondary);">${u.email}</div>
+            </td>
+            <td>
+              <span class="badge ${u.status === 'active' ? 'badge-emerald' : 'badge-rose'}">${u.status}</span>
+            </td>
+            <td>
+              <span class="badge ${u.two_factor_enabled ? 'badge-emerald' : 'badge-amber'}">${u.two_factor_enabled ? 'RFC 6238' : 'Off'}</span>
+            </td>
+            <td>
+              <span class="badge ${u.roles.includes('Admin') ? 'badge-purple' : 'badge-blue'}">${u.roles.join(', ') || 'User'}</span>
+            </td>
+            <td>
+              <div style="display: flex; gap: 0.4rem; align-items: center;">
+                <select id="role-select-${u.id}" class="form-input" style="padding: 0.35rem 0.5rem; font-size: 0.8rem; width: auto;">
+                  <option value="Admin" ${u.roles.includes('Admin') ? 'selected' : ''}>Admin</option>
+                  <option value="User" ${!u.roles.includes('Admin') ? 'selected' : ''}>User</option>
+                </select>
+                <button onclick="updateUserRole(${u.id})" class="btn btn-secondary btn-sm" style="padding: 0.35rem 0.6rem;">Set</button>
+              </div>
+            </td>
+            <td class="font-mono" style="font-size: 0.8rem; color: var(--text-muted);">
+              ${u.last_login_at ? new Date(u.last_login_at).toLocaleString() : 'Never'}
+            </td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    async function updateUserRole(userId) {
+      const select = document.getElementById(`role-select-${userId}`);
+      const role_name = select.value;
+
+      const response = await apiRequest('admin/assign-role', {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId, role_name })
+      });
+
+      if (response.ok && response.data.success) {
+        showToast(response.data.message, 'success');
+        loadAdminData();
+      } else {
+        showToast(response.data.message || 'Failed to update role.', 'error');
+      }
+    }
+
+    async function loadAuditLogs() {
+      const response = await apiRequest('admin/audit-logs?limit=25');
+      if (response.ok && response.data.success) {
+        const tbody = document.getElementById('audit-table-body');
+        const logs = response.data.logs.data || [];
+        tbody.innerHTML = logs.map(l => {
+          const sevClass = l.severity === 'emergency' || l.severity === 'alert' || l.severity === 'critical' ? 'badge-rose' 
+            : l.severity === 'warning' ? 'badge-amber' 
+            : l.severity === 'notice' ? 'badge-blue' 
+            : 'badge-emerald';
+
+          return `
+            <tr>
+              <td class="font-mono" style="color: var(--text-muted); font-size: 0.8rem;">#${l.id}</td>
+              <td class="font-mono" style="font-size: 0.8rem; color: var(--accent-cyan); font-weight: 600;">${l.event_type}</td>
+              <td><span class="badge ${sevClass}">${l.severity}</span></td>
+              <td class="font-mono" style="font-size: 0.8rem;">${l.user ? l.user.email : 'System/Guest'}</td>
+              <td style="font-size: 0.85rem; max-width: 320px;">${l.description}</td>
+              <td class="font-mono" style="font-size: 0.75rem; color: var(--text-muted);" title="${l.hash}">
+                ${l.hash ? l.hash.substring(0, 16) + '...' : 'GENESIS'}
+              </td>
+              <td class="font-mono" style="font-size: 0.75rem; color: var(--text-muted);">
+                ${new Date(l.created_at).toLocaleString()}
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+    }
+
+    async function verifyChainIntegrity() {
+      const banner = document.getElementById('integrity-banner');
+      banner.style.display = 'block';
+      banner.style.background = 'rgba(59, 130, 246, 0.15)';
+      banner.style.border = '1px solid rgba(59, 130, 246, 0.3)';
+      banner.style.color = '#93c5fd';
+      banner.innerHTML = '🔍 Computing SHA-256 cryptographic chain verification across all database records...';
+
+      const response = await apiRequest('admin/verify-audit-chain');
+      if (response.ok && response.data.success) {
+        const report = response.data.report;
+        if (report.intact) {
+          banner.style.background = 'rgba(16, 185, 129, 0.15)';
+          banner.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+          banner.style.color = '#34d399';
+          banner.innerHTML = `<strong>✓ Cryptographic Chain Intact:</strong> 100% of ${report.total_logs} audit records verified. Zero tampering detected across entire genesis ledger.`;
+          showToast('Audit hash chain 100% verified!', 'success');
+        } else {
+          banner.style.background = 'rgba(244, 63, 94, 0.15)';
+          banner.style.border = '1px solid rgba(244, 63, 94, 0.3)';
+          banner.style.color = '#fb7185';
+          banner.innerHTML = `<strong>⚠️ CRITICAL TAMPER ALERT:</strong> Hash chain broken at Log #${report.broken_at_id}! Expected: <code class="font-mono">${report.expected_hash}</code> | Actual: <code class="font-mono">${report.actual_hash}</code>`;
+          showToast('Tampering detected!', 'error');
+        }
+      }
+    }
+
+    async function simulateTamperAttack() {
+      const banner = document.getElementById('integrity-banner');
+      banner.style.display = 'block';
+      banner.style.background = 'rgba(245, 158, 11, 0.15)';
+      banner.style.border = '1px solid rgba(245, 158, 11, 0.3)';
+      banner.style.color = '#fbbf24';
+      banner.innerHTML = '⚠️ Executing live forensic tampering attack simulation for viva demonstration...';
+
+      const response = await apiRequest('admin/simulate-tampering', { method: 'POST' });
+      if (response.ok && response.data.success) {
+        banner.style.background = 'rgba(244, 63, 94, 0.15)';
+        banner.style.border = '1px solid rgba(244, 63, 94, 0.3)';
+        banner.style.color = '#fb7185';
+        banner.innerHTML = `<strong>🚨 Viva Demonstration Success:</strong> Tamper attack simulated on database record. The SHA-256 hash chaining engine immediately flagged the discrepancy!`;
+        showToast('Viva Attack Demo: Tamper caught instantly by SHA-256 chain!', 'warning');
+        loadAuditLogs();
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadAdminData();
+      loadAuditLogs();
+    });
+  </script>
+</body>
+</html>

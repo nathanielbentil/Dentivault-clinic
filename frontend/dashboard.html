@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security Dashboard - Enterprise Security System</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container nav-container"></div>
+  </nav>
+
+  <main class="container" style="padding-top: 2.5rem; padding-bottom: 4rem;">
+    <!-- Welcome Header -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+      <div>
+        <h1 style="font-size: 1.85rem; font-weight: 700; margin-bottom: 0.25rem;">
+          Welcome back, <span id="user-display-name" style="color: var(--accent-cyan);">User</span>
+        </h1>
+        <p style="color: var(--text-secondary); font-size: 0.9rem;">
+          Security profile, session telemetry &amp; 2FA credential control
+        </p>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem;">
+        <span id="role-badge" class="badge badge-blue">Role: User</span>
+        <span id="status-badge" class="badge badge-emerald">Status: Active</span>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2" style="margin-bottom: 2rem;">
+      <!-- Profile Information Card -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">User Security Profile</h2>
+            <p class="card-subtitle">Account credentials &amp; identity metadata</p>
+          </div>
+          <span style="font-size: 1.5rem;">👤</span>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 1rem; font-size: 0.9rem;">
+          <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+            <span style="color: var(--text-secondary);">Full Name:</span>
+            <span id="profile-name" style="font-weight: 600;">-</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+            <span style="color: var(--text-secondary);">Email Address:</span>
+            <span id="profile-email" class="font-mono">-</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+            <span style="color: var(--text-secondary);">Assigned Role:</span>
+            <span id="profile-role" style="font-weight: 600;">-</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+            <span style="color: var(--text-secondary);">Password Algorithm:</span>
+            <span class="badge badge-purple font-mono">Argon2id + HMAC Pepper</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--text-secondary);">Password Last Updated:</span>
+            <span id="profile-password-date" style="color: var(--text-muted);">-</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Session & Telemetry Card -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Session Telemetry</h2>
+            <p class="card-subtitle">Real-time authentication telemetry</p>
+          </div>
+          <span style="font-size: 1.5rem;">🛰️</span>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 1rem; font-size: 0.9rem;">
+          <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+            <span style="color: var(--text-secondary);">Last Sign In Timestamp:</span>
+            <span id="telemetry-login-time" class="font-mono">-</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+            <span style="color: var(--text-secondary);">Client IP Address:</span>
+            <span id="telemetry-login-ip" class="font-mono">-</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+            <span style="color: var(--text-secondary);">Session Storage:</span>
+            <span class="badge badge-emerald">Encrypted Cloud DB</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+            <span style="color: var(--text-secondary);">Audit Trail Status:</span>
+            <span class="badge badge-blue">Cryptographic Hash Chain</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--text-secondary);">API Token Type:</span>
+            <span class="font-mono" style="color: var(--accent-cyan);">Bearer Token (Sanctum)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Two-Factor Authentication Control Card -->
+    <div class="card" style="margin-bottom: 2rem;">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">Two-Factor Authentication (RFC 6238 TOTP)</h2>
+          <p class="card-subtitle">Hardware/software authenticator app &amp; single-use emergency backup recovery codes</p>
+        </div>
+        <span id="2fa-status-badge" class="badge badge-amber">Disabled</span>
+      </div>
+
+      <div id="2fa-disabled-view" style="display: none;">
+        <p style="color: var(--text-secondary); margin-bottom: 1.25rem; font-size: 0.9rem;">
+          Two-Factor Authentication adds an extra layer of security to your enterprise account. When enabled, you will be required to provide a 6-digit TOTP code generated by Google Authenticator, 1Password, or Authy upon signing in.
+        </p>
+        <button onclick="start2FaSetup()" class="btn btn-primary">
+          🛡️ Enable Two-Factor Authentication
+        </button>
+      </div>
+
+      <div id="2fa-enabled-view" style="display: none;">
+        <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 1rem 1.25rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+          <span style="font-size: 1.25rem;">✓</span>
+          <div style="font-size: 0.9rem; color: #34d399;">
+            Two-Factor Authentication is currently active on your account using RFC 6238 TOTP.
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+          <button onclick="openRegenerateModal()" class="btn btn-secondary">
+            🔄 Regenerate 8 Recovery Codes
+          </button>
+          <button onclick="openDisableModal()" class="btn btn-danger">
+            ✕ Disable 2FA
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 2FA Setup Modal -->
+  <div id="setup-2fa-modal" class="modal-overlay">
+    <div class="modal-box" style="max-width: 600px;">
+      <div class="card-header">
+        <h3 class="card-title">Setup Two-Factor Authentication</h3>
+        <button onclick="closeModal('setup-2fa-modal')" style="background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;">×</button>
+      </div>
+
+      <div style="text-align: center; margin-bottom: 1.5rem;">
+        <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 1rem;">
+          Scan this QR code with your authenticator application (Google Authenticator, Microsoft Authenticator, 1Password):
+        </p>
+
+        <!-- Live Vector SVG QR Code -->
+        <div id="qr-code-wrapper" class="qr-container"></div>
+
+        <div style="margin-top: 0.75rem;">
+          <span style="font-size: 0.8rem; color: var(--text-muted);">Manual Entry Key:</span>
+          <div id="manual-secret-key" class="font-mono" style="font-size: 0.95rem; font-weight: 700; color: var(--accent-cyan); letter-spacing: 0.1em; margin-top: 0.25rem;"></div>
+        </div>
+      </div>
+
+      <!-- 8 Single-Use Recovery Codes -->
+      <div style="margin-bottom: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+          <label class="form-label" style="margin-bottom: 0; color: var(--accent-amber);">⚠️ 8 Single-Use Recovery Codes (Save Securely)</label>
+          <button type="button" onclick="copyRecoveryCodes()" class="btn btn-secondary btn-sm" style="font-size: 0.75rem;">📋 Copy All</button>
+        </div>
+        <div id="recovery-codes-grid" class="recovery-grid"></div>
+        <div class="form-hint">Each recovery code can only be used once if you lose access to your authenticator app.</div>
+      </div>
+
+      <!-- 6-digit confirmation code -->
+      <form id="confirm-2fa-form">
+        <div class="form-group">
+          <label for="confirm-code" class="form-label">Enter 6-digit code from your app to confirm:</label>
+          <input type="text" id="confirm-code" class="form-input font-mono" placeholder="000000" maxlength="6" style="text-align: center; font-size: 1.5rem; letter-spacing: 0.25em; font-weight: 700;" required>
+        </div>
+
+        <div id="setup-error" style="display: none; background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.3); color: #fb7185; padding: 0.5rem; border-radius: var(--radius-sm); font-size: 0.85rem; margin-bottom: 1rem;"></div>
+
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+          <button type="button" onclick="closeModal('setup-2fa-modal')" class="btn btn-secondary">Cancel</button>
+          <button type="submit" id="confirm-btn" class="btn btn-primary">Verify &amp; Activate 2FA</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Disable 2FA Modal -->
+  <div id="disable-2fa-modal" class="modal-overlay">
+    <div class="modal-box" style="max-width: 450px;">
+      <div class="card-header">
+        <h3 class="card-title">Disable Two-Factor Auth</h3>
+        <button onclick="closeModal('disable-2fa-modal')" style="background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;">×</button>
+      </div>
+      <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 1.25rem;">
+        To disable 2FA, please enter your password for verification.
+      </p>
+      <form id="disable-2fa-form">
+        <div class="form-group">
+          <label for="disable-password" class="form-label">Account Password</label>
+          <input type="password" id="disable-password" class="form-input" required>
+        </div>
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+          <button type="button" onclick="closeModal('disable-2fa-modal')" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-danger">Confirm Disable</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Regenerate Recovery Codes Modal -->
+  <div id="regen-modal" class="modal-overlay">
+    <div class="modal-box" style="max-width: 500px;">
+      <div class="card-header">
+        <h3 class="card-title">Regenerate Recovery Codes</h3>
+        <button onclick="closeModal('regen-modal')" style="background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;">×</button>
+      </div>
+      <form id="regen-form">
+        <div class="form-group">
+          <label for="regen-password" class="form-label">Confirm Password</label>
+          <input type="password" id="regen-password" class="form-input" required>
+        </div>
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+          <button type="button" onclick="closeModal('regen-modal')" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary">Regenerate</button>
+        </div>
+      </form>
+      <div id="regen-results" style="display: none; margin-top: 1.5rem;">
+        <div style="color: var(--accent-amber); font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem;">New 8 Recovery Codes:</div>
+        <div id="new-codes-grid" class="recovery-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script>
+    let activeRecoveryCodes = [];
+
+    async function loadUserProfile() {
+      const response = await apiRequest('auth/user');
+      if (response.ok && response.data.success) {
+        const user = response.data.user;
+        document.getElementById('user-display-name').innerText = user.name;
+        document.getElementById('profile-name').innerText = user.name;
+        document.getElementById('profile-email').innerText = user.email;
+        document.getElementById('profile-role').innerText = user.roles.join(', ') || 'User';
+        document.getElementById('profile-password-date').innerText = user.password_changed_at ? new Date(user.password_changed_at).toLocaleString() : 'N/A';
+        
+        document.getElementById('telemetry-login-time').innerText = user.last_login_at ? new Date(user.last_login_at).toLocaleString() : 'Current Session';
+        document.getElementById('telemetry-login-ip').innerText = user.last_login_ip || '127.0.0.1';
+
+        document.getElementById('role-badge').innerText = `Role: ${user.roles.join(', ') || 'User'}`;
+        document.getElementById('role-badge').className = `badge ${user.is_admin ? 'badge-purple' : 'badge-blue'}`;
+
+        // 2FA state
+        const badge2fa = document.getElementById('2fa-status-badge');
+        if (user.two_factor_enabled) {
+          badge2fa.innerText = 'Active (RFC 6238)';
+          badge2fa.className = 'badge badge-emerald';
+          document.getElementById('2fa-enabled-view').style.display = 'block';
+          document.getElementById('2fa-disabled-view').style.display = 'none';
+        } else {
+          badge2fa.innerText = 'Disabled';
+          badge2fa.className = 'badge badge-amber';
+          document.getElementById('2fa-enabled-view').style.display = 'none';
+          document.getElementById('2fa-disabled-view').style.display = 'block';
+        }
+      }
+    }
+
+    async function start2FaSetup() {
+      const response = await apiRequest('2fa/setup', { method: 'POST' });
+      if (response.ok && response.data.success) {
+        document.getElementById('qr-code-wrapper').innerHTML = response.data.qr_code_svg;
+        document.getElementById('manual-secret-key').innerText = response.data.secret;
+        
+        activeRecoveryCodes = response.data.recovery_codes || [];
+        const grid = document.getElementById('recovery-codes-grid');
+        grid.innerHTML = activeRecoveryCodes.map(c => `<div>${c}</div>`).join('');
+
+        document.getElementById('setup-2fa-modal').classList.add('active');
+      } else {
+        showToast(response.data.message || 'Failed to initiate 2FA setup.', 'error');
+      }
+    }
+
+    document.getElementById('confirm-2fa-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const code = document.getElementById('confirm-code').value.trim();
+      const errorDiv = document.getElementById('setup-error');
+      errorDiv.style.display = 'none';
+
+      const response = await apiRequest('2fa/confirm', {
+        method: 'POST',
+        body: JSON.stringify({ code })
+      });
+
+      if (response.ok && response.data.success) {
+        closeModal('setup-2fa-modal');
+        showToast('Two-Factor Authentication is now active!', 'success');
+        loadUserProfile();
+      } else {
+        errorDiv.innerText = response.data.message || 'Invalid code.';
+        errorDiv.style.display = 'block';
+      }
+    });
+
+    function copyRecoveryCodes() {
+      if (activeRecoveryCodes.length) {
+        navigator.clipboard.writeText(activeRecoveryCodes.join('\n'));
+        showToast('8 recovery codes copied to clipboard!', 'success');
+      }
+    }
+
+    function openDisableModal() {
+      document.getElementById('disable-2fa-modal').classList.add('active');
+    }
+
+    function openRegenerateModal() {
+      document.getElementById('regen-results').style.display = 'none';
+      document.getElementById('regen-modal').classList.add('active');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+    }
+
+    document.getElementById('disable-2fa-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const password = document.getElementById('disable-password').value;
+      const response = await apiRequest('2fa/disable', {
+        method: 'POST',
+        body: JSON.stringify({ password })
+      });
+
+      if (response.ok && response.data.success) {
+        closeModal('disable-2fa-modal');
+        showToast('Two-Factor Authentication disabled.', 'info');
+        loadUserProfile();
+      } else {
+        showToast(response.data.message || 'Password incorrect.', 'error');
+      }
+    });
+
+    document.getElementById('regen-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const password = document.getElementById('regen-password').value;
+      const response = await apiRequest('2fa/recovery-codes', {
+        method: 'POST',
+        body: JSON.stringify({ password })
+      });
+
+      if (response.ok && response.data.success) {
+        const codes = response.data.recovery_codes || [];
+        document.getElementById('new-codes-grid').innerHTML = codes.map(c => `<div>${c}</div>`).join('');
+        document.getElementById('regen-results').style.display = 'block';
+        showToast('8 new single-use recovery codes generated.', 'success');
+      } else {
+        showToast(response.data.message || 'Password incorrect.', 'error');
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', loadUserProfile);
+  </script>
+</body>
+</html>
