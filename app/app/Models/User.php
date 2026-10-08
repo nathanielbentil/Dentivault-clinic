@@ -92,6 +92,11 @@ class User extends Authenticatable
         });
     }
 
+    public function hasAnyRole(array $roles): bool
+    {
+        return $this->hasRole($roles);
+    }
+
     public function hasPermission(string $permissionSlug): bool
     {
         if ($this->hasRole('SuperAdmin')) {

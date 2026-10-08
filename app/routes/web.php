@@ -18,6 +18,9 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('admin')->name('admin.')->middleware(['role:SuperAdmin'])->group(function () {
         Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
         Route::post('/users/{user}/assign-role', [AdminController::class, 'assignRole'])->name('users.assign-role');
+        Route::get('/backups', [AdminController::class, 'backups'])->name('backups');
+        Route::post('/backups/trigger', [AdminController::class, 'triggerBackup'])->name('backups.trigger');
+        Route::post('/backups/drill', [AdminController::class, 'triggerDrill'])->name('backups.drill');
     });
 
     // 3. Security Auditor Forensics Hub

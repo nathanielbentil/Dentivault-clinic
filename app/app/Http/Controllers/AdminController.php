@@ -63,4 +63,42 @@ class AdminController extends Controller
 
         return back()->with('status', "Role updated to {$role->name}.");
     }
+
+    /**
+     * Display the 3-2-1 Backup & Disaster Recovery management dashboard.
+     */
+    public function backups(): View
+    {
+        $backupLogs = \App\Models\BackupLog::latest('id')->paginate(15);
+        $localBackups = \App\Services\CloudBackupService::listCloudBackups();
+        
+        return view('admin.backups', compact('backupLogs', 'localBackups'));
+    }
+
+    /**
+     * Trigger an on-demand encrypted backup & cloud replication.
+     */
+    public function triggerBackup(): RedirectResponse
+    {
+        try {
+            $local = \App\Services\BackupService::createLocalBackup();
+            \App\Services\CloudBackupService::uploadToCloud($local['filepath']);
+            return back()->with('status', "Encrypted backup [{$local['filename']}] generated and synced to cloud storage!");
+        } catch (\Throwable $e) {
+            return back()->withErrors(['backup_error' => "Backup execution failed: " . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Trigger an automated Disaster Recovery restore drill.
+     */
+    public function triggerDrill(): RedirectResponse
+    {
+        try {
+            $result = \App\Services\DisasterRecoveryService::runDrill();
+            return back()->with('status', "Disaster Recovery drill completed with 100% integrity! RTO: {$result['total_rto_ms']} ms | RPO: {$result['rpo_status']}");
+        } catch (\Throwable $e) {
+            return back()->withErrors(['drill_error' => "DR Drill failed: " . $e->getMessage()]);
+        }
+    }
 }
