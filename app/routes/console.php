@@ -12,6 +12,9 @@ Artisan::command('inspire', function () {
 Schedule::command('backup:create-local')
     ->dailyAt('02:00')
     ->withoutOverlapping()
+    ->then(function () {
+        Artisan::call('backup:sync-cloud');
+    })
     ->onFailure(function () {
         \App\Models\AuditLog::record(
             eventType: 'backup.failed',
