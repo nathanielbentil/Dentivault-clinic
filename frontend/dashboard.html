@@ -444,15 +444,17 @@
       const response = await apiRequest('2fa/setup', { method: 'POST' });
       if (response.ok && response.data.success) {
         const wrapper = document.getElementById('qr-code-wrapper');
-        wrapper.innerHTML = '';
-        if (typeof QRCode !== 'undefined' && response.data.otpauth_url) {
-          new QRCode(wrapper, {
-            text: response.data.otpauth_url,
-            width: 220,
-            height: 220
-          });
-        } else {
-          wrapper.innerHTML = response.data.qr_code_svg || '';
+        wrapper.innerHTML = response.data.qr_code_svg || '';
+        
+        // Ensure SVG renders with white background, padding and clear display
+        const svg = wrapper.querySelector('svg');
+        if (svg) {
+          svg.style.background = '#ffffff';
+          svg.style.padding = '12px';
+          svg.style.borderRadius = '12px';
+          svg.style.display = 'inline-block';
+          svg.style.maxWidth = '100%';
+          svg.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.15)';
         }
         
         document.getElementById('manual-secret-key').innerText = response.data.secret;
