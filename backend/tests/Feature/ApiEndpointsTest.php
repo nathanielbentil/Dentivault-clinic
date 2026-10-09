@@ -187,4 +187,25 @@ class ApiEndpointsTest extends TestCase
             'password_confirmation' => 'User@SecureAuth2026!',
         ]);
     }
+
+    public function test_email_2fa_activation_flow(): void
+    {
+        $user = User::where('email', 'user@secureauth.com')->first();
+        $user->forceFill(['two_factor_confirmed_at' => null])->save();
+
+        // 1. Initiate Email 2FA setup
+        $setupRes = $this->actingAs($user, 'sanctum')->postJson('/api/2fa/email-setup');
+        $setupRes->assertStatus(200);
+        $setupRes->assertJsonFragment(['success' => true]);
+        $debugCode = $setupRes->json('debug_code');
+        $this->assertNotEmpty($debugCode);
+
+        // 2. Confirm Email 2FA setup
+        $confirmRes = $this->actingAs($user, 'sanctum')->postJson('/api/2fa/email-confirm', [
+            'code' => $debugCode,
+        ]);
+        $confirmRes->assertStatus(200);
+        $confirmRes->assertJsonFragment(['success' => true]);
+        $this->assertNotNull($user->fresh()->two_factor_confirmed_at);
+    }
 }

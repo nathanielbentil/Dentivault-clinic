@@ -39,6 +39,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('status', [TwoFactorApiController::class, 'status']);
         Route::post('setup', [TwoFactorApiController::class, 'setup']);
         Route::post('confirm', [TwoFactorApiController::class, 'confirm']);
+        Route::post('email-setup', [TwoFactorApiController::class, 'emailSetup']);
+        Route::post('email-confirm', [TwoFactorApiController::class, 'emailConfirm']);
         Route::post('disable', [TwoFactorApiController::class, 'disable']);
         Route::post('recovery-codes', [TwoFactorApiController::class, 'regenerateRecoveryCodes']);
     });

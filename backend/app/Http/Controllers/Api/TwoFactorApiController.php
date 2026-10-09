@@ -9,6 +9,8 @@ use App\Services\QrCodeService;
 use App\Services\TotpService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
 class TwoFactorApiController extends Controller
@@ -66,6 +68,125 @@ class TwoFactorApiController extends Controller
             'otpauth_url' => $otpUri,
             'qr_code_svg' => $qrCodeSvg,
             'recovery_codes' => $recovery['plain'],
+        ]);
+    }
+
+    /**
+     * Initiate 2FA Activation via Email OTP (No App/QR needed)
+     */
+    public function emailSetup(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if ($user->two_factor_confirmed_at) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Two-Factor Authentication is already active on this account.',
+            ], 400);
+        }
+
+        $otp = (string) random_int(100000, 999999);
+        $recovery = TotpService::generateRecoveryCodes(8);
+
+        // Store setup state in cache for 10 minutes
+        Cache::put("2fa_setup_email_{$user->id}", [
+            'otp_hash' => hash('sha256', $otp),
+            'recovery' => $recovery,
+            'expires_at' => now()->addMinutes(10)->timestamp,
+        ], now()->addMinutes(10));
+
+        // Mask email for display
+        $parts = explode('@', $user->email);
+        $maskedEmail = substr($parts[0], 0, 2) . '***@' . ($parts[1] ?? 'secureauth.com');
+
+        // Send confirmation email
+        try {
+            Mail::raw("Your SecureAuth 2FA Email Activation Code is: {$otp}\n\nThis single-use code expires in 10 minutes.", function ($message) use ($user) {
+                $message->to($user->email)->subject('SecureAuth 2FA Email Activation Code');
+            });
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::info("2FA Activation Email OTP for [{$user->email}]: {$otp}");
+        }
+
+        AuditLog::record(
+            eventType: 'auth.2fa_email_setup_initiated',
+            description: "User [{$user->email}] initiated 2FA activation via Email OTP.",
+            userId: $user->id,
+            severity: 'info'
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => "A 6-digit activation code has been sent to {$maskedEmail}.",
+            'masked_email' => $maskedEmail,
+            'recovery_codes' => $recovery['plain'],
+            'debug_code' => config('app.debug') || app()->environment('local') ? $otp : null,
+        ]);
+    }
+
+    /**
+     * Confirm 2FA Activation via Email OTP
+     */
+    public function emailConfirm(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'code' => ['required', 'string', 'size:6'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $user = $request->user();
+        $cached = Cache::get("2fa_setup_email_{$user->id}");
+
+        if (!$cached || now()->timestamp > $cached['expires_at']) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Activation session expired. Please request a new activation code.',
+            ], 400);
+        }
+
+        if (!hash_equals($cached['otp_hash'], hash('sha256', $request->code))) {
+            AuditLog::record(
+                eventType: 'auth.2fa_confirm_failed',
+                description: "Invalid 2FA email confirmation code submitted by [{$user->email}].",
+                userId: $user->id,
+                severity: 'warning'
+            );
+
+            return response()->json([
+                'success' => false,
+                'message' => 'The provided activation code is incorrect.',
+            ], 422);
+        }
+
+        // Generate Base32 secret for dual compatibility
+        $secret = TotpService::generateSecret();
+        $recovery = $cached['recovery'];
+
+        $user->forceFill([
+            'two_factor_secret' => $secret,
+            'two_factor_recovery_codes' => $recovery['hashed'],
+            'two_factor_confirmed_at' => now(),
+        ])->save();
+
+        Cache::forget("2fa_setup_email_{$user->id}");
+
+        AuditLog::record(
+            eventType: 'auth.2fa_enabled',
+            description: "Two-Factor Authentication activated and verified via Email for [{$user->email}].",
+            userId: $user->id,
+            severity: 'notice'
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Two-Factor Authentication successfully activated via Email OTP!',
         ]);
     }
 
