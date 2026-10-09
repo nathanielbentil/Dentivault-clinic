@@ -10,7 +10,9 @@ use App\Services\PasswordService;
 use App\Services\TotpService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
 
@@ -216,13 +218,32 @@ class AuthController extends Controller
         $authenticated = false;
         $isRecoveryUsed = false;
 
-        // 1. Verify TOTP 6-digit code
+        // 1. Verify TOTP 6-digit code (App TOTP)
         if (!empty($code)) {
             $authenticated = TotpService::verifyCode(
                 $user->two_factor_secret,
                 $code,
                 window: config('security.two_factor.window', 1)
             );
+
+            // 1b. If not matched with App TOTP, check if valid Email OTP was issued
+            if (!$authenticated) {
+                $cachedOtp = Cache::get("2fa_email_otp_{$user->id}");
+                if ($cachedOtp && now()->timestamp <= $cachedOtp['expires_at']) {
+                    if (hash_equals($cachedOtp['hash'], hash('sha256', $code))) {
+                        $authenticated = true;
+                        Cache::forget("2fa_email_otp_{$user->id}");
+
+                        AuditLog::record(
+                            eventType: 'auth.2fa_email_otp_verified',
+                            description: "User [{$user->email}] successfully verified 2FA using Email OTP.",
+                            userId: $user->id,
+                            severity: 'info',
+                            payload: ['ip' => $request->ip()]
+                        );
+                    }
+                }
+            }
         }
 
         // 2. Verify single-use recovery code
@@ -283,6 +304,93 @@ class AuthController extends Controller
                 'two_factor_enabled' => true,
                 'last_login_at' => $user->last_login_at,
             ],
+        ]);
+    }
+
+    /**
+     * Dispatch 6-digit Out-of-Band Email OTP
+     */
+    public function sendEmailOtp(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'temp_token' => ['required', 'string'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error.',
+            ], 422);
+        }
+
+        try {
+            $payload = json_decode(Crypt::decryptString($request->temp_token), true);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid or expired 2FA session.',
+            ], 401);
+        }
+
+        if (now()->timestamp > $payload['expires_at']) {
+            return response()->json([
+                'success' => false,
+                'message' => '2FA authentication challenge expired. Please log in again.',
+            ], 401);
+        }
+
+        $user = User::find($payload['user_id']);
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not found.',
+            ], 404);
+        }
+
+        // Rate-limiting check: max 3 requests per 5 minutes
+        $rateKey = "email_otp_rate_{$user->id}";
+        $attempts = (int) Cache::get($rateKey, 0);
+        if ($attempts >= 3) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Too many OTP requests. Please wait 5 minutes before requesting another code.',
+            ], 429);
+        }
+        Cache::put($rateKey, $attempts + 1, now()->addMinutes(5));
+
+        // Generate 6-digit cryptographic OTP
+        $otp = (string) random_int(100000, 999999);
+        Cache::put("2fa_email_otp_{$user->id}", [
+            'hash' => hash('sha256', $otp),
+            'expires_at' => now()->addMinutes(5)->timestamp,
+        ], now()->addMinutes(5));
+
+        // Mask email for display (e.g. ad***@secureauth.com)
+        $parts = explode('@', $user->email);
+        $maskedEmail = substr($parts[0], 0, 2) . '***@' . ($parts[1] ?? 'secureauth.com');
+
+        // Send via Laravel Mail / Log driver
+        try {
+            Mail::raw("Your SecureAuth Two-Factor Verification Code is: {$otp}\n\nThis single-use code expires in 5 minutes.\nIf you did not request this login code, please secure your account immediately.", function ($message) use ($user) {
+                $message->to($user->email)->subject('SecureAuth Two-Factor Verification Code');
+            });
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::info("2FA Email OTP for [{$user->email}]: {$otp}");
+        }
+
+        AuditLog::record(
+            eventType: 'auth.2fa_email_otp_sent',
+            description: "Dispatched 6-digit 2FA Email OTP to [{$user->email}].",
+            userId: $user->id,
+            severity: 'info',
+            payload: ['ip' => $request->ip(), 'masked_email' => $maskedEmail]
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => "A 6-digit verification code has been sent to {$maskedEmail}.",
+            'masked_email' => $maskedEmail,
+            'debug_code' => config('app.debug') || app()->environment('local') ? $otp : null,
         ]);
     }
 

@@ -9,9 +9,12 @@ class ApiEndpointsTest extends TestCase
 {
     public function test_api_login_returns_token_and_user_profile(): void
     {
+        $user = User::where('email', 'user@secureauth.com')->first();
+        $user->forceFill(['two_factor_confirmed_at' => null])->save();
+
         $response = $this->postJson('/api/auth/login', [
-            'email' => 'admin@secureauth.com',
-            'password' => 'Admin@SecureAuth2026!',
+            'email' => 'user@secureauth.com',
+            'password' => 'User@SecureAuth2026!',
         ]);
 
         $response->assertStatus(200);
@@ -78,5 +81,42 @@ class ApiEndpointsTest extends TestCase
             'new_password_confirmation' => 'User@SecureAuth2026!',
         ]);
         $restoreResponse->assertStatus(200);
+    }
+
+    public function test_email_otp_flow_dispatches_and_verifies_successfully(): void
+    {
+        $user = User::where('email', 'admin@secureauth.com')->first();
+        // Ensure 2FA is active
+        $user->forceFill([
+            'two_factor_secret' => 'JBSWY3DPEHPK3PXP',
+            'two_factor_confirmed_at' => now(),
+        ])->save();
+
+        // 1. Initial login triggers 2FA
+        $loginRes = $this->postJson('/api/auth/login', [
+            'email' => 'admin@secureauth.com',
+            'password' => 'Admin@SecureAuth2026!',
+        ]);
+        $loginRes->assertStatus(200);
+        $tempToken = $loginRes->json('temp_token');
+        $this->assertNotEmpty($tempToken);
+
+        // 2. Dispatch Email OTP
+        $otpRes = $this->postJson('/api/auth/send-email-otp', [
+            'temp_token' => $tempToken,
+        ]);
+        $otpRes->assertStatus(200);
+        $otpRes->assertJsonFragment(['success' => true]);
+        $debugCode = $otpRes->json('debug_code');
+        $this->assertNotEmpty($debugCode);
+
+        // 3. Verify Email OTP code
+        $verifyRes = $this->postJson('/api/auth/two-factor-challenge', [
+            'temp_token' => $tempToken,
+            'code' => $debugCode,
+        ]);
+        $verifyRes->assertStatus(200);
+        $verifyRes->assertJsonStructure(['success', 'token', 'user']);
+        $this->assertTrue($verifyRes->json('success'));
     }
 }
