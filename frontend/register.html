@@ -127,7 +127,7 @@
 
       errorAlert.style.display = 'none';
       submitBtn.disabled = true;
-      submitBtn.innerText = 'Creating account...';
+      submitBtn.innerHTML = '⏳ Creating account &amp; signing in...';
 
       const response = await apiRequest('auth/register', {
         method: 'POST',
@@ -135,21 +135,31 @@
         skipAuthRedirect: true
       });
 
-      submitBtn.disabled = false;
-      submitBtn.innerText = 'Create Account';
-
       if (response.ok && response.data.success) {
         Auth.setToken(response.data.token);
         Auth.setUser(response.data.user);
+        
+        errorAlert.style.background = 'rgba(16, 185, 129, 0.15)';
+        errorAlert.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+        errorAlert.style.color = '#34d399';
+        errorAlert.innerHTML = '✓ <strong>Account created successfully!</strong> Redirecting to your Security Dashboard...';
+        errorAlert.style.display = 'block';
+
         showToast('Account registered successfully!', 'success');
         setTimeout(() => {
           window.location.href = 'dashboard.html';
-        }, 600);
+        }, 500);
       } else {
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Create Account';
+
         let msg = response.data.message || 'Registration failed.';
         if (response.data.errors) {
           msg = Object.values(response.data.errors).flat().join(' ');
         }
+        errorAlert.style.background = 'rgba(244, 63, 94, 0.15)';
+        errorAlert.style.borderColor = 'rgba(244, 63, 94, 0.3)';
+        errorAlert.style.color = '#fb7185';
         errorAlert.innerText = msg;
         errorAlert.style.display = 'block';
         showToast(msg, 'error');
