@@ -21,6 +21,8 @@ Route::prefix('auth')->group(function () {
     Route::post('login', [AuthController::class, 'login'])->middleware('throttle:15,1');
     Route::post('two-factor-challenge', [AuthController::class, 'twoFactorChallenge'])->middleware('throttle:10,1');
     Route::post('send-email-otp', [AuthController::class, 'sendEmailOtp'])->middleware('throttle:10,1');
+    Route::post('forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:10,1');
+    Route::post('reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:10,1');
     Route::post('register', [AuthController::class, 'register'])->middleware('throttle:10,1');
 });
 

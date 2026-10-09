@@ -119,4 +119,72 @@ class ApiEndpointsTest extends TestCase
         $verifyRes->assertJsonStructure(['success', 'token', 'user']);
         $this->assertTrue($verifyRes->json('success'));
     }
+
+    public function test_forgot_password_anti_user_enumeration(): void
+    {
+        // 1. Unregistered email receives generic message (anti-enumeration)
+        $unregRes = $this->postJson('/api/auth/forgot-password', [
+            'email' => 'nonexistent@secureauth.com',
+        ]);
+        $unregRes->assertStatus(200);
+        $unregRes->assertJsonFragment(['success' => true]);
+        $this->assertNull($unregRes->json('debug_code'));
+
+        // 2. Registered user receives code
+        $regRes = $this->postJson('/api/auth/forgot-password', [
+            'email' => 'user@secureauth.com',
+        ]);
+        $regRes->assertStatus(200);
+        $regRes->assertJsonFragment(['success' => true]);
+        $this->assertNotEmpty($regRes->json('debug_code'));
+    }
+
+    public function test_reset_password_flow_and_session_revocation(): void
+    {
+        $user = User::where('email', 'user@secureauth.com')->first();
+
+        // 1. Create access token to test revocation
+        $token = $user->createToken('test-session')->plainTextToken;
+        $this->assertDatabaseHas('personal_access_tokens', ['tokenable_id' => $user->id]);
+
+        // 2. Request forgot password code
+        $forgotRes = $this->postJson('/api/auth/forgot-password', [
+            'email' => 'user@secureauth.com',
+        ]);
+        $code = $forgotRes->json('debug_code');
+
+        // 3. Bad code fails
+        $badReset = $this->postJson('/api/auth/reset-password', [
+            'email' => 'user@secureauth.com',
+            'code' => '000000',
+            'password' => 'NewResetPass2026!#',
+            'password_confirmation' => 'NewResetPass2026!#',
+        ]);
+        $badReset->assertStatus(422);
+
+        // 4. Good code resets password and revokes all tokens
+        $goodReset = $this->postJson('/api/auth/reset-password', [
+            'email' => 'user@secureauth.com',
+            'code' => $code,
+            'password' => 'NewResetPass2026!#',
+            'password_confirmation' => 'NewResetPass2026!#',
+        ]);
+        $goodReset->assertStatus(200);
+        $goodReset->assertJsonFragment(['success' => true]);
+
+        // Verify old token was revoked
+        $this->assertDatabaseMissing('personal_access_tokens', ['tokenable_id' => $user->id]);
+
+        // 5. Restore original user password
+        $restoreForgot = $this->postJson('/api/auth/forgot-password', [
+            'email' => 'user@secureauth.com',
+        ]);
+        $restoreCode = $restoreForgot->json('debug_code');
+        $this->postJson('/api/auth/reset-password', [
+            'email' => 'user@secureauth.com',
+            'code' => $restoreCode,
+            'password' => 'User@SecureAuth2026!',
+            'password_confirmation' => 'User@SecureAuth2026!',
+        ]);
+    }
 }

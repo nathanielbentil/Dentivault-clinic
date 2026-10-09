@@ -12,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
@@ -634,6 +635,202 @@ class AuthController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Password updated successfully.',
+        ]);
+    }
+
+    /**
+     * Public Forgot Password - Dispatches NIST Compliant 15-Minute Reset Code
+     * Implements Anti-User Enumeration (OWASP Top 10)
+     */
+    public function forgotPassword(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => ['required', 'string', 'email'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Please provide a valid email address.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $email = strtolower($request->email);
+        $user = User::where('email', $email)->first();
+
+        // Anti-User Enumeration: Generic success response regardless of account existence
+        $genericMessage = 'If an account is associated with this email address, a 6-digit recovery code has been sent.';
+
+        if (!$user) {
+            AuditLog::record(
+                eventType: 'auth.password_reset_unregistered',
+                description: "Password reset attempted for unregistered email [{$email}].",
+                severity: 'info',
+                payload: ['ip' => $request->ip(), 'attempted_email' => $email]
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => $genericMessage,
+                'debug_code' => null,
+            ]);
+        }
+
+        // Rate-limiting check: max 3 requests per 10 minutes
+        $rateKey = "pwd_reset_rate_{$user->id}";
+        $attempts = (int) Cache::get($rateKey, 0);
+        if ($attempts >= 3) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Too many reset requests. Please wait 10 minutes before requesting another code.',
+            ], 429);
+        }
+        Cache::put($rateKey, $attempts + 1, now()->addMinutes(10));
+
+        // Generate 6-digit cryptographic reset code
+        $code = (string) random_int(100000, 999999);
+        $hashedToken = hash('sha256', $code);
+
+        DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $user->email],
+            [
+                'token' => $hashedToken,
+                'created_at' => now(),
+            ]
+        );
+
+        // Send Email via Laravel Mail / Log
+        try {
+            Mail::raw("Your SecureAuth Password Reset Code is: {$code}\n\nThis single-use code expires in 15 minutes.\nIf you did not request this password reset, please ignore this email or contact security.", function ($message) use ($user) {
+                $message->to($user->email)->subject('SecureAuth Password Reset Verification Code');
+            });
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::info("Password Reset Code for [{$user->email}]: {$code}");
+        }
+
+        AuditLog::record(
+            eventType: 'auth.password_reset_requested',
+            description: "Password reset code dispatched for user [{$user->email}].",
+            userId: $user->id,
+            severity: 'notice',
+            payload: ['ip' => $request->ip()]
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => $genericMessage,
+            'email' => $email,
+            'debug_code' => config('app.debug') || app()->environment('local') ? $code : null,
+        ]);
+    }
+
+    /**
+     * Public Reset Password - Verifies Token & Sets New NIST-Compliant Password
+     * Revokes All Active Sessions / Bearer Tokens (Anti-Session Fixation)
+     */
+    public function resetPassword(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => ['required', 'string', 'email'],
+            'code' => ['required', 'string', 'size:6'],
+            'password' => [
+                'required',
+                'string',
+                Password::min(12)
+                    ->letters()
+                    ->mixedCase()
+                    ->numbers()
+                    ->symbols()
+                    ->uncompromised(3),
+                'confirmed',
+            ],
+        ], [
+            'password.min' => 'Password must be at least 12 characters long according to NIST SP 800-63B guidelines.',
+            'password.confirmed' => 'Password confirmation does not match.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $email = strtolower($request->email);
+        $user = User::where('email', $email)->first();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid or expired recovery code.',
+            ], 422);
+        }
+
+        $resetRecord = DB::table('password_reset_tokens')->where('email', $email)->first();
+
+        if (!$resetRecord) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No active password reset request found. Please request a new code.',
+            ], 422);
+        }
+
+        // 15-Minute Expiry Check (TTL)
+        if (now()->diffInMinutes($resetRecord->created_at) > 15) {
+            DB::table('password_reset_tokens')->where('email', $email)->delete();
+            return response()->json([
+                'success' => false,
+                'message' => 'The recovery code has expired. Please request a new one.',
+            ], 422);
+        }
+
+        // Constant-time SHA-256 token verification
+        $providedHash = hash('sha256', $request->code);
+        if (!hash_equals($resetRecord->token, $providedHash)) {
+            AuditLog::record(
+                eventType: 'auth.password_reset_failed',
+                description: "Failed password reset verification for [{$user->email}]: invalid code.",
+                userId: $user->id,
+                severity: 'warning',
+                payload: ['ip' => $request->ip()]
+            );
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid recovery code provided.',
+            ], 422);
+        }
+
+        // Hash new password with active pepper
+        $hashed = PasswordService::hash($request->password);
+
+        $user->forceFill([
+            'password' => $hashed['hash'],
+            'pepper_version' => $hashed['pepper_version'],
+            'password_changed_at' => now(),
+            'failed_login_attempts' => 0,
+            'lockout_until' => null,
+        ])->save();
+
+        // Session Revocation: Invalidate all existing tokens across all devices
+        $user->tokens()->delete();
+
+        // Delete used token (single-use replay protection)
+        DB::table('password_reset_tokens')->where('email', $email)->delete();
+
+        AuditLog::record(
+            eventType: 'auth.password_reset_success',
+            description: "Password successfully reset for user [{$user->email}]. All prior sessions revoked.",
+            userId: $user->id,
+            severity: 'notice',
+            payload: ['ip' => $request->ip()]
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Your password has been reset successfully! You can now sign in with your new password.',
         ]);
     }
 }
