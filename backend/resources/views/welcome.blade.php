@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>SecureAuth - Enterprise Authentication & 3-2-1 Disaster Recovery System</title>
+    <title>DentiVault - Dental Practice Management & Clinical EDR Platform</title>
     
     <!-- Tailwind CSS CDN & Alpine.js -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -14,10 +14,16 @@
             theme: {
                 extend: {
                     colors: {
-                        shield: {
-                            500: '#22c55e',
-                            600: '#16a34a',
-                            950: '#052e16',
+                        dental: {
+                            50: '#ecfeff',
+                            100: '#cffafe',
+                            400: '#22d3ee',
+                            500: '#06b6d4',
+                            600: '#0891b2',
+                            700: '#0e7490',
+                            800: '#155e75',
+                            900: '#164e63',
+                            950: '#083344',
                         }
                     }
                 }
@@ -26,43 +32,38 @@
     </script>
     <style>
         .glass-card {
-            background: rgba(15, 23, 42, 0.75);
+            background: rgba(15, 23, 42, 0.85);
             backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
     </style>
 </head>
-<body class="min-h-full font-sans antialiased selection:bg-emerald-500 selection:text-slate-950 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(16,185,129,0.2),rgba(255,255,255,0))]">
+<body class="min-h-full font-sans antialiased selection:bg-cyan-500 selection:text-slate-950 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(6,182,212,0.2),rgba(255,255,255,0))]">
     
     <!-- Top Navigation -->
     <header class="sticky top-0 z-50 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-xl">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="flex h-20 items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <div class="h-11 w-11 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-400 p-0.5 shadow-lg shadow-emerald-500/20">
-                        <div class="h-full w-full bg-slate-950 rounded-[14px] flex items-center justify-center">
-                            <svg class="h-6 w-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                            </svg>
+                    <div class="h-11 w-11 rounded-2xl bg-gradient-to-tr from-cyan-600 to-teal-400 p-0.5 shadow-lg shadow-cyan-500/20">
+                        <div class="h-full w-full bg-slate-950 rounded-[14px] flex items-center justify-center text-xl">
+                            🦷
                         </div>
                     </div>
                     <div>
-                        <span class="text-xl font-black tracking-tight text-white block">Secure<span class="text-emerald-400">Auth</span></span>
-                        <span class="text-[10px] uppercase font-bold tracking-widest text-emerald-500 block">Security & DR System</span>
+                        <span class="text-xl font-black tracking-tight text-white block">Denti<span class="text-cyan-400">Vault</span></span>
+                        <span class="text-[10px] uppercase font-bold tracking-widest text-cyan-500 block">Dental Practice & EDR</span>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-3">
                     @auth
-                        <a href="{{ route('dashboard') }}" class="rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 px-5 py-2.5 text-xs font-bold text-slate-950 shadow-md hover:from-emerald-500 hover:to-teal-400 transition-all">
-                            Enter Dashboard →
+                        <a href="{{ route('dashboard') }}" class="rounded-xl bg-gradient-to-r from-cyan-600 to-teal-500 px-5 py-2.5 text-xs font-bold text-slate-950 shadow-md hover:from-cyan-500 hover:to-teal-400 transition-all">
+                            Enter Clinical Portal &rarr;
                         </a>
                     @else
-                        <a href="{{ route('login') }}" class="rounded-xl border border-slate-700 bg-slate-900/80 px-4 py-2.5 text-xs font-bold text-slate-200 hover:border-emerald-500/40 hover:text-emerald-400 transition-all">
-                            Sign In
-                        </a>
-                        <a href="{{ route('register') }}" class="rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 px-5 py-2.5 text-xs font-bold text-slate-950 shadow-lg shadow-emerald-500/20 hover:from-emerald-500 hover:to-teal-400 transition-all">
-                            Create Account
+                        <a href="{{ route('login') }}" class="rounded-xl bg-gradient-to-r from-cyan-600 to-teal-500 px-5 py-2.5 text-xs font-bold text-slate-950 shadow-md hover:from-cyan-500 hover:to-teal-400 transition-all">
+                            Staff Login &rarr;
                         </a>
                     @endauth
                 </div>
@@ -71,152 +72,74 @@
     </header>
 
     <!-- Hero Section -->
-    <section class="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center space-y-8">
-        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-emerald-950/80 border border-emerald-500/40 text-emerald-400 shadow-xl shadow-emerald-950/50">
-            <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span>PostgreSQL 17.11 (Supabase Cloud) • Argon2id (64MB) • Asymmetric age X25519</span>
-        </div>
-
-        <h1 class="text-4xl sm:text-6xl font-black tracking-tight text-white max-w-4xl mx-auto leading-tight sm:leading-tight">
-            Enterprise Authentication & <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">3-2-1 Disaster Recovery</span>
-        </h1>
-
-        <p class="text-base sm:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
-            Enterprise RBAC access control, RFC 6238 TOTP two-factor security, cryptographic append-only audit trails, and automated ransomware-proof backups with sub-second restore drills.
-        </p>
-
-        <!-- CTA Action Buttons -->
-        <div class="flex flex-wrap items-center justify-center gap-4 pt-4">
-            <a href="{{ route('login') }}" class="rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 px-8 py-4 text-sm font-bold text-slate-950 shadow-xl shadow-emerald-500/25 hover:from-emerald-500 hover:to-teal-400 hover:scale-[1.02] transition-all flex items-center gap-2">
-                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                </svg>
-                <span>Launch Application Portal</span>
-            </a>
-            <a href="{{ route('register') }}" class="rounded-xl border border-slate-700 bg-slate-900/90 px-8 py-4 text-sm font-bold text-slate-200 hover:border-emerald-500/40 hover:text-emerald-400 hover:scale-[1.02] transition-all">
-                Test NIST SP 800-63B Registration
-            </a>
-        </div>
-    </section>
-
-    <!-- Architecture Pillars Grid (3x2) -->
-    <section class="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div class="text-center mb-12">
-            <h2 class="text-2xl sm:text-3xl font-bold text-white">Defense-in-Depth Core Architecture</h2>
-            <p class="text-sm text-slate-400 mt-2">Verified against OWASP Top 10 and STRIDE threat vectors.</p>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- 1. Password Security -->
-            <div class="glass-card p-6 rounded-3xl space-y-3 hover:border-emerald-500/30 transition-all">
-                <div class="h-10 w-10 rounded-xl bg-emerald-950 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                    </svg>
-                </div>
-                <h3 class="text-base font-bold text-white">Argon2id + HMAC Pepper</h3>
-                <p class="text-xs text-slate-400 leading-relaxed">
-                    64MB memory cost, 4 iterations, dual threads (~300ms defense latency). Server-side HMAC pepper rotated with zero downtime.
-                </p>
+    <main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
+        <div class="text-center max-w-3xl mx-auto">
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-950/70 border border-cyan-500/30 text-cyan-300 text-xs font-semibold mb-6">
+                <span>✨</span>
+                <span>Commercial Dental Practice Management & Clinical EDR Platform</span>
             </div>
-
-            <!-- 2. Two-Factor Authentication -->
-            <div class="glass-card p-6 rounded-3xl space-y-3 hover:border-emerald-500/30 transition-all">
-                <div class="h-10 w-10 rounded-xl bg-emerald-950 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                    </svg>
-                </div>
-                <h3 class="text-base font-bold text-white">RFC 6238 Offline TOTP</h3>
-                <p class="text-xs text-slate-400 leading-relaxed">
-                    Pure vector SVG QR generation without external API dependencies. 8 single-use hashed emergency recovery codes.
-                </p>
-            </div>
-
-            <!-- 3. Enterprise RBAC -->
-            <div class="glass-card p-6 rounded-3xl space-y-3 hover:border-emerald-500/30 transition-all">
-                <div class="h-10 w-10 rounded-xl bg-emerald-950 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                </div>
-                <h3 class="text-base font-bold text-white">Strict RBAC Authorization</h3>
-                <p class="text-xs text-slate-400 leading-relaxed">
-                    Granular role definitions (Administrator and Standard User) enforced via middleware gates and DB policies.
-                </p>
-            </div>
-
-            <!-- 4. Append-Only Audit Logging -->
-            <div class="glass-card p-6 rounded-3xl space-y-3 hover:border-emerald-500/30 transition-all">
-                <div class="h-10 w-10 rounded-xl bg-emerald-950 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                </div>
-                <h3 class="text-base font-bold text-white">SHA-256 Chained Audit Trail</h3>
-                <p class="text-xs text-slate-400 leading-relaxed">
-                    Cryptographic block chaining. Immediate intrusion alerts on database row tampering. Certified forensic JSON/CSV exports.
-                </p>
-            </div>
-
-            <!-- 5. 3-2-1 Asymmetric Backups -->
-            <div class="glass-card p-6 rounded-3xl space-y-3 hover:border-emerald-500/30 transition-all">
-                <div class="h-10 w-10 rounded-xl bg-emerald-950 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2 1.5 3 3.5 3h9c2 0 3.5-1 3.5-3V7c0-2-1.5-3-3.5-3h-9C5.5 4 4 5 4 7z" />
-                    </svg>
-                </div>
-                <h3 class="text-base font-bold text-white">Asymmetric age Backups</h3>
-                <p class="text-xs text-slate-400 leading-relaxed">
-                    Server only holds public key. Ransomware cannot decrypt backups. Air-gapped offline private key decryption protocol.
-                </p>
-            </div>
-
-            <!-- 6. Disaster Recovery Drills -->
-            <div class="glass-card p-6 rounded-3xl space-y-3 hover:border-emerald-500/30 transition-all">
-                <div class="h-10 w-10 rounded-xl bg-emerald-950 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                </div>
-                <h3 class="text-base font-bold text-white">Automated DR Drill Engine</h3>
-                <p class="text-xs text-slate-400 leading-relaxed">
-                    RTO < 4 seconds, RPO zero data loss. End-to-end restore verification with automated table integrity hashing.
-                </p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Pre-seeded 2 User Accounts Showcase -->
-    <section class="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-slate-800">
-        <div class="glass-card p-8 rounded-3xl border border-slate-800 space-y-6 text-center">
-            <h3 class="text-xl font-bold text-white">System User Accounts (Ready for Panel Demo)</h3>
-            <p class="text-xs text-slate-400 max-w-xl mx-auto">
-                2 pre-seeded accounts with tiered privileges ready for immediate live demonstration.
+            
+            <h1 class="text-4xl sm:text-6xl font-black tracking-tight text-white leading-tight">
+                Secure Dental Records. <br>
+                <span class="bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 bg-clip-text text-transparent">
+                    Effortless Practice Flow.
+                </span>
+            </h1>
+            
+            <p class="mt-6 text-base sm:text-lg text-slate-400 leading-relaxed">
+                Empower your dental practice with interactive tooth diagnostics, HIPAA cryptographic audit trails, 3-tier role authorization, and Age X25519 automated clinical backups.
             </p>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-left max-w-2xl mx-auto">
-                <!-- Administrator -->
-                <div class="p-5 rounded-2xl bg-purple-950/40 border border-purple-500/30 space-y-2">
-                    <span class="text-sm font-bold text-purple-300 block">Administrator</span>
-                    <span class="font-mono text-xs text-purple-200 block truncate">admin@secureauth.com</span>
-                    <p class="text-xs text-slate-400">Full system governance, user directory, 3-2-1 backup & DR hub, audit forensics.</p>
-                </div>
-
-                <!-- Standard User -->
-                <div class="p-5 rounded-2xl bg-emerald-950/40 border border-emerald-500/30 space-y-2">
-                    <span class="text-sm font-bold text-emerald-300 block">Standard User</span>
-                    <span class="font-mono text-xs text-emerald-200 block truncate">user@secureauth.com</span>
-                    <p class="text-xs text-slate-400">User dashboard, self-service 2FA management, session security history.</p>
-                </div>
+            <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a href="{{ route('login') }}" class="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-cyan-600 to-teal-500 text-slate-950 font-bold text-sm shadow-xl shadow-cyan-500/20 hover:from-cyan-500 hover:to-teal-400 transition-all flex items-center justify-center gap-2">
+                    <span>Access Clinical Portal</span>
+                    <span>&rarr;</span>
+                </a>
             </div>
         </div>
-    </section>
+
+        <!-- 3 Staff Roles Preview -->
+        <div class="mt-20 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="glass-card rounded-2xl p-6 border border-slate-800">
+                <div class="h-10 w-10 rounded-xl bg-cyan-950 border border-cyan-500/30 flex items-center justify-center text-xl mb-4">
+                    🩺
+                </div>
+                <h3 class="text-base font-bold text-white">Attending Dentist</h3>
+                <p class="text-xs text-slate-400 mt-1">Dr. Isaac Donkoh</p>
+                <p class="text-xs text-slate-400 mt-3 leading-relaxed">
+                    Interactive tooth charting, procedure documentation, clinical notes, and treatment plan progress tracking.
+                </p>
+            </div>
+
+            <div class="glass-card rounded-2xl p-6 border border-slate-800">
+                <div class="h-10 w-10 rounded-xl bg-emerald-950 border border-emerald-500/30 flex items-center justify-center text-xl mb-4">
+                    📋
+                </div>
+                <h3 class="text-base font-bold text-white">Clinic Practice Manager</h3>
+                <p class="text-xs text-slate-400 mt-1">Dr. Bright Ainoo</p>
+                <p class="text-xs text-slate-400 mt-3 leading-relaxed">
+                    Practice operations, new patient registration intake, treatment flow metrics, and clinic capacity KPIs.
+                </p>
+            </div>
+
+            <div class="glass-card rounded-2xl p-6 border border-slate-800">
+                <div class="h-10 w-10 rounded-xl bg-purple-950 border border-purple-500/30 flex items-center justify-center text-xl mb-4">
+                    👑
+                </div>
+                <h3 class="text-base font-bold text-white">Chief Dental Director</h3>
+                <p class="text-xs text-slate-400 mt-1">Dr. Prof. Nathaniel Bentil</p>
+                <p class="text-xs text-slate-400 mt-3 leading-relaxed">
+                    Master governance, staff role management, HIPAA tamper-evident audit telemetry, and Age 3-2-1 backup vault.
+                </p>
+            </div>
+        </div>
+    </main>
 
     <!-- Footer -->
-    <footer class="border-t border-slate-800 py-8 text-center text-xs text-slate-500">
-        <p>Built with Laravel 11, Supabase Cloud PostgreSQL 17.11, and age X25519.</p>
-        <p class="mt-1">Zero-Leak Git Version Control • 100% Free Open Infrastructure</p>
+    <footer class="border-t border-slate-800/80 bg-slate-950/60 py-8">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500">
+            DentiVault Platform • 100% Offline Capable • Argon2id + HMAC Pepper • RFC 6238 TOTP • SHA-256 Hash Chain
+        </div>
     </footer>
 </body>
 </html>

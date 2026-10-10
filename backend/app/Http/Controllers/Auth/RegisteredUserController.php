@@ -45,19 +45,19 @@ class RegisteredUserController extends Controller
             'password_changed_at' => now(),
         ]);
 
-        // 3. Assign default 'Customer' role
-        $customerRole = Role::where('slug', 'Customer')->first();
-        if ($customerRole) {
-            $user->roles()->attach($customerRole->id);
+        // 3. Assign default 'Dentist' / Clinical Practitioner role
+        $dentistRole = Role::where('slug', 'Dentist')->orWhere('slug', 'User')->first();
+        if ($dentistRole) {
+            $user->roles()->attach($dentistRole->id, ['created_at' => now()]);
         }
 
         // 4. Record Audit Log
         AuditLog::record(
             eventType: 'auth.registered',
-            description: "New user account registered for [{$user->email}] with default role [Customer].",
+            description: "New clinical staff account registered for [{$user->email}] with role [{$dentistRole?->name}].",
             userId: $user->id,
-            severity: 'info',
-            payload: ['ip' => $request->ip(), 'pepper_version' => $hashResult['pepper_version']]
+            severity: 'notice',
+            payload: ['ip' => $request->ip(), 'role' => $dentistRole?->name, 'pepper_version' => $hashResult['pepper_version']]
         );
 
         // 5. Fire Laravel Registered event (triggers email verification link)

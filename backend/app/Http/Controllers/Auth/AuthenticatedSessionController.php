@@ -107,6 +107,6 @@ class AuthenticatedSessionController extends Controller
             return response()->json(['message' => 'Logged out successfully.']);
         }
 
-        return redirect('/');
+        return redirect()->route('login')->with('status', 'You have been safely signed out from DentiVault.');
     }
 }

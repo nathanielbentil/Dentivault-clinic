@@ -11,26 +11,35 @@ Route::get('/', function () {
 });
 
 Route::middleware(['auth'])->group(function () {
-    // 1. Customer Banking Dashboard
+    // 1. Customer / Clinical Staff Dashboard
     Route::get('/dashboard', [CustomerController::class, 'dashboard'])->name('dashboard');
+    Route::post('/profile/update-name', [CustomerController::class, 'updateName'])->name('profile.update-name');
+    Route::post('/profile/update-email', [CustomerController::class, 'updateEmail'])->name('profile.update-email');
+    Route::post('/profile/update-password', [CustomerController::class, 'updatePassword'])->name('profile.update-password');
 
-    // 2. SuperAdmin Executive Zone
-    Route::prefix('admin')->name('admin.')->middleware(['role:SuperAdmin'])->group(function () {
+    // 1.1 Biometric Hardware Passkey Registration & Management
+    Route::get('/biometric/register-challenge', [\App\Http\Controllers\BiometricAuthController::class, 'registerChallenge'])->name('biometric.register-challenge');
+    Route::post('/biometric/register-verify', [\App\Http\Controllers\BiometricAuthController::class, 'registerVerify'])->name('biometric.register-verify');
+    Route::delete('/biometric/credentials/{credential}', [\App\Http\Controllers\BiometricAuthController::class, 'destroy'])->name('biometric.destroy');
+
+    // 2. Chief Admin Suite
+    Route::prefix('admin')->name('admin.')->middleware(['role:Admin,SuperAdmin'])->group(function () {
         Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
         Route::post('/users/{user}/assign-role', [AdminController::class, 'assignRole'])->name('users.assign-role');
+        Route::delete('/users/{user}', [AdminController::class, 'destroy'])->name('users.destroy');
         Route::get('/backups', [AdminController::class, 'backups'])->name('backups');
         Route::post('/backups/trigger', [AdminController::class, 'triggerBackup'])->name('backups.trigger');
         Route::post('/backups/drill', [AdminController::class, 'triggerDrill'])->name('backups.drill');
     });
 
-    // 3. Security Auditor Forensics Hub
-    Route::prefix('audit')->name('audit.')->middleware(['role:SecurityAuditor,SuperAdmin'])->group(function () {
+    // 3. Security & HIPAA Audit Forensics Hub
+    Route::prefix('audit')->name('audit.')->middleware(['role:Admin,SuperAdmin,SecurityAuditor'])->group(function () {
         Route::get('/dashboard', [AuditorController::class, 'index'])->name('dashboard');
         Route::get('/verify-integrity', [AuditorController::class, 'verifyIntegrity'])->name('verify-integrity');
     });
 
-    // 4. Branch Manager Operations Portal
-    Route::prefix('branch')->name('branch.')->middleware(['role:BranchManager,SuperAdmin'])->group(function () {
+    // 4. Practice Operations Portal
+    Route::prefix('branch')->name('branch.')->middleware(['role:Manager,BranchManager,Admin,SuperAdmin'])->group(function () {
         Route::get('/dashboard', [BranchController::class, 'index'])->name('dashboard');
         Route::post('/customers/{user}/unlock', [BranchController::class, 'unlockCustomer'])->name('customers.unlock');
     });

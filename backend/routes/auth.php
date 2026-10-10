@@ -26,6 +26,10 @@ Route::middleware('guest')->group(function () {
     Route::post('forgot-password', [PasswordResetController::class, 'sendResetLink'])->name('password.email');
     Route::get('reset-password/{token}', [PasswordResetController::class, 'edit'])->name('password.reset');
     Route::post('reset-password', [PasswordResetController::class, 'update'])->name('password.store');
+
+    // WebAuthn Biometric Login Routes
+    Route::get('biometric/login-challenge', [\App\Http\Controllers\BiometricAuthController::class, 'loginChallenge'])->name('biometric.login-challenge');
+    Route::post('biometric/login-verify', [\App\Http\Controllers\BiometricAuthController::class, 'loginVerify'])->name('biometric.login-verify');
 });
 
 Route::middleware('auth')->group(function () {

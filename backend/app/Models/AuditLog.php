@@ -66,10 +66,10 @@ class AuditLog extends Model
         $lastLog = self::query()->latest('id')->first();
         $prevHash = $lastLog ? $lastLog->log_hash : str_repeat('0', 64);
 
-        $now = now();
+        $now = now()->startOfSecond();
         $ipAddress = Request::ip();
         $userAgent = Request::userAgent();
-        $timestamp = $now->toIso8601String();
+        $timestamp = $now->format('Y-m-d H:i:s');
 
         // Cryptographic Hash Chaining: H_i = SHA256(H_{i-1} || event_type || severity || description || user_id || ip || timestamp || payload)
         $chainData = json_encode([

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Two-Factor Authentication - Enterprise Security System</title>
+  <title>DentiVault - HIPAA 2-Step Identity Verification</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -12,52 +12,41 @@
   </nav>
 
   <main class="container" style="padding-top: 3rem; padding-bottom: 4rem; display: flex; justify-content: center;">
-    <div style="max-width: 460px; width: 100%;">
+    <div style="max-width: 480px; width: 100%;">
       <div class="card">
         <div class="card-header" style="text-align: center; display: block;">
-          <div class="brand-icon" style="margin: 0 auto 1rem auto; width: 2.75rem; height: 2.75rem; font-size: 1.4rem;">
-            🛡️
+          <div class="brand-icon" style="margin: 0 auto 0.75rem auto; width: 3rem; height: 3rem; font-size: 1.5rem; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3);">
+            🦷
           </div>
-          <h2 class="card-title">Two-Factor Authentication</h2>
+          <h2 class="card-title" style="font-size: 1.5rem;">HIPAA Identity Verification</h2>
           <p class="card-subtitle">RFC 6238 Time-based One-Time Password (TOTP)</p>
         </div>
 
         <form id="totp-form">
           <div id="totp-mode-container">
             <div class="form-group">
-              <label for="code" class="form-label" style="text-align: center;">Enter 6-Digit Security Code</label>
+              <label for="code" class="form-label" style="text-align: center;">Enter 6-Digit Authenticator Code</label>
               <input type="text" id="code" class="form-input font-mono" placeholder="000000" maxlength="6" pattern="[0-9]{6}" style="text-align: center; font-size: 1.75rem; letter-spacing: 0.35em; font-weight: 700;" autofocus autocomplete="one-time-code">
-              <div class="form-hint" style="text-align: center;">Enter code from your Authenticator App OR Email OTP</div>
-            </div>
-
-            <!-- Email OTP Dispatch Box -->
-            <div style="background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: var(--radius-md); padding: 0.85rem; margin-bottom: 1.25rem; text-align: center;">
-              <div style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
-                Don't have your authenticator device right now?
-              </div>
-              <button type="button" id="send-email-otp-btn" onclick="requestEmailOtp()" class="btn btn-secondary btn-sm" style="width: 100%; font-size: 0.85rem;">
-                📧 Send 6-Digit Code to my Email
-              </button>
-              <div id="email-otp-notice" style="display: none; margin-top: 0.6rem; font-size: 0.8rem; color: #34d399;"></div>
+              <div class="form-hint" style="text-align: center;">Open Google Authenticator, Microsoft Auth, or 1Password</div>
             </div>
 
             <div style="text-align: center; margin-bottom: 1.25rem;">
               <button type="button" onclick="toggleRecoveryMode(true)" style="background: none; border: none; color: var(--accent-cyan); font-size: 0.85rem; cursor: pointer; text-decoration: underline;">
-                Use a single-use recovery code instead
+                Use a single-use emergency recovery code instead
               </button>
             </div>
           </div>
 
           <div id="recovery-mode-container" style="display: none;">
             <div class="form-group">
-              <label for="recovery_code" class="form-label">Single-Use Recovery Code</label>
+              <label for="recovery_code" class="form-label">Emergency Recovery Code</label>
               <input type="text" id="recovery_code" class="form-input font-mono" placeholder="xxxxx-xxxxx" style="text-align: center; font-size: 1.1rem; letter-spacing: 0.1em;">
               <div class="form-hint" style="text-align: center;">Enter one of your 8 emergency backup recovery codes</div>
             </div>
 
             <div style="text-align: center; margin-bottom: 1.25rem;">
               <button type="button" onclick="toggleRecoveryMode(false)" style="background: none; border: none; color: var(--accent-cyan); font-size: 0.85rem; cursor: pointer; text-decoration: underline;">
-                Use 6-digit TOTP / Email OTP code instead
+                Use 6-digit Authenticator code instead
               </button>
             </div>
           </div>
@@ -66,12 +55,12 @@
           </div>
 
           <button type="submit" id="submit-btn" class="btn btn-primary btn-block">
-            Verify & Continue
+            Verify &amp; Access Patient Records
           </button>
         </form>
 
         <div style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-secondary);">
-          <a href="login.html" style="color: var(--text-muted); text-decoration: none;">← Cancel and return to Sign In</a>
+          <a href="login.html" style="color: var(--text-muted); text-decoration: none;">← Cancel and return to Staff Sign In</a>
         </div>
       </div>
     </div>
@@ -91,47 +80,6 @@
         document.getElementById('recovery_code').focus();
       } else {
         document.getElementById('code').focus();
-      }
-    }
-
-    async function requestEmailOtp() {
-      const tempToken = localStorage.getItem('secureauth_2fa_token');
-      const btn = document.getElementById('send-email-otp-btn');
-      const notice = document.getElementById('email-otp-notice');
-      const codeInput = document.getElementById('code');
-
-      if (!tempToken) {
-        showToast('Session expired. Please sign in again.', 'error');
-        window.location.href = 'login.html';
-        return;
-      }
-
-      btn.disabled = true;
-      btn.innerText = '⏳ Dispatching Email OTP...';
-      notice.style.display = 'none';
-
-      const response = await apiRequest('auth/send-email-otp', {
-        method: 'POST',
-        body: JSON.stringify({ temp_token: tempToken }),
-        skipAuthRedirect: true
-      });
-
-      btn.disabled = false;
-      btn.innerText = '🔄 Resend Code to Email';
-
-      if (response.ok && response.data.success) {
-        notice.innerText = `✓ ${response.data.message}`;
-        notice.style.display = 'block';
-        showToast('6-digit security code sent to your email!', 'success');
-
-        if (response.data.debug_code) {
-          codeInput.value = response.data.debug_code;
-          showToast(`Demo/Local OTP auto-filled: ${response.data.debug_code}`, 'info');
-        }
-
-        codeInput.focus();
-      } else {
-        showToast(response.data.message || 'Failed to send Email OTP.', 'error');
       }
     }
 
@@ -164,7 +112,7 @@
 
       errorAlert.style.display = 'none';
       submitBtn.disabled = true;
-      submitBtn.innerText = 'Verifying 2FA...';
+      submitBtn.innerText = 'Verifying HIPAA Credentials...';
 
       const response = await apiRequest('auth/two-factor-challenge', {
         method: 'POST',
@@ -177,7 +125,7 @@
       });
 
       submitBtn.disabled = false;
-      submitBtn.innerText = 'Verify & Continue';
+      submitBtn.innerText = 'Verify & Access Patient Records';
 
       if (response.ok && response.data.success) {
         localStorage.removeItem('secureauth_2fa_token');
@@ -191,7 +139,7 @@
           } else {
             window.location.href = 'dashboard.html';
           }
-        }, 600);
+        }, 500);
       } else {
         const msg = response.data.message || 'The provided 2FA code is invalid or expired.';
         errorAlert.innerText = msg;

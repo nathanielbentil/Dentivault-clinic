@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DentiVault - Dental Practice Staff Sign In</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container nav-container"></div>
+  </nav>
+
+  <main class="container" style="padding-top: 2.5rem; padding-bottom: 4rem; display: flex; justify-content: center;">
+    <div style="max-width: 500px; width: 100%;">
+      <div class="card">
+        <div class="card-header" style="text-align: center; display: block;">
+          <div class="brand-icon" style="margin: 0 auto 0.75rem auto; width: 3rem; height: 3rem; font-size: 1.6rem; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3);">
+            🦷
+          </div>
+          <h2 class="card-title" style="font-size: 1.6rem;">DentiVault Clinical Portal</h2>
+          <p class="card-subtitle">HIPAA-Compliant Dental Practice Management System</p>
+        </div>
+
+        <!-- 1-Click Fast Fill for 3-Tier Roles (Viva Demonstration) -->
+        <div style="background: rgba(31, 41, 55, 0.6); padding: 0.85rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
+          <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em; display: flex; justify-content: space-between;">
+            <span>⚡ 3-Tier Demo Accounts</span>
+            <span style="color: var(--accent-cyan);">Click to Auto-Fill</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; margin-bottom: 0.4rem;">
+            <button type="button" onclick="fillCredentials('dentist@dentivault.com', 'Dentist@Dental2026!')" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 0.35rem 0.5rem; text-align: left;">
+              🩺 Dr. Isaac Donkoh (Dentist)
+            </button>
+            <button type="button" onclick="fillCredentials('manager@dentivault.com', 'Manager@Dental2026!')" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 0.35rem 0.5rem; text-align: left;">
+              📋 Dr. Bright Ainoo (Manager)
+            </button>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem;">
+            <button type="button" onclick="fillCredentials('admin@dentivault.com', 'Admin@Dental2026!')" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 0.35rem 0.5rem; border-color: var(--accent-purple); color: #c084fc; text-align: left;">
+              👑 Dr. Prof. Nathaniel (Admin)
+            </button>
+            <button type="button" onclick="fillCredentials('natinobentil22@gmail.com', 'Admin@SecureAuth2026!')" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 0.35rem 0.5rem; border-color: var(--accent-cyan); color: var(--accent-cyan); text-align: left;">
+              ⭐ Dr. Prof. Nathaniel (Gmail)
+            </button>
+          </div>
+        </div>
+
+        <form id="login-form">
+          <div class="form-group">
+            <label for="email" class="form-label">Staff Email Address</label>
+            <input type="email" id="email" class="form-input" placeholder="dentist@dentivault.com" required autocomplete="email">
+          </div>
+
+          <div class="form-group">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+              <label for="password" class="form-label" style="margin-bottom: 0;">Password</label>
+              <a href="forgot-password.html" style="font-size: 0.78rem; color: var(--accent-cyan); text-decoration: none;">Forgot password?</a>
+            </div>
+            <div style="position: relative;">
+              <input type="password" id="password" class="form-input" placeholder="••••••••••••" required autocomplete="current-password">
+              <button type="button" onclick="togglePasswordVisibility()" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.9rem;">
+                👁️
+              </button>
+            </div>
+          </div>
+
+          <div id="error-alert" style="display: none; background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.3); color: #fb7185; padding: 0.75rem 1rem; border-radius: var(--radius-md); font-size: 0.85rem; margin-bottom: 1.25rem;">
+          </div>
+
+          <button type="submit" id="submit-btn" class="btn btn-primary btn-block">
+            Sign In to Practice Portal
+          </button>
+        </form>
+
+        <div style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-secondary);">
+          New practitioner or staff? <a href="register.html" style="color: var(--accent-cyan); text-decoration: none; font-weight: 500;">Register Account</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/app.js"></script>
+  <script>
+    function fillCredentials(email, password) {
+      document.getElementById('email').value = email;
+      document.getElementById('password').value = password;
+      document.getElementById('error-alert').style.display = 'none';
+      
+      // Directly execute login
+      executeLogin(email, password);
+    }
+
+    function togglePasswordVisibility() {
+      const input = document.getElementById('password');
+      input.type = input.type === 'password' ? 'text' : 'password';
+    }
+
+    async function executeLogin(email, password) {
+      const errorAlert = document.getElementById('error-alert');
+      const submitBtn = document.getElementById('submit-btn');
+
+      if (!email || !password) {
+        showToast('Please enter both email and password.', 'error');
+        return;
+      }
+
+      errorAlert.style.display = 'none';
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'Authenticating Credentials...';
+      showToast(`Authenticating ${email}...`, 'info');
+
+      try {
+        const response = await apiRequest('auth/login', {
+          method: 'POST',
+          body: JSON.stringify({ email, password }),
+          skipAuthRedirect: true
+        });
+
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Sign In to Practice Portal';
+
+        if (response.ok && response.data.success) {
+          if (response.data.requires_two_factor) {
+            localStorage.setItem('secureauth_2fa_token', response.data.temp_token);
+            showToast('Password verified. Redirecting to 2FA...', 'info');
+            setTimeout(() => {
+              window.location.href = 'two-factor.html';
+            }, 300);
+          } else {
+            Auth.setToken(response.data.token);
+            Auth.setUser(response.data.user);
+            showToast(`Welcome, ${response.data.user.name}!`, 'success');
+            
+            setTimeout(() => {
+              if (response.data.user.is_admin) {
+                window.location.href = 'admin.html';
+              } else {
+                window.location.href = 'dashboard.html';
+              }
+            }, 350);
+          }
+        } else {
+          const msg = response.data.message || 'Invalid email or password.';
+          errorAlert.innerText = msg;
+          errorAlert.style.display = 'block';
+          showToast(msg, 'error');
+        }
+      } catch (err) {
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Sign In to Practice Portal';
+        showToast('Connection error. Please verify backend server is running.', 'error');
+      }
+    }
+
+    document.getElementById('login-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      executeLogin(email, password);
+    });
+  </script>
+</body>
+</html>

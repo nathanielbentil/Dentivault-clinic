@@ -6,9 +6,16 @@
     <div class="space-y-6 pt-6" x-data="{
         selectedUser: null,
         showRoleModal: false,
+        showNameModal: false,
+        showDeleteModal: false,
+        deleteUser: null,
         openRoleModal(user) {
             this.selectedUser = user;
             this.showRoleModal = true;
+        },
+        openDeleteModal(user) {
+            this.deleteUser = user;
+            this.showDeleteModal = true;
         }
     }">
         <!-- Page Header -->
@@ -37,7 +44,7 @@
             <div class="stat-card p-5 rounded-2xl">
                 <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Total Registered Users</span>
                 <span class="text-3xl font-black text-white mt-1 block font-mono">{{ $stats['total_users'] }}</span>
-                <span class="text-[11px] text-purple-400 font-semibold mt-2 block">PostgreSQL Supabase Managed</span>
+                <span class="text-[11px] text-purple-400 font-semibold mt-2 block">Local SQLite Database</span>
             </div>
 
             <div class="stat-card p-5 rounded-2xl">
@@ -130,10 +137,20 @@
                                     @endif
                                 </td>
                                 <td class="py-3 px-3 text-slate-400">{{ $u->created_at->format('M d, Y') }}</td>
-                                <td class="py-3 px-3 text-right">
-                                    <button @click="openRoleModal({{ json_encode(['id' => $u->id, 'name' => $u->name, 'email' => $u->email, 'role_id' => $u->roles->first()?->id]) }})" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-purple-900/60 hover:text-purple-200 border border-slate-700 text-slate-200 transition-colors font-medium text-[11px]">
+                                <td class="py-3 px-3 text-right space-x-1.5">
+                                    <button @click="selectedUser = {{ json_encode(['id' => $u->id, 'name' => $u->name, 'email' => $u->email, 'role_id' => $u->roles->first()?->id]) }}; showNameModal = true;" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 transition-colors font-medium text-[11px]">
+                                        ✏️ Edit Name
+                                    </button>
+                                    <button @click="openRoleModal({{ json_encode(['id' => $u->id, 'name' => $u->name, 'email' => $u->email, 'role_id' => $u->roles->first()?->id]) }})" class="px-2.5 py-1 rounded-lg bg-purple-950/80 hover:bg-purple-900/80 border border-purple-500/40 text-purple-200 transition-colors font-medium text-[11px]">
                                         Modify Role
                                     </button>
+                                    @if($u->id !== auth()->id())
+                                        <button @click="openDeleteModal({{ json_encode(['id' => $u->id, 'name' => $u->name, 'email' => $u->email]) }})" class="px-2.5 py-1 rounded-lg bg-red-950/80 hover:bg-red-900/80 border border-red-500/40 text-red-200 hover:text-white transition-colors font-medium text-[11px]">
+                                            🗑️ Delete
+                                        </button>
+                                    @else
+                                        <span class="px-2 py-1 rounded-lg bg-slate-900 border border-slate-800 text-slate-500 text-[10px] font-semibold">You</span>
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach
@@ -144,6 +161,35 @@
             <!-- Pagination -->
             <div class="pt-3 border-t border-slate-800">
                 {{ $users->links() }}
+            </div>
+        </div>
+
+        <!-- Staff Identity Modification Modal (Chief Admin Only) -->
+        <div x-show="showNameModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+            <div @click.outside="showNameModal = false" class="glass-card max-w-md w-full p-6 rounded-2xl border border-purple-500/40 space-y-4 shadow-2xl">
+                <div class="flex items-center gap-2 text-purple-400 font-bold text-sm">
+                    <span>👑</span>
+                    <span>Edit Staff Profile & Credentials</span>
+                </div>
+                <p class="text-xs text-slate-300">
+                    Modifying staff identity for <span class="font-bold text-white font-mono" x-text="selectedUser ? selectedUser.email : ''"></span>.
+                </p>
+                <form action="{{ route('profile.update-name') }}" method="POST" class="space-y-3 text-xs">
+                    @csrf
+                    <input type="hidden" name="target_user_id" :value="selectedUser ? selectedUser.id : ''">
+                    <div>
+                        <label class="block font-semibold text-slate-300 mb-1">Full Name / Title</label>
+                        <input type="text" name="name" :value="selectedUser ? selectedUser.name : ''" required class="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 focus:border-purple-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-300 mb-1">Staff Email Address</label>
+                        <input type="email" name="email" :value="selectedUser ? selectedUser.email : ''" required class="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 focus:border-purple-500 focus:outline-none">
+                    </div>
+                    <div class="flex items-center justify-end gap-2 pt-2">
+                        <button type="button" @click="showNameModal = false" class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-400 text-xs">Cancel</button>
+                        <button type="submit" class="px-4 py-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-500 text-white font-bold text-xs">Save Profile Changes</button>
+                    </div>
+                </form>
             </div>
         </div>
 
@@ -184,6 +230,41 @@
                             Save Role Assignment
                         </button>
                     </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Staff Account Deletion Modal (SuperAdmin Only) -->
+        <div x-show="showDeleteModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+            <div @click.outside="showDeleteModal = false" class="glass-card max-w-md w-full p-6 rounded-2xl border border-red-500/40 space-y-4 shadow-2xl">
+                <div class="flex items-center gap-3 text-red-400">
+                    <div class="h-9 w-9 rounded-xl bg-red-950/80 border border-red-500/40 flex items-center justify-center text-lg">
+                        🗑️
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-white">Permanently Delete Account</h3>
+                        <span class="text-[11px] text-red-400 font-semibold">Irreversible Administrative Action</span>
+                    </div>
+                </div>
+
+                <div class="p-3.5 rounded-xl bg-red-950/30 border border-red-500/30 text-xs text-red-200 space-y-2">
+                    <p>
+                        Are you sure you want to permanently delete the staff account for <strong class="text-white" x-text="deleteUser ? deleteUser.name : ''"></strong> (<span class="font-mono text-red-300" x-text="deleteUser ? deleteUser.email : ''"></span>)?
+                    </p>
+                    <p class="text-[11px] text-red-300/80">
+                        ⚠️ All active authentication sessions, personal API tokens, and RBAC permissions will be revoked immediately. This deletion event is written to the cryptographic audit trail.
+                    </p>
+                </div>
+
+                <form :action="deleteUser ? `/admin/users/${deleteUser.id}` : '#'" method="POST" class="flex items-center justify-end gap-3 pt-2">
+                    @csrf
+                    @method('DELETE')
+                    <button type="button" @click="showDeleteModal = false" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-slate-200">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-xs font-bold text-white transition-colors shadow-lg shadow-red-900/40 flex items-center gap-2">
+                        <span>Confirm & Delete Account</span>
+                    </button>
                 </form>
             </div>
         </div>

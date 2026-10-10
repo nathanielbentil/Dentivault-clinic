@@ -23,6 +23,21 @@ class CloudBackupService
      */
     public static function getCloudMirrorPath(): string
     {
+        $customPath = env('BACKUP_CLOUD_SYNC_PATH');
+        if (!empty($customPath) && is_dir($customPath)) {
+            return $customPath;
+        }
+
+        // Automatic Windows OneDrive Auto-Sync detection
+        $userProfile = getenv('USERPROFILE');
+        $oneDrivePath = $userProfile . DIRECTORY_SEPARATOR . 'OneDrive' . DIRECTORY_SEPARATOR . 'DentiVault_Backups';
+        if (is_dir($userProfile . DIRECTORY_SEPARATOR . 'OneDrive')) {
+            if (!is_dir($oneDrivePath)) {
+                @mkdir($oneDrivePath, 0755, true);
+            }
+            return $oneDrivePath;
+        }
+
         $mirrorPath = dirname(base_path()) . DIRECTORY_SEPARATOR . 'backups' . DIRECTORY_SEPARATOR . 'cloud-mirror';
         if (!is_dir($mirrorPath)) {
             mkdir($mirrorPath, 0755, true);

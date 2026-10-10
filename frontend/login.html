@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sign In - Enterprise Security System</title>
+  <title>DentiVault - Dental Practice Staff Sign In</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -11,36 +11,45 @@
     <div class="container nav-container"></div>
   </nav>
 
-  <main class="container" style="padding-top: 3rem; padding-bottom: 4rem; display: flex; justify-content: center;">
-    <div style="max-width: 480px; width: 100%;">
+  <main class="container" style="padding-top: 2.5rem; padding-bottom: 4rem; display: flex; justify-content: center;">
+    <div style="max-width: 500px; width: 100%;">
       <div class="card">
         <div class="card-header" style="text-align: center; display: block;">
-          <div class="brand-icon" style="margin: 0 auto 1rem auto; width: 2.75rem; height: 2.75rem; font-size: 1.4rem;">
-            🔐
+          <div class="brand-icon" style="margin: 0 auto 0.75rem auto; width: 3rem; height: 3rem; font-size: 1.6rem; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3);">
+            🦷
           </div>
-          <h2 class="card-title">Enterprise Sign In</h2>
-          <p class="card-subtitle">Protected by Argon2id + Pepper & Sliding Account Lockout</p>
+          <h2 class="card-title" style="font-size: 1.6rem;">DentiVault Clinical Portal</h2>
+          <p class="card-subtitle">HIPAA-Compliant Dental Practice Management System</p>
         </div>
 
-        <!-- 1-Click Fast Fill for Viva Demonstration -->
-        <div style="background: rgba(31, 41, 55, 0.6); padding: 0.85rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
-          <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">
-            ⚡ Quick Test Credentials (1-Click Fill)
-          </div>
-          <div style="display: flex; gap: 0.5rem;">
-            <button type="button" onclick="fillCredentials('admin@secureauth.com', 'Admin@SecureAuth2026!')" class="btn btn-secondary btn-sm" style="flex: 1; font-size: 0.75rem;">
-              👑 Fill Admin
+        <!-- Role Selector Tabs -->
+        <div style="margin-bottom: 1.25rem;">
+          <label style="display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">
+            Select Account Type:
+          </label>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
+            <button type="button" id="tab-dentist" onclick="selectRoleTab('dentist')" class="btn btn-secondary btn-sm" style="border-color: var(--accent-cyan); color: var(--accent-cyan); font-weight: 700;">
+              🩺 Dentist<br><span style="font-size: 0.65rem; color: var(--text-muted); font-weight: 400;">Manual Entry</span>
             </button>
-            <button type="button" onclick="fillCredentials('user@secureauth.com', 'User@SecureAuth2026!')" class="btn btn-secondary btn-sm" style="flex: 1; font-size: 0.75rem;">
-              👤 Fill User
+            <button type="button" id="tab-manager" onclick="selectRoleTab('manager')" class="btn btn-secondary btn-sm" style="font-weight: 700;">
+              📋 Manager<br><span style="font-size: 0.65rem; color: var(--text-muted); font-weight: 400;">Manual Entry</span>
+            </button>
+            <button type="button" id="tab-admin" onclick="selectRoleTab('admin')" class="btn btn-secondary btn-sm" style="font-weight: 700;">
+              👑 Chief Admin<br><span style="font-size: 0.65rem; color: #c084fc; font-weight: 600;">Autofill ⚡</span>
             </button>
           </div>
+        </div>
+
+        <!-- Mode Notification Banner -->
+        <div id="role-banner" style="background: rgba(31, 41, 55, 0.6); padding: 0.65rem 0.85rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 1.25rem; font-size: 0.8rem; display: flex; align-items: center; justify-content: space-between;">
+          <span>🩺 <strong>Attending Dentist Mode</strong> (Enter credentials below)</span>
+          <span style="font-size: 0.7rem; background: rgba(255,255,255,0.08); padding: 0.2rem 0.4rem; border-radius: 4px; color: var(--text-muted);">Blank Space</span>
         </div>
 
         <form id="login-form">
           <div class="form-group">
-            <label for="email" class="form-label">Email Address</label>
-            <input type="email" id="email" class="form-input" placeholder="user@secureauth.com" required autocomplete="email">
+            <label for="email" class="form-label">Staff Email Address</label>
+            <input type="email" id="email" class="form-input" placeholder="e.g. dentist@dentivault.com" required autocomplete="email">
           </div>
 
           <div class="form-group">
@@ -48,20 +57,30 @@
               <label for="password" class="form-label" style="margin-bottom: 0;">Password</label>
               <a href="forgot-password.html" style="font-size: 0.78rem; color: var(--accent-cyan); text-decoration: none;">Forgot password?</a>
             </div>
-            <input type="password" id="password" class="form-input" placeholder="••••••••••••" required autocomplete="current-password">
+            <div style="position: relative;">
+              <input type="password" id="password" class="form-input" placeholder="••••••••••••" required autocomplete="current-password">
+              <button type="button" onclick="togglePasswordVisibility()" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.9rem;">
+                👁️
+              </button>
+            </div>
           </div>
 
           <div id="error-alert" style="display: none; background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.3); color: #fb7185; padding: 0.75rem 1rem; border-radius: var(--radius-md); font-size: 0.85rem; margin-bottom: 1.25rem;">
           </div>
 
-          <button type="submit" id="submit-btn" class="btn btn-primary btn-block">
-            Sign In to Secure Console
+          <button type="submit" id="submit-btn" class="btn btn-primary btn-block" style="margin-bottom: 0.75rem;">
+            Authorize &amp; Sign In
+          </button>
+
+          <!-- 1-Touch Biometrics Button -->
+          <button type="button" onclick="handleBiometricLogin()" class="btn btn-secondary btn-block" style="border-color: var(--accent-cyan); color: var(--accent-cyan); display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+            <span>👆</span>
+            <span>1-Touch Fingerprint / Windows Hello</span>
           </button>
         </form>
 
-        <div style="display: flex; justify-content: space-between; margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-secondary);">
-          <span>Need an account? <a href="register.html" style="color: var(--accent-cyan); text-decoration: none; font-weight: 500;">Register</a></span>
-          <a href="forgot-password.html" style="color: var(--text-muted); text-decoration: none;">Account Recovery</a>
+        <div style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-secondary);">
+          New practitioner or staff? <a href="register.html" style="color: var(--accent-cyan); text-decoration: none; font-weight: 500;">Register Account</a>
         </div>
       </div>
     </div>
@@ -69,61 +88,130 @@
 
   <script src="js/app.js"></script>
   <script>
-    function fillCredentials(email, password) {
-      document.getElementById('email').value = email;
-      document.getElementById('password').value = password;
-      document.getElementById('error-alert').style.display = 'none';
+    function selectRoleTab(role) {
+      const emailInput = document.getElementById('email');
+      const passInput = document.getElementById('password');
+      const banner = document.getElementById('role-banner');
+      const tabDentist = document.getElementById('tab-dentist');
+      const tabManager = document.getElementById('tab-manager');
+      const tabAdmin = document.getElementById('tab-admin');
+
+      // Reset tab borders
+      tabDentist.style.borderColor = 'var(--border-color)';
+      tabDentist.style.color = 'var(--text-secondary)';
+      tabManager.style.borderColor = 'var(--border-color)';
+      tabManager.style.color = 'var(--text-secondary)';
+      tabAdmin.style.borderColor = 'var(--border-color)';
+      tabAdmin.style.color = 'var(--text-secondary)';
+
+      if (role === 'admin') {
+        tabAdmin.style.borderColor = 'var(--accent-purple)';
+        tabAdmin.style.color = '#c084fc';
+        emailInput.value = 'admin@dentivault.com';
+        passInput.value = 'Admin@Dental2026!';
+        banner.innerHTML = '<span>👑 <strong>Chief Administrator Mode</strong> (Autofilled credentials ready)</span><span style="font-size: 0.7rem; background: rgba(168,85,247,0.2); padding: 0.2rem 0.5rem; border-radius: 4px; color: #c084fc; font-weight: 700;">Ready ⚡</span>';
+      } else if (role === 'manager') {
+        tabManager.style.borderColor = 'var(--accent-emerald)';
+        tabManager.style.color = '#34d399';
+        emailInput.value = '';
+        passInput.value = '';
+        emailInput.placeholder = 'e.g. manager@dentivault.com';
+        banner.innerHTML = '<span>📋 <strong>Practice Manager Mode</strong> (Enter credentials below)</span><span style="font-size: 0.7rem; background: rgba(255,255,255,0.08); padding: 0.2rem 0.4rem; border-radius: 4px; color: var(--text-muted);">Blank Space</span>';
+      } else {
+        tabDentist.style.borderColor = 'var(--accent-cyan)';
+        tabDentist.style.color = 'var(--accent-cyan)';
+        emailInput.value = '';
+        passInput.value = '';
+        emailInput.placeholder = 'e.g. dentist@dentivault.com';
+        banner.innerHTML = '<span>🩺 <strong>Attending Dentist Mode</strong> (Enter credentials below)</span><span style="font-size: 0.7rem; background: rgba(255,255,255,0.08); padding: 0.2rem 0.4rem; border-radius: 4px; color: var(--text-muted);">Blank Space</span>';
+      }
     }
 
-    document.getElementById('login-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-      const submitBtn = document.getElementById('submit-btn');
+    async function handleBiometricLogin() {
+      showToast('Connecting to Windows Hello / Biometric Sensor...', 'info');
+      try {
+        if (window.DentiVaultBiometrics) {
+          const result = await window.DentiVaultBiometrics.login();
+          showToast('Fingerprint verified! Redirecting...', 'success');
+          setTimeout(() => {
+            window.location.href = result.redirect || 'dashboard.html';
+          }, 500);
+        } else {
+          // Fallback to live server endpoint
+          window.location.href = 'http://127.0.0.1:8000/login';
+        }
+      } catch (err) {
+        showToast(err.message || 'Biometric sensor error. Please use password login.', 'error');
+      }
+    }
+
+    function togglePasswordVisibility() {
+      const input = document.getElementById('password');
+      input.type = input.type === 'password' ? 'text' : 'password';
+    }
+
+    async function executeLogin(email, password) {
       const errorAlert = document.getElementById('error-alert');
+      const submitBtn = document.getElementById('submit-btn');
+
+      if (!email || !password) {
+        showToast('Please enter both email and password.', 'error');
+        return;
+      }
 
       errorAlert.style.display = 'none';
       submitBtn.disabled = true;
-      submitBtn.innerText = 'Authenticating...';
+      submitBtn.innerText = 'Authenticating Credentials...';
+      showToast(`Authenticating ${email}...`, 'info');
 
-      const response = await apiRequest('auth/login', {
-        method: 'POST',
-        body: JSON.stringify({ email, password }),
-        skipAuthRedirect: true
-      });
+      try {
+        const response = await apiRequest('auth/login', {
+          method: 'POST',
+          body: JSON.stringify({ email, password }),
+          skipAuthRedirect: true
+        });
 
-      submitBtn.disabled = false;
-      submitBtn.innerText = 'Sign In to Secure Console';
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Sign In to Practice Portal';
 
-      if (response.ok && response.data.success) {
-        if (response.data.two_factor_required) {
-          // 2FA Challenge required
-          localStorage.setItem('secureauth_2fa_token', response.data.temp_token);
-          showToast('2FA Required: Enter your TOTP code.', 'info');
-          setTimeout(() => {
-            window.location.href = 'two-factor.html';
-          }, 600);
-          return;
-        }
-
-        // Direct Login Success
-        Auth.setToken(response.data.token);
-        Auth.setUser(response.data.user);
-        showToast('Authentication successful!', 'success');
-
-        setTimeout(() => {
-          if (response.data.user.is_admin) {
-            window.location.href = 'admin.html';
+        if (response.ok && response.data.success) {
+          if (response.data.requires_two_factor) {
+            localStorage.setItem('secureauth_2fa_token', response.data.temp_token);
+            showToast('Password verified. Redirecting to 2FA...', 'info');
+            setTimeout(() => {
+              window.location.href = 'two-factor.html';
+            }, 300);
           } else {
-            window.location.href = 'dashboard.html';
+            Auth.setToken(response.data.token);
+            Auth.setUser(response.data.user);
+            showToast(`Welcome, ${response.data.user.name}!`, 'success');
+            
+            setTimeout(() => {
+              if (response.data.user.is_admin) {
+                window.location.href = 'admin.html';
+              } else {
+                window.location.href = 'dashboard.html';
+              }
+            }, 350);
           }
-        }, 600);
-      } else {
-        const errorMsg = response.data.message || 'Authentication failed. Please check credentials.';
-        errorAlert.innerText = errorMsg;
-        errorAlert.style.display = 'block';
-        showToast(errorMsg, 'error');
+        } else {
+          const msg = response.data.message || 'Invalid email or password.';
+          errorAlert.innerText = msg;
+          errorAlert.style.display = 'block';
+          showToast(msg, 'error');
+        }
+      } catch (err) {
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Sign In to Practice Portal';
+        showToast('Connection error. Please verify backend server is running.', 'error');
       }
+    }
+
+    document.getElementById('login-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      executeLogin(email, password);
     });
   </script>
 </body>

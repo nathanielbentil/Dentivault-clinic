@@ -9,12 +9,12 @@ class ApiEndpointsTest extends TestCase
 {
     public function test_api_login_returns_token_and_user_profile(): void
     {
-        $user = User::where('email', 'user@secureauth.com')->first();
+        $user = User::where('email', 'dentist@dentivault.com')->first();
         $user->forceFill(['two_factor_confirmed_at' => null])->save();
 
         $response = $this->postJson('/api/auth/login', [
-            'email' => 'user@secureauth.com',
-            'password' => 'User@SecureAuth2026!',
+            'email' => 'dentist@dentivault.com',
+            'password' => 'Dentist@Dental2026!',
         ]);
 
         $response->assertStatus(200);
@@ -29,7 +29,7 @@ class ApiEndpointsTest extends TestCase
     public function test_api_login_fails_with_invalid_credentials(): void
     {
         $response = $this->postJson('/api/auth/login', [
-            'email' => 'admin@secureauth.com',
+            'email' => 'admin@dentivault.com',
             'password' => 'InvalidPassword123!',
         ]);
 
@@ -39,23 +39,23 @@ class ApiEndpointsTest extends TestCase
 
     public function test_authenticated_user_can_update_profile_name(): void
     {
-        $user = User::where('email', 'admin@secureauth.com')->first();
+        $user = User::where('email', 'admin@dentivault.com')->first();
 
         $response = $this->actingAs($user, 'sanctum')->postJson('/api/auth/profile', [
-            'name' => 'Administrator Updated',
+            'name' => 'Dr. Prof. Nathaniel Bentil (Updated)',
         ]);
 
         $response->assertStatus(200);
         $response->assertJsonFragment(['success' => true]);
-        $this->assertEquals('Administrator Updated', $user->fresh()->name);
+        $this->assertEquals('Dr. Prof. Nathaniel Bentil (Updated)', $user->fresh()->name);
 
         // Revert back
-        $user->update(['name' => 'Administrator']);
+        $user->update(['name' => 'Dr. Prof. Nathaniel Bentil (Admin)']);
     }
 
     public function test_authenticated_user_can_update_password(): void
     {
-        $user = User::where('email', 'user@secureauth.com')->first();
+        $user = User::where('email', 'dentist@dentivault.com')->first();
 
         // 1. Wrong current password fails
         $badResponse = $this->actingAs($user, 'sanctum')->postJson('/api/auth/password', [
@@ -67,7 +67,7 @@ class ApiEndpointsTest extends TestCase
 
         // 2. Correct current password succeeds
         $goodResponse = $this->actingAs($user, 'sanctum')->postJson('/api/auth/password', [
-            'current_password' => 'User@SecureAuth2026!',
+            'current_password' => 'Dentist@Dental2026!',
             'new_password' => 'NewSecuredPass2026!#',
             'new_password_confirmation' => 'NewSecuredPass2026!#',
         ]);
@@ -77,15 +77,15 @@ class ApiEndpointsTest extends TestCase
         // Restore original password
         $restoreResponse = $this->actingAs($user, 'sanctum')->postJson('/api/auth/password', [
             'current_password' => 'NewSecuredPass2026!#',
-            'new_password' => 'User@SecureAuth2026!',
-            'new_password_confirmation' => 'User@SecureAuth2026!',
+            'new_password' => 'Dentist@Dental2026!',
+            'new_password_confirmation' => 'Dentist@Dental2026!',
         ]);
         $restoreResponse->assertStatus(200);
     }
 
     public function test_email_otp_flow_dispatches_and_verifies_successfully(): void
     {
-        $user = User::where('email', 'admin@secureauth.com')->first();
+        $user = User::where('email', 'admin@dentivault.com')->first();
         // Ensure 2FA is active
         $user->forceFill([
             'two_factor_secret' => 'JBSWY3DPEHPK3PXP',
@@ -94,8 +94,8 @@ class ApiEndpointsTest extends TestCase
 
         // 1. Initial login triggers 2FA
         $loginRes = $this->postJson('/api/auth/login', [
-            'email' => 'admin@secureauth.com',
-            'password' => 'Admin@SecureAuth2026!',
+            'email' => 'admin@dentivault.com',
+            'password' => 'Admin@Dental2026!',
         ]);
         $loginRes->assertStatus(200);
         $tempToken = $loginRes->json('temp_token');
@@ -118,13 +118,19 @@ class ApiEndpointsTest extends TestCase
         $verifyRes->assertStatus(200);
         $verifyRes->assertJsonStructure(['success', 'token', 'user']);
         $this->assertTrue($verifyRes->json('success'));
+
+        // Reset 2FA state for dev environment
+        $user->forceFill([
+            'two_factor_secret' => null,
+            'two_factor_confirmed_at' => null,
+        ])->save();
     }
 
     public function test_forgot_password_anti_user_enumeration(): void
     {
         // 1. Unregistered email receives generic message (anti-enumeration)
         $unregRes = $this->postJson('/api/auth/forgot-password', [
-            'email' => 'nonexistent@secureauth.com',
+            'email' => 'nonexistent@dentivault.com',
         ]);
         $unregRes->assertStatus(200);
         $unregRes->assertJsonFragment(['success' => true]);
@@ -132,7 +138,7 @@ class ApiEndpointsTest extends TestCase
 
         // 2. Registered user receives code
         $regRes = $this->postJson('/api/auth/forgot-password', [
-            'email' => 'user@secureauth.com',
+            'email' => 'dentist@dentivault.com',
         ]);
         $regRes->assertStatus(200);
         $regRes->assertJsonFragment(['success' => true]);
@@ -141,7 +147,7 @@ class ApiEndpointsTest extends TestCase
 
     public function test_reset_password_flow_and_session_revocation(): void
     {
-        $user = User::where('email', 'user@secureauth.com')->first();
+        $user = User::where('email', 'dentist@dentivault.com')->first();
 
         // 1. Create access token to test revocation
         $token = $user->createToken('test-session')->plainTextToken;
@@ -149,13 +155,13 @@ class ApiEndpointsTest extends TestCase
 
         // 2. Request forgot password code
         $forgotRes = $this->postJson('/api/auth/forgot-password', [
-            'email' => 'user@secureauth.com',
+            'email' => 'dentist@dentivault.com',
         ]);
         $code = $forgotRes->json('debug_code');
 
         // 3. Bad code fails
         $badReset = $this->postJson('/api/auth/reset-password', [
-            'email' => 'user@secureauth.com',
+            'email' => 'dentist@dentivault.com',
             'code' => '000000',
             'password' => 'NewResetPass2026!#',
             'password_confirmation' => 'NewResetPass2026!#',
@@ -164,7 +170,7 @@ class ApiEndpointsTest extends TestCase
 
         // 4. Good code resets password and revokes all tokens
         $goodReset = $this->postJson('/api/auth/reset-password', [
-            'email' => 'user@secureauth.com',
+            'email' => 'dentist@dentivault.com',
             'code' => $code,
             'password' => 'NewResetPass2026!#',
             'password_confirmation' => 'NewResetPass2026!#',
@@ -177,20 +183,20 @@ class ApiEndpointsTest extends TestCase
 
         // 5. Restore original user password
         $restoreForgot = $this->postJson('/api/auth/forgot-password', [
-            'email' => 'user@secureauth.com',
+            'email' => 'dentist@dentivault.com',
         ]);
         $restoreCode = $restoreForgot->json('debug_code');
         $this->postJson('/api/auth/reset-password', [
-            'email' => 'user@secureauth.com',
+            'email' => 'dentist@dentivault.com',
             'code' => $restoreCode,
-            'password' => 'User@SecureAuth2026!',
-            'password_confirmation' => 'User@SecureAuth2026!',
+            'password' => 'Dentist@Dental2026!',
+            'password_confirmation' => 'Dentist@Dental2026!',
         ]);
     }
 
     public function test_email_2fa_activation_flow(): void
     {
-        $user = User::where('email', 'user@secureauth.com')->first();
+        $user = User::where('email', 'dentist@dentivault.com')->first();
         $user->forceFill(['two_factor_confirmed_at' => null])->save();
 
         // 1. Initiate Email 2FA setup
@@ -207,5 +213,12 @@ class ApiEndpointsTest extends TestCase
         $confirmRes->assertStatus(200);
         $confirmRes->assertJsonFragment(['success' => true]);
         $this->assertNotNull($user->fresh()->two_factor_confirmed_at);
+
+        // Reset 2FA state for dev environment
+        $user->forceFill([
+            'two_factor_secret' => null,
+            'two_factor_confirmed_at' => null,
+        ])->save();
     }
 }
+

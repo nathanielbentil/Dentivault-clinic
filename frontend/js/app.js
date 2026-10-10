@@ -164,24 +164,36 @@ function renderNavbar() {
       `;
     }
 
+    let roleBadgeClass = 'badge-blue';
+    let roleName = 'Dentist';
+    if (user && user.roles) {
+      if (isAdmin || user.roles.includes('Admin')) {
+        roleBadgeClass = 'badge-purple';
+        roleName = 'Admin';
+      } else if (user.roles.includes('Manager')) {
+        roleBadgeClass = 'badge-amber';
+        roleName = 'Manager';
+      }
+    }
+
     linksHtml += `
       <li style="display: flex; align-items: center; gap: 0.75rem; margin-left: 0.75rem;">
-        <span class="badge ${isAdmin ? 'badge-purple' : 'badge-blue'}">${user ? (isAdmin ? 'Admin' : 'User') : 'User'}</span>
+        <span class="badge ${roleBadgeClass}">${roleName}</span>
         <span style="font-size: 0.85rem; color: var(--text-secondary);">${user ? user.email : ''}</span>
         <button onclick="handleLogout()" class="btn btn-secondary btn-sm" style="padding: 0.35rem 0.65rem;">Sign Out</button>
       </li>
     `;
   } else {
     linksHtml += `
-      <li><a href="login.html" class="nav-link ${currentPath.endsWith('login.html') ? 'active' : ''}">Sign In</a></li>
+      <li><a href="login.html" class="nav-link ${currentPath.endsWith('login.html') ? 'active' : ''}">Staff Sign In</a></li>
       <li><a href="register.html" class="btn btn-primary btn-sm">Register</a></li>
     `;
   }
 
   navContainer.innerHTML = `
     <a href="index.html" class="brand">
-      <div class="brand-icon">🛡️</div>
-      <span>SecureAuth <span style="color: var(--accent-cyan); font-weight: 400; font-size: 0.9rem;">Enterprise</span></span>
+      <div class="brand-icon" style="font-size: 1.25rem;">🦷</div>
+      <span>DentiVault <span style="color: var(--accent-cyan); font-weight: 400; font-size: 0.85rem;">Clinical System</span></span>
     </a>
     <ul class="nav-links">
       ${linksHtml}

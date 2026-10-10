@@ -45,7 +45,7 @@ class AuditLoggerService
                 'description' => $log->description,
                 'user_id' => $log->user_id,
                 'ip' => $log->ip_address,
-                'timestamp' => $log->created_at->toIso8601String(),
+                'timestamp' => $log->created_at ? $log->created_at->format('Y-m-d H:i:s') : '',
                 'payload' => $log->payload,
             ]);
 

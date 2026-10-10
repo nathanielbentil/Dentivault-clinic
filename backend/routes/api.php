@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AdminApiController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BackupApiController;
+use App\Http\Controllers\Api\PatientController;
 use App\Http\Controllers\Api\TwoFactorApiController;
 use Illuminate\Support\Facades\Route;
 
@@ -33,6 +34,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('auth/profile', [AuthController::class, 'updateProfile']);
     Route::post('auth/password', [AuthController::class, 'updatePassword']);
     Route::post('auth/logout', [AuthController::class, 'logout']);
+
+    // Dental Patient & Clinical EHR Routes
+    Route::get('patients', [PatientController::class, 'index']);
+    Route::post('patients', [PatientController::class, 'store']);
+    Route::delete('patients/{id}', [PatientController::class, 'destroy']);
 
     // Two-Factor Authentication Management
     Route::prefix('2fa')->group(function () {

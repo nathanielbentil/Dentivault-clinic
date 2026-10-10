@@ -147,47 +147,85 @@ class BackupService
         fwrite($handle, "BEGIN;\n");
         fwrite($handle, "SET CONSTRAINTS ALL DEFERRED;\n\n");
 
+        $driver = \Illuminate\Support\Facades\DB::connection()->getDriverName();
         $pdo = \Illuminate\Support\Facades\DB::connection()->getPdo();
 
-        // Query all public tables
-        $tablesQuery = $pdo->query("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE' ORDER BY table_name");
-        $tables = $tablesQuery->fetchAll(\PDO::FETCH_COLUMN);
+        if ($driver === 'sqlite') {
+            $tablesQuery = $pdo->query("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name");
+            $tables = $tablesQuery->fetchAll(\PDO::FETCH_COLUMN);
 
-        foreach ($tables as $table) {
-            // Write table header
-            fwrite($handle, "\n-- ----------------------------------------------------------\n");
-            fwrite($handle, "-- Table Data: {$table}\n");
-            fwrite($handle, "-- ----------------------------------------------------------\n");
+            foreach ($tables as $table) {
+                fwrite($handle, "\n-- ----------------------------------------------------------\n");
+                fwrite($handle, "-- Table Data: {$table}\n");
+                fwrite($handle, "-- ----------------------------------------------------------\n");
 
-            // Fetch columns
-            $colsQuery = $pdo->query("SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = " . $pdo->quote($table) . " ORDER BY ordinal_position");
-            $columns = $colsQuery->fetchAll(\PDO::FETCH_COLUMN);
+                $colsQuery = $pdo->query("PRAGMA table_info(\"{$table}\")");
+                $colRows = $colsQuery->fetchAll(\PDO::FETCH_ASSOC);
+                $columns = array_map(fn($c) => $c['name'], $colRows);
 
-            if (empty($columns)) {
-                continue;
-            }
-
-            $colList = implode(', ', array_map(fn($c) => "\"{$c}\"", $columns));
-
-            // Fetch rows
-            $dataStmt = $pdo->query("SELECT * FROM \"{$table}\"");
-            while ($row = $dataStmt->fetch(\PDO::FETCH_ASSOC)) {
-                $values = [];
-                foreach ($columns as $col) {
-                    $val = $row[$col] ?? null;
-                    if ($val === null) {
-                        $values[] = 'NULL';
-                    } elseif (is_bool($val)) {
-                        $values[] = $val ? 'TRUE' : 'FALSE';
-                    } elseif (is_int($val) || is_float($val)) {
-                        $values[] = (string) $val;
-                    } else {
-                        $values[] = $pdo->quote((string) $val);
-                    }
+                if (empty($columns)) {
+                    continue;
                 }
 
-                $valList = implode(', ', $values);
-                fwrite($handle, "INSERT INTO \"{$table}\" ({$colList}) VALUES ({$valList});\n");
+                $colList = implode(', ', array_map(fn($c) => "\"{$c}\"", $columns));
+                $dataStmt = $pdo->query("SELECT * FROM \"{$table}\"");
+                while ($row = $dataStmt->fetch(\PDO::FETCH_ASSOC)) {
+                    $values = [];
+                    foreach ($columns as $col) {
+                        $val = $row[$col] ?? null;
+                        if ($val === null) {
+                            $values[] = 'NULL';
+                        } elseif (is_int($val) || is_float($val)) {
+                            $values[] = (string) $val;
+                        } else {
+                            $values[] = $pdo->quote((string) $val);
+                        }
+                    }
+                    $valList = implode(', ', $values);
+                    fwrite($handle, "INSERT INTO \"{$table}\" ({$colList}) VALUES ({$valList});\n");
+                }
+            }
+        } else {
+            // Query all public tables (PostgreSQL / MySQL)
+            $tablesQuery = $pdo->query("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE' ORDER BY table_name");
+            $tables = $tablesQuery->fetchAll(\PDO::FETCH_COLUMN);
+
+            foreach ($tables as $table) {
+                // Write table header
+                fwrite($handle, "\n-- ----------------------------------------------------------\n");
+                fwrite($handle, "-- Table Data: {$table}\n");
+                fwrite($handle, "-- ----------------------------------------------------------\n");
+
+                // Fetch columns
+                $colsQuery = $pdo->query("SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = " . $pdo->quote($table) . " ORDER BY ordinal_position");
+                $columns = $colsQuery->fetchAll(\PDO::FETCH_COLUMN);
+
+                if (empty($columns)) {
+                    continue;
+                }
+
+                $colList = implode(', ', array_map(fn($c) => "\"{$c}\"", $columns));
+
+                // Fetch rows
+                $dataStmt = $pdo->query("SELECT * FROM \"{$table}\"");
+                while ($row = $dataStmt->fetch(\PDO::FETCH_ASSOC)) {
+                    $values = [];
+                    foreach ($columns as $col) {
+                        $val = $row[$col] ?? null;
+                        if ($val === null) {
+                            $values[] = 'NULL';
+                        } elseif (is_bool($val)) {
+                            $values[] = $val ? 'TRUE' : 'FALSE';
+                        } elseif (is_int($val) || is_float($val)) {
+                            $values[] = (string) $val;
+                        } else {
+                            $values[] = $pdo->quote((string) $val);
+                        }
+                    }
+
+                    $valList = implode(', ', $values);
+                    fwrite($handle, "INSERT INTO \"{$table}\" ({$colList}) VALUES ({$valList});\n");
+                }
             }
         }
 

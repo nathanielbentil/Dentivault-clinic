@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DentiVault - Dental Practice & Clinical Management System</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container nav-container"></div>
+  </nav>
+
+  <main class="container" style="padding-top: 2rem; padding-bottom: 4rem;">
+    <!-- Welcome Header -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.75rem; flex-wrap: wrap; gap: 1rem;">
+      <div>
+        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+          <span style="font-size: 1.75rem;">🦷</span>
+          <h1 style="font-size: 1.85rem; font-weight: 700;">
+            DentiVault <span style="color: var(--accent-cyan); font-weight: 400; font-size: 1.35rem;">| Clinical Practice Portal</span>
+          </h1>
+        </div>
+        <p style="color: var(--text-secondary); font-size: 0.9rem;">
+          Welcome back, <strong id="user-display-name" style="color: #ffffff;">Doctor</strong>. Patient records, dental charting &amp; HIPAA-compliant 2FA access control.
+        </p>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+        <span id="role-badge" class="badge badge-blue">Role: Dentist</span>
+        <span id="status-badge" class="badge badge-emerald">HIPAA Verified</span>
+        <a id="admin-switch-btn" href="admin.html" class="btn btn-secondary btn-sm" style="display: none; border-color: var(--accent-purple); color: #c084fc;">
+          ⚙️ Switch to Admin Suite
+        </a>
+      </div>
+    </div>
+
+    <!-- 4 Dental KPI Metric Cards -->
+    <div class="grid grid-cols-4" style="margin-bottom: 2rem;">
+      <div class="card" style="padding: 1.25rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+          <span style="color: var(--text-secondary); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Total Patients</span>
+          <span style="font-size: 1.3rem;">🦷</span>
+        </div>
+        <div id="kpi-total-patients" style="font-size: 1.85rem; font-weight: 700; color: #ffffff;">5</div>
+        <div style="font-size: 0.75rem; color: #34d399; margin-top: 0.25rem;">Active Clinic Registry</div>
+      </div>
+
+      <div class="card" style="padding: 1.25rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+          <span style="color: var(--text-secondary); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">In Treatment</span>
+          <span style="font-size: 1.3rem;">🩺</span>
+        </div>
+        <div id="kpi-in-treatment" style="font-size: 1.85rem; font-weight: 700; color: var(--accent-amber);">2</div>
+        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Endo &amp; Crown Procedures</div>
+      </div>
+
+      <div class="card" style="padding: 1.25rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+          <span style="color: var(--text-secondary); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Completed</span>
+          <span style="font-size: 1.3rem;">✅</span>
+        </div>
+        <div id="kpi-completed" style="font-size: 1.85rem; font-weight: 700; color: #34d399;">2</div>
+        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Restorations &amp; Prophy</div>
+      </div>
+
+      <div class="card" style="padding: 1.25rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+          <span style="color: var(--text-secondary); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">2FA Security</span>
+          <span style="font-size: 1.3rem;">🛡️</span>
+        </div>
+        <div id="kpi-2fa-status" style="font-size: 1.35rem; font-weight: 700; color: #34d399; margin-top: 0.35rem;">Protected</div>
+        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">RFC 6238 TOTP App</div>
+      </div>
+    </div>
+
+    <!-- Dental Patient Records & Tooth Treatment Chart Table -->
+    <div class="card" style="margin-bottom: 2rem;">
+      <div class="card-header" style="flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h2 class="card-title">Patient Dental Records &amp; Clinical Tooth Charts</h2>
+          <p class="card-subtitle">Electronic Dental Records (EDR) &amp; Procedure Notes (HIPAA Audit Tracked)</p>
+        </div>
+        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
+          <input type="text" id="patient-search" placeholder="🔍 Search patient, tooth #, code..." class="form-input" style="width: 240px; padding: 0.45rem 0.75rem; font-size: 0.85rem;" oninput="filterPatients()">
+          <select id="patient-status-filter" class="form-input" style="width: 140px; padding: 0.45rem 0.75rem; font-size: 0.85rem;" onchange="filterPatients()">
+            <option value="ALL">All Statuses</option>
+            <option value="In Treatment">In Treatment</option>
+            <option value="Scheduled">Scheduled</option>
+            <option value="Completed">Completed</option>
+          </select>
+          <button onclick="openNewPatientModal()" class="btn btn-primary btn-sm">
+            ➕ Register New Patient
+          </button>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Patient Code</th>
+              <th>Patient Name</th>
+              <th>Age / Gender</th>
+              <th>Tooth # / Area</th>
+              <th>Procedure &amp; Diagnosis</th>
+              <th>Medical History / Allergies</th>
+              <th>Dentist</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="patients-table-body">
+            <tr>
+              <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                Loading patient dental records...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Profile & Security Row -->
+    <div class="grid grid-cols-2" style="margin-bottom: 2rem;">
+      <!-- Practitioner Profile Card -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Practitioner Profile</h2>
+            <p class="card-subtitle">Staff credentials &amp; cryptographic identity</p>
+          </div>
+          <span style="font-size: 1.5rem;">👤</span>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.9rem;">
+          <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+            <span style="color: var(--text-secondary);">Full Name:</span>
+            <span id="profile-name" style="font-weight: 600;">-</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+            <span style="color: var(--text-secondary);">Email Address:</span>
+            <span id="profile-email" class="font-mono">-</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+            <span style="color: var(--text-secondary);">Assigned Role:</span>
+            <span id="profile-role" style="font-weight: 600;">-</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+            <span style="color: var(--text-secondary);">Password Security:</span>
+            <span class="badge badge-purple font-mono">Argon2id + HMAC Pepper</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--text-secondary);">Password Last Updated:</span>
+            <span id="profile-password-date" style="color: var(--text-muted);">-</span>
+          </div>
+
+          <div style="display: flex; gap: 0.75rem; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--border-color); flex-wrap: wrap;">
+            <button onclick="openEditProfileModal()" class="btn btn-secondary btn-sm" style="flex: 1;">
+              ✏️ Change Name
+            </button>
+            <button onclick="openChangePasswordModal()" class="btn btn-secondary btn-sm" style="flex: 1;">
+              🔑 Change Password
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Two-Factor Authentication Security Card -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">HIPAA 2FA Access Control</h2>
+            <p class="card-subtitle">RFC 6238 TOTP Authenticator &amp; Emergency Keys</p>
+          </div>
+          <span id="2fa-status-badge" class="badge badge-amber">Disabled</span>
+        </div>
+
+        <div id="2fa-disabled-view" style="display: none;">
+          <p style="color: var(--text-secondary); margin-bottom: 1.25rem; font-size: 0.88rem;">
+            HIPAA § 164.312(d) requires multi-factor authentication for healthcare practitioners. Protect patient records with your <strong>Google Authenticator</strong> or <strong>Microsoft Authenticator</strong> app.
+          </p>
+          <div>
+            <button onclick="start2FaSetup()" class="btn btn-primary btn-block">
+              🛡️ Enable Two-Factor Authentication (Scan QR)
+            </button>
+          </div>
+        </div>
+
+        <div id="2fa-enabled-view" style="display: none;">
+          <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.85rem 1rem; border-radius: var(--radius-md); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.75rem;">
+            <span style="font-size: 1.25rem; color: #34d399;">✓</span>
+            <div style="font-size: 0.85rem; color: #34d399;">
+              Two-Factor Authentication is currently active on your practitioner account.
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <button onclick="openRegenerateModal()" class="btn btn-secondary btn-sm" style="flex: 1;">
+              🔄 Regenerate 8 Recovery Codes
+            </button>
+            <button onclick="openDisableModal()" class="btn btn-danger btn-sm" style="flex: 1;">
+              ✕ Disable 2FA
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal: Update Dental Treatment & Tooth Chart -->
+  <div id="edit-patient-modal" class="modal-overlay">
+    <div class="modal-box" style="max-width: 600px;">
+      <div class="card-header">
+        <div>
+          <h3 class="card-title">Update Dental Treatment Chart</h3>
+          <p id="modal-patient-subtitle" class="card-subtitle"></p>
+        </div>
+        <button onclick="closeModal('edit-patient-modal')" style="background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;">×</button>
+      </div>
+
+      <form id="edit-patient-form">
+        <input type="hidden" id="edit-patient-id">
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 0.75rem;">
+          <div class="form-group">
+            <label for="edit-patient-name" class="form-label">Patient Name</label>
+            <input type="text" id="edit-patient-name" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label for="edit-patient-age" class="form-label">Age</label>
+            <input type="number" id="edit-patient-age" class="form-input" required min="1" max="120">
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="form-group">
+            <label for="edit-patient-gender" class="form-label">Gender</label>
+            <select id="edit-patient-gender" class="form-input" required>
+              <option value="Female">Female</option>
+              <option value="Male">Male</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="edit-patient-phone" class="form-label">Contact Phone</label>
+            <input type="text" id="edit-patient-phone" class="form-input" placeholder="+1 (555) 000-0000">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="edit-patient-history" class="form-label">Medical History &amp; Allergies</label>
+          <input type="text" id="edit-patient-history" class="form-input" placeholder="e.g. Penicillin allergy, Hypertension">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="form-group">
+            <label for="edit-tooth-number" class="form-label">Tooth # / Quadrant</label>
+            <input type="text" id="edit-tooth-number" class="form-input" placeholder="e.g. #14 (Upper Left Molar)">
+          </div>
+          <div class="form-group">
+            <label for="edit-patient-status" class="form-label">Treatment Status</label>
+            <select id="edit-patient-status" class="form-input" required>
+              <option value="Scheduled">Scheduled</option>
+              <option value="In Treatment">In Treatment</option>
+              <option value="Completed">Completed</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="edit-patient-procedure" class="form-label">Procedure / Treatment Plan</label>
+          <input type="text" id="edit-patient-procedure" class="form-input" placeholder="e.g. Composite Resin Restoration, Root Canal Therapy">
+        </div>
+
+        <div class="form-group">
+          <label for="edit-clinical-notes" class="form-label">Clinical Dental Notes &amp; Anesthesia Administered</label>
+          <textarea id="edit-clinical-notes" class="form-input" rows="3" placeholder="Enter clinical observations, anesthesia dose, materials used..."></textarea>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1rem;">
+          <button type="button" onclick="closeModal('edit-patient-modal')" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Dental Chart</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Register New Dental Patient -->
+  <div id="new-patient-modal" class="modal-overlay">
+    <div class="modal-box" style="max-width: 600px;">
+      <div class="card-header">
+        <div>
+          <h3 class="card-title">Register New Dental Patient</h3>
+          <p class="card-subtitle">Create patient record and open dental chart</p>
+        </div>
+        <button onclick="closeModal('new-patient-modal')" style="background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;">×</button>
+      </div>
+
+      <form id="new-patient-form">
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 0.75rem;">
+          <div class="form-group">
+            <label for="new-patient-name" class="form-label">Patient Full Name</label>
+            <input type="text" id="new-patient-name" class="form-input" required placeholder="e.g. Jessica Adams">
+          </div>
+          <div class="form-group">
+            <label for="new-patient-age" class="form-label">Age</label>
+            <input type="number" id="new-patient-age" class="form-input" required min="1" max="120" placeholder="30">
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="form-group">
+            <label for="new-patient-gender" class="form-label">Gender</label>
+            <select id="new-patient-gender" class="form-input" required>
+              <option value="Female">Female</option>
+              <option value="Male">Male</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="new-patient-phone" class="form-label">Contact Phone</label>
+            <input type="text" id="new-patient-phone" class="form-input" placeholder="+1 (555) 000-0000">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="new-patient-history" class="form-label">Medical History &amp; Allergies</label>
+          <input type="text" id="new-patient-history" class="form-input" placeholder="e.g. Penicillin allergy, None, Diabetic">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="form-group">
+            <label for="new-tooth-number" class="form-label">Tooth # / Area</label>
+            <input type="text" id="new-tooth-number" class="form-input" placeholder="e.g. #30 Lower Right Molar">
+          </div>
+          <div class="form-group">
+            <label for="new-patient-status" class="form-label">Initial Status</label>
+            <select id="new-patient-status" class="form-input" required>
+              <option value="Scheduled">Scheduled</option>
+              <option value="In Treatment">In Treatment</option>
+              <option value="Completed">Completed</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="new-patient-procedure" class="form-label">Procedure / Chief Complaint</label>
+          <input type="text" id="new-patient-procedure" class="form-input" placeholder="e.g. Toothache, Routine Cleaning, Crown Replacement">
+        </div>
+
+        <div class="form-group">
+          <label for="new-clinical-notes" class="form-label">Clinical Examination Notes</label>
+          <textarea id="new-clinical-notes" class="form-input" rows="3" placeholder="Initial dental observations, x-ray findings..."></textarea>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1rem;">
+          <button type="button" onclick="closeModal('new-patient-modal')" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Patient Record</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2FA Setup Modal (Authenticator App) -->
+  <div id="setup-2fa-modal" class="modal-overlay">
+    <div class="modal-box" style="max-width: 560px;">
+      <div class="card-header">
+        <h3 class="card-title">Setup HIPAA Two-Factor Authentication</h3>
+        <button onclick="closeModal('setup-2fa-modal')" style="background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;">×</button>
+      </div>
+
+      <div style="text-align: center; margin-bottom: 1.5rem;">
+        <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 1rem;">
+          Scan this QR code with your authenticator application (Google Authenticator, Microsoft Authenticator, 1Password, or Apple Keychain):
+        </p>
+
+        <!-- Live Vector SVG QR Code -->
+        <div id="qr-code-wrapper" class="qr-container"></div>
+
+        <div style="margin-top: 0.75rem;">
+          <span style="font-size: 0.8rem; color: var(--text-muted);">Manual Entry Key:</span>
+          <div id="manual-secret-key" class="font-mono" style="font-size: 0.95rem; font-weight: 700; color: var(--accent-cyan); letter-spacing: 0.1em; margin-top: 0.25rem;"></div>
+        </div>
+      </div>
+
+      <!-- 8 Single-Use Recovery Codes -->
+      <div style="margin-bottom: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+          <label class="form-label" style="margin-bottom: 0; color: var(--accent-amber);">⚠️ 8 Single-Use Recovery Codes (Save Securely)</label>
+          <button type="button" onclick="copyRecoveryCodes()" class="btn btn-secondary btn-sm" style="font-size: 0.75rem;">📋 Copy All</button>
+        </div>
+        <div id="recovery-codes-grid" class="recovery-grid"></div>
+        <div class="form-hint">Each recovery code can only be used once if you lose access to your authenticator app.</div>
+      </div>
+
+      <!-- 6-digit confirmation code -->
+      <form id="confirm-2fa-form">
+        <div class="form-group">
+          <label for="confirm-code" class="form-label">Enter 6-digit code from your app to confirm:</label>
+          <input type="text" id="confirm-code" class="form-input font-mono" placeholder="000000" maxlength="6" style="text-align: center; font-size: 1.5rem; letter-spacing: 0.25em; font-weight: 700;" required>
+        </div>
+
+        <div id="setup-error" style="display: none; background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.3); color: #fb7185; padding: 0.5rem; border-radius: var(--radius-sm); font-size: 0.85rem; margin-bottom: 1rem;"></div>
+
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+          <button type="button" onclick="closeModal('setup-2fa-modal')" class="btn btn-secondary">Cancel</button>
+          <button type="submit" id="confirm-btn" class="btn btn-primary">Verify &amp; Activate 2FA</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Disable 2FA Modal -->
+  <div id="disable-2fa-modal" class="modal-overlay">
+    <div class="modal-box" style="max-width: 450px;">
+      <div class="card-header">
+        <h3 class="card-title">Disable Two-Factor Auth</h3>
+        <button onclick="closeModal('disable-2fa-modal')" style="background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;">×</button>
+      </div>
+      <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 1.25rem;">
+        To disable 2FA, please enter your password for identity verification.
+      </p>
+      <form id="disable-2fa-form">
+        <div class="form-group">
+          <label for="disable-password" class="form-label">Account Password</label>
+          <input type="password" id="disable-password" class="form-input" required>
+        </div>
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+          <button type="button" onclick="closeModal('disable-2fa-modal')" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-danger">Confirm Disable</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Regenerate Recovery Codes Modal -->
+  <div id="regen-modal" class="modal-overlay">
+    <div class="modal-box" style="max-width: 500px;">
+      <div class="card-header">
+        <h3 class="card-title">Regenerate Recovery Codes</h3>
+        <button onclick="closeModal('regen-modal')" style="background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;">×</button>
+      </div>
+      <form id="regen-form">
+        <div class="form-group">
+          <label for="regen-password" class="form-label">Confirm Password</label>
+          <input type="password" id="regen-password" class="form-input" required>
+        </div>
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+          <button type="button" onclick="closeModal('regen-modal')" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary">Regenerate</button>
+        </div>
+      </form>
+      <div id="regen-results" style="display: none; margin-top: 1.5rem;">
+        <div style="color: var(--accent-amber); font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem;">New 8 Recovery Codes:</div>
+        <div id="new-codes-grid" class="recovery-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Profile Modal -->
+  <div id="edit-profile-modal" class="modal-overlay">
+    <div class="modal-box" style="max-width: 450px;">
+      <div class="card-header">
+        <h3 class="card-title">Change Display Name</h3>
+        <button onclick="closeModal('edit-profile-modal')" style="background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;">×</button>
+      </div>
+      <form id="edit-profile-form">
+        <div class="form-group">
+          <label for="edit-name" class="form-label">Full Name</label>
+          <input type="text" id="edit-name" class="form-input" required placeholder="Enter new name">
+        </div>
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+          <button type="button" onclick="closeModal('edit-profile-modal')" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Change Password Modal -->
+  <div id="change-password-modal" class="modal-overlay">
+    <div class="modal-box" style="max-width: 500px;">
+      <div class="card-header">
+        <h3 class="card-title">Change Account Password</h3>
+        <button onclick="closeModal('change-password-modal')" style="background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;">×</button>
+      </div>
+      <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1rem;">
+        Passwords must meet NIST SP 800-63B guidelines (minimum 12 characters with character diversity).
+      </p>
+      <form id="change-password-form">
+        <div class="form-group">
+          <label for="current-password" class="form-label">Current Password</label>
+          <input type="password" id="current-password" class="form-input" required placeholder="Enter current password">
+        </div>
+        <div class="form-group">
+          <label for="new-password" class="form-label">New Password</label>
+          <input type="password" id="new-password" class="form-input" required placeholder="Min 12 chars (e.g. Dentist@Dental2026!)">
+          
+          <div style="margin-top: 0.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.25rem; font-size: 0.75rem;">
+            <div id="rule-len" style="color: var(--text-muted);">✕ 12+ Characters</div>
+            <div id="rule-upper" style="color: var(--text-muted);">✕ Uppercase Letter</div>
+            <div id="rule-lower" style="color: var(--text-muted);">✕ Lowercase Letter</div>
+            <div id="rule-num-sym" style="color: var(--text-muted);">✕ Number &amp; Symbol</div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="new-password-confirm" class="form-label">Confirm New Password</label>
+          <input type="password" id="new-password-confirm" class="form-input" required placeholder="Re-type new password">
+        </div>
+        
+        <div id="change-pw-error" style="display: none; background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.3); color: #fb7185; padding: 0.5rem; border-radius: var(--radius-sm); font-size: 0.85rem; margin-bottom: 1rem;"></div>
+
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+          <button type="button" onclick="closeModal('change-password-modal')" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary">Update Password</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/qrcode.min.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    let activeRecoveryCodes = [];
+    let currentUserProfile = null;
+    let allPatients = [];
+
+    async function loadUserProfile() {
+      const response = await apiRequest('auth/user');
+      if (response.ok && response.data.success) {
+        currentUserProfile = response.data.user;
+        const user = response.data.user;
+        document.getElementById('user-display-name').innerText = user.name;
+        document.getElementById('profile-name').innerText = user.name;
+        document.getElementById('profile-email').innerText = user.email;
+        document.getElementById('profile-role').innerText = user.roles.join(', ') || 'Dentist';
+        document.getElementById('profile-password-date').innerText = user.password_changed_at ? new Date(user.password_changed_at).toLocaleString() : 'N/A';
+
+        const roleText = user.roles.join(', ') || 'Dentist';
+        document.getElementById('role-badge').innerText = `Role: ${roleText}`;
+        document.getElementById('role-badge').className = `badge ${user.is_admin ? 'badge-purple' : (user.roles.includes('Manager') ? 'badge-amber' : 'badge-blue')}`;
+
+        // Admin suite link
+        if (user.is_admin) {
+          document.getElementById('admin-switch-btn').style.display = 'inline-block';
+        }
+
+        // 2FA state
+        const badge2fa = document.getElementById('2fa-status-badge');
+        const kpi2fa = document.getElementById('kpi-2fa-status');
+        if (user.two_factor_enabled) {
+          badge2fa.innerText = 'Active (RFC 6238)';
+          badge2fa.className = 'badge badge-emerald';
+          kpi2fa.innerText = 'Protected';
+          kpi2fa.style.color = '#34d399';
+          document.getElementById('2fa-enabled-view').style.display = 'block';
+          document.getElementById('2fa-disabled-view').style.display = 'none';
+        } else {
+          badge2fa.innerText = 'Disabled';
+          badge2fa.className = 'badge badge-amber';
+          kpi2fa.innerText = 'Action Needed';
+          kpi2fa.style.color = 'var(--accent-amber)';
+          document.getElementById('2fa-enabled-view').style.display = 'none';
+          document.getElementById('2fa-disabled-view').style.display = 'block';
+        }
+
+        loadPatients();
+      }
+    }
+
+    async function loadPatients() {
+      const response = await apiRequest('patients');
+      if (response.ok && response.data.success) {
+        allPatients = response.data.patients || [];
+        updateKpis();
+        renderPatientsTable(allPatients);
+      }
+    }
+
+    function updateKpis() {
+      document.getElementById('kpi-total-patients').innerText = allPatients.length;
+      document.getElementById('kpi-in-treatment').innerText = allPatients.filter(p => p.status === 'In Treatment').length;
+      document.getElementById('kpi-completed').innerText = allPatients.filter(p => p.status === 'Completed').length;
+    }
+
+    function renderPatientsTable(patients) {
+      const tbody = document.getElementById('patients-table-body');
+      if (!patients.length) {
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">No dental patient records matching query.</td></tr>';
+        return;
+      }
+
+      const isManagerOrAdmin = currentUserProfile && (currentUserProfile.is_admin || (currentUserProfile.roles && currentUserProfile.roles.includes('Manager')));
+
+      tbody.innerHTML = patients.map(p => {
+        let statusBadge = 'badge-blue';
+        if (p.status === 'Completed') statusBadge = 'badge-emerald';
+        if (p.status === 'In Treatment') statusBadge = 'badge-amber';
+
+        return `
+          <tr>
+            <td><span class="badge badge-purple font-mono">${p.patient_code}</span></td>
+            <td><strong>${p.name}</strong></td>
+            <td>${p.age} yrs (${p.gender})</td>
+            <td><span class="font-mono" style="color: var(--accent-cyan); font-weight:600;">${p.tooth_number || 'N/A'}</span></td>
+            <td>
+              <div style="font-weight: 500;">${p.procedure || 'Consultation'}</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted); max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${p.clinical_notes || ''}">
+                ${p.clinical_notes || 'No notes'}
+              </div>
+            </td>
+            <td>
+              <span style="font-size: 0.8rem; color: ${p.medical_history && p.medical_history.toLowerCase().includes('allergy') ? '#fb7185' : 'var(--text-secondary)'};">
+                ${p.medical_history || 'None'}
+              </span>
+            </td>
+            <td style="font-size: 0.85rem; color: var(--text-secondary);">${p.attending_dentist || 'Unassigned'}</td>
+            <td><span class="badge ${statusBadge}">${p.status}</span></td>
+            <td>
+              <div style="display: flex; gap: 0.4rem;">
+                <button onclick="openEditPatientModal(${p.id})" class="btn btn-secondary btn-sm" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
+                  📝 Edit Chart
+                </button>
+                ${isManagerOrAdmin ? `
+                  <button onclick="deletePatient(${p.id}, '${p.patient_code}')" class="btn btn-danger btn-sm" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
+                    🗑️
+                  </button>
+                ` : ''}
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function filterPatients() {
+      const q = document.getElementById('patient-search').value.toLowerCase().trim();
+      const status = document.getElementById('patient-status-filter').value;
+
+      const filtered = allPatients.filter(p => {
+        const matchesQuery = !q || 
+          p.name.toLowerCase().includes(q) || 
+          p.patient_code.toLowerCase().includes(q) || 
+          (p.tooth_number && p.tooth_number.toLowerCase().includes(q)) || 
+          (p.procedure && p.procedure.toLowerCase().includes(q));
+
+        const matchesStatus = status === 'ALL' || p.status === status;
+        return matchesQuery && matchesStatus;
+      });
+
+      renderPatientsTable(filtered);
+    }
+
+    function openNewPatientModal() {
+      document.getElementById('new-patient-form').reset();
+      document.getElementById('new-patient-modal').classList.add('active');
+    }
+
+    function openEditPatientModal(id) {
+      const patient = allPatients.find(p => p.id === id);
+      if (!patient) return;
+
+      document.getElementById('edit-patient-id').value = patient.id;
+      document.getElementById('edit-patient-name').value = patient.name;
+      document.getElementById('edit-patient-age').value = patient.age;
+      document.getElementById('edit-patient-gender').value = patient.gender;
+      document.getElementById('edit-patient-phone').value = patient.phone || '';
+      document.getElementById('edit-patient-history').value = patient.medical_history || '';
+      document.getElementById('edit-tooth-number').value = patient.tooth_number || '';
+      document.getElementById('edit-patient-status').value = patient.status;
+      document.getElementById('edit-patient-procedure').value = patient.procedure || '';
+      document.getElementById('edit-clinical-notes').value = patient.clinical_notes || '';
+
+      document.getElementById('modal-patient-subtitle').innerText = `${patient.patient_code} - ${patient.name}`;
+      document.getElementById('edit-patient-modal').classList.add('active');
+    }
+
+    document.getElementById('new-patient-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        name: document.getElementById('new-patient-name').value.trim(),
+        age: parseInt(document.getElementById('new-patient-age').value),
+        gender: document.getElementById('new-patient-gender').value,
+        phone: document.getElementById('new-patient-phone').value.trim(),
+        medical_history: document.getElementById('new-patient-history').value.trim(),
+        tooth_number: document.getElementById('new-tooth-number').value.trim(),
+        status: document.getElementById('new-patient-status').value,
+        procedure: document.getElementById('new-patient-procedure').value.trim(),
+        clinical_notes: document.getElementById('new-clinical-notes').value.trim(),
+      };
+
+      const response = await apiRequest('patients', {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok && response.data.success) {
+        closeModal('new-patient-modal');
+        showToast('New patient registered successfully!', 'success');
+        loadPatients();
+      } else {
+        showToast(response.data.message || 'Failed to register patient.', 'error');
+      }
+    });
+
+    document.getElementById('edit-patient-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        id: parseInt(document.getElementById('edit-patient-id').value),
+        name: document.getElementById('edit-patient-name').value.trim(),
+        age: parseInt(document.getElementById('edit-patient-age').value),
+        gender: document.getElementById('edit-patient-gender').value,
+        phone: document.getElementById('edit-patient-phone').value.trim(),
+        medical_history: document.getElementById('edit-patient-history').value.trim(),
+        tooth_number: document.getElementById('edit-tooth-number').value.trim(),
+        status: document.getElementById('edit-patient-status').value,
+        procedure: document.getElementById('edit-patient-procedure').value.trim(),
+        clinical_notes: document.getElementById('edit-clinical-notes').value.trim(),
+      };
+
+      const response = await apiRequest('patients', {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok && response.data.success) {
+        closeModal('edit-patient-modal');
+        showToast('Dental treatment chart updated successfully!', 'success');
+        loadPatients();
+      } else {
+        showToast(response.data.message || 'Failed to update chart.', 'error');
+      }
+    });
+
+    async function deletePatient(id, code) {
+      if (!confirm(`Are you sure you want to permanently delete patient record ${code}?`)) {
+        return;
+      }
+
+      const response = await apiRequest(`patients/${id}`, { method: 'DELETE' });
+      if (response.ok && response.data.success) {
+        showToast(`Patient record ${code} deleted.`, 'info');
+        loadPatients();
+      } else {
+        showToast(response.data.message || 'Failed to delete record.', 'error');
+      }
+    }
+
+    function openEditProfileModal() {
+      if (currentUserProfile) {
+        document.getElementById('edit-name').value = currentUserProfile.name || '';
+      }
+      document.getElementById('edit-profile-modal').classList.add('active');
+    }
+
+    function openChangePasswordModal() {
+      document.getElementById('change-password-form').reset();
+      document.getElementById('change-pw-error').style.display = 'none';
+      updatePasswordRules('');
+      document.getElementById('change-password-modal').classList.add('active');
+    }
+
+    function updatePasswordRules(pw) {
+      const ruleLen = document.getElementById('rule-len');
+      const ruleUpper = document.getElementById('rule-upper');
+      const ruleLower = document.getElementById('rule-lower');
+      const ruleNumSym = document.getElementById('rule-num-sym');
+
+      const isLen = pw.length >= 12;
+      const isUpper = /[A-Z]/.test(pw);
+      const isLower = /[a-z]/.test(pw);
+      const isNumSym = /[0-9]/.test(pw) && /[^A-Za-z0-9]/.test(pw);
+
+      ruleLen.style.color = isLen ? '#34d399' : 'var(--text-muted)';
+      ruleLen.innerText = (isLen ? '✓' : '✕') + ' 12+ Characters';
+
+      ruleUpper.style.color = isUpper ? '#34d399' : 'var(--text-muted)';
+      ruleUpper.innerText = (isUpper ? '✓' : '✕') + ' Uppercase Letter';
+
+      ruleLower.style.color = isLower ? '#34d399' : 'var(--text-muted)';
+      ruleLower.innerText = (isLower ? '✓' : '✕') + ' Lowercase Letter';
+
+      ruleNumSym.style.color = isNumSym ? '#34d399' : 'var(--text-muted)';
+      ruleNumSym.innerText = (isNumSym ? '✓' : '✕') + ' Number & Symbol';
+    }
+
+    document.getElementById('new-password').addEventListener('input', (e) => {
+      updatePasswordRules(e.target.value);
+    });
+
+    document.getElementById('edit-profile-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('edit-name').value.trim();
+      const response = await apiRequest('auth/profile', {
+        method: 'POST',
+        body: JSON.stringify({ name })
+      });
+
+      if (response.ok && response.data.success) {
+        closeModal('edit-profile-modal');
+        showToast('Name updated successfully!', 'success');
+        loadUserProfile();
+      } else {
+        showToast(response.data.message || 'Failed to update profile.', 'error');
+      }
+    });
+
+    document.getElementById('change-password-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const current_password = document.getElementById('current-password').value;
+      const new_password = document.getElementById('new-password').value;
+      const new_password_confirmation = document.getElementById('new-password-confirm').value;
+      const errorDiv = document.getElementById('change-pw-error');
+      errorDiv.style.display = 'none';
+
+      if (new_password !== new_password_confirmation) {
+        errorDiv.innerText = 'New password confirmation does not match.';
+        errorDiv.style.display = 'block';
+        return;
+      }
+
+      const response = await apiRequest('auth/password', {
+        method: 'POST',
+        body: JSON.stringify({ current_password, new_password, new_password_confirmation })
+      });
+
+      if (response.ok && response.data.success) {
+        closeModal('change-password-modal');
+        showToast('Password updated successfully!', 'success');
+        loadUserProfile();
+      } else {
+        const errorMsg = response.data.errors 
+          ? Object.values(response.data.errors).flat().join(' ') 
+          : (response.data.message || 'Failed to update password.');
+        errorDiv.innerText = errorMsg;
+        errorDiv.style.display = 'block';
+      }
+    });
+
+    async function start2FaSetup() {
+      const response = await apiRequest('2fa/setup', { method: 'POST' });
+      if (response.ok && response.data.success) {
+        const wrapper = document.getElementById('qr-code-wrapper');
+        wrapper.innerHTML = response.data.qr_code_svg || '';
+        
+        const svg = wrapper.querySelector('svg');
+        if (svg) {
+          svg.style.background = '#ffffff';
+          svg.style.padding = '12px';
+          svg.style.borderRadius = '12px';
+          svg.style.display = 'inline-block';
+          svg.style.maxWidth = '100%';
+          svg.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.15)';
+        }
+        
+        document.getElementById('manual-secret-key').innerText = response.data.secret;
+        activeRecoveryCodes = response.data.recovery_codes || [];
+        const grid = document.getElementById('recovery-codes-grid');
+        grid.innerHTML = activeRecoveryCodes.map(c => `<div>${c}</div>`).join('');
+
+        document.getElementById('setup-2fa-modal').classList.add('active');
+      } else {
+        showToast(response.data.message || 'Failed to initiate 2FA setup.', 'error');
+      }
+    }
+
+    document.getElementById('confirm-2fa-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const code = document.getElementById('confirm-code').value.trim();
+      const errorDiv = document.getElementById('setup-error');
+      errorDiv.style.display = 'none';
+
+      const response = await apiRequest('2fa/confirm', {
+        method: 'POST',
+        body: JSON.stringify({ code })
+      });
+
+      if (response.ok && response.data.success) {
+        closeModal('setup-2fa-modal');
+        showToast('Two-Factor Authentication is now active!', 'success');
+        loadUserProfile();
+      } else {
+        errorDiv.innerText = response.data.message || 'Invalid code.';
+        errorDiv.style.display = 'block';
+      }
+    });
+
+    function copyRecoveryCodes() {
+      if (activeRecoveryCodes.length) {
+        navigator.clipboard.writeText(activeRecoveryCodes.join('\n'));
+        showToast('8 recovery codes copied to clipboard!', 'success');
+      }
+    }
+
+    function openDisableModal() {
+      document.getElementById('disable-2fa-modal').classList.add('active');
+    }
+
+    function openRegenerateModal() {
+      document.getElementById('regen-results').style.display = 'none';
+      document.getElementById('regen-modal').classList.add('active');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+    }
+
+    document.getElementById('disable-2fa-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const password = document.getElementById('disable-password').value;
+      const response = await apiRequest('2fa/disable', {
+        method: 'POST',
+        body: JSON.stringify({ password })
+      });
+
+      if (response.ok && response.data.success) {
+        closeModal('disable-2fa-modal');
+        showToast('Two-Factor Authentication disabled.', 'info');
+        loadUserProfile();
+      } else {
+        showToast(response.data.message || 'Password incorrect.', 'error');
+      }
+    });
+
+    document.getElementById('regen-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const password = document.getElementById('regen-password').value;
+      const response = await apiRequest('2fa/recovery-codes', {
+        method: 'POST',
+        body: JSON.stringify({ password })
+      });
+
+      if (response.ok && response.data.success) {
+        const codes = response.data.recovery_codes || [];
+        document.getElementById('new-codes-grid').innerHTML = codes.map(c => `<div>${c}</div>`).join('');
+        document.getElementById('regen-results').style.display = 'block';
+        showToast('8 new single-use recovery codes generated.', 'success');
+      } else {
+        showToast(response.data.message || 'Password incorrect.', 'error');
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', loadUserProfile);
+  </script>
+</body>
+</html>

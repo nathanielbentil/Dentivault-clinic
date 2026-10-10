@@ -85,6 +85,11 @@ class User extends Authenticatable
         return $this->hasMany(AuditLog::class);
     }
 
+    public function biometricCredentials(): HasMany
+    {
+        return $this->hasMany(BiometricCredential::class);
+    }
+
     public function hasRole(string|array $roles): bool
     {
         $roleList = is_array($roles) ? $roles : [$roles];

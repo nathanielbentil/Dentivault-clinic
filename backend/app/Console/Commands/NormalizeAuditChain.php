@@ -38,12 +38,12 @@ class NormalizeAuditChain extends Command
                 'description' => $log->description,
                 'user_id' => $log->user_id,
                 'ip' => $log->ip_address,
-                'timestamp' => $log->created_at->toIso8601String(),
+                'timestamp' => $log->created_at ? $log->created_at->format('Y-m-d H:i:s') : '',
                 'payload' => $log->payload,
             ]);
 
             $hash = hash('sha256', $chainData);
-            $log->updateQuietly([
+            \Illuminate\Support\Facades\DB::table('audit_logs')->where('id', $log->id)->update([
                 'prev_hash' => $prev,
                 'log_hash' => $hash,
             ]);

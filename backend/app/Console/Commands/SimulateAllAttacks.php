@@ -56,7 +56,7 @@ class SimulateAllAttacks extends Command
         // ------------------------------------------------------------------
         $this->newLine();
         $this->line('<fg=yellow>[Attack 2/5] Simulating Brute-Force Attack & Sliding Lockout...</>');
-        $targetUser = User::where('email', 'user@secureauth.com')->first();
+        $targetUser = User::where('email', 'dentist@dentivault.com')->orWhere('email', 'user@secureauth.com')->first() ?? User::first();
         $this->line("  Target: <fg=cyan>{$targetUser->email}</>");
 
         for ($attempt = 1; $attempt <= 5; $attempt++) {
@@ -78,8 +78,8 @@ class SimulateAllAttacks extends Command
         // ------------------------------------------------------------------
         $this->newLine();
         $this->line('<fg=yellow>[Attack 3/5] Simulating Privilege Escalation against Admin Endpoints...</>');
-        $standardUser = User::where('email', 'user@secureauth.com')->first();
-        $this->line("  Actor: Standard User [<fg=cyan>{$standardUser->email}</>] attempting admin route [/api/admin/users]");
+        $standardUser = User::where('email', 'dentist@dentivault.com')->orWhere('email', 'user@secureauth.com')->first() ?? User::where('id', '!=', 1)->first();
+        $this->line("  Actor: Standard Practitioner [<fg=cyan>{$standardUser->email}</>] attempting admin route [/api/admin/users]");
 
         if (!$standardUser->hasRole('Admin') && !$standardUser->hasRole('SuperAdmin')) {
             SecurityEvent::logAttack(

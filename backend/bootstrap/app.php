@@ -23,6 +23,14 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => CheckRole::class,
             'permission' => CheckPermission::class,
         ]);
+
+        // Prevent 419 Page Expired errors during local demo/development testing
+        $middleware->validateCsrfTokens(except: [
+            'login',
+            'register',
+            'two-factor-challenge',
+            'api/*',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

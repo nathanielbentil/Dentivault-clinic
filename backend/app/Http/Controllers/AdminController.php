@@ -65,6 +65,48 @@ class AdminController extends Controller
     }
 
     /**
+     * Delete a staff user account permanently.
+     */
+    public function destroy(Request $request, User $user): RedirectResponse|JsonResponse
+    {
+        // 1. Prevent admin from deleting their own active account
+        if ($user->id === $request->user()->id) {
+            if ($request->wantsJson()) {
+                return response()->json(['error' => 'Security Policy: You cannot delete your own active administrator account.'], 403);
+            }
+            return back()->withErrors(['error' => 'Security Policy: You cannot delete your own active administrator account.']);
+        }
+
+        $userName = $user->name;
+        $userEmail = $user->email;
+        $userId = $user->id;
+
+        // 2. Revoke all personal access tokens and role associations
+        $user->tokens()->delete();
+        $user->roles()->detach();
+        $user->delete();
+
+        // 3. Record tamper-evident audit log
+        AuditLog::record(
+            eventType: 'user.deleted',
+            description: "Chief Admin [{$request->user()->email}] permanently deleted staff account [{$userEmail}] (Name: {$userName}).",
+            userId: $request->user()->id,
+            severity: 'warning',
+            payload: [
+                'deleted_user_id' => $userId,
+                'deleted_user_email' => $userEmail,
+                'deleted_user_name' => $userName,
+            ]
+        );
+
+        if ($request->wantsJson()) {
+            return response()->json(['message' => "Staff account for [{$userName}] ({$userEmail}) was successfully deleted."]);
+        }
+
+        return back()->with('status', "Staff account for [{$userName}] ({$userEmail}) was permanently deleted.");
+    }
+
+    /**
      * Display the 3-2-1 Backup & Disaster Recovery management dashboard.
      */
     public function backups(): View
