@@ -18,6 +18,7 @@ yarn-error.log
 /.idea
 /.vscode
 *.sqlite
+!database.sqlite.seed
 *.sqlite-journal
 *.sqlite-wal
 *.sqlite-shm

@@ -159,8 +159,8 @@ function renderNavbar() {
 
     if (isAdmin) {
       linksHtml += `
-        <li><a href="admin.html" class="nav-link ${currentPath.endsWith('admin.html') ? 'active' : ''}">Admin Center</a></li>
-        <li><a href="backups.html" class="nav-link ${currentPath.endsWith('backups.html') ? 'active' : ''}">3-2-1 Backups & DR</a></li>
+        <li><a href="admin.html" class="nav-link ${currentPath.endsWith('admin.html') ? 'active' : ''}">Staff & Roles</a></li>
+        <li><a href="backups.html" class="nav-link ${currentPath.endsWith('backups.html') ? 'active' : ''}">3-2-1 Backup Vault</a></li>
       `;
     }
 

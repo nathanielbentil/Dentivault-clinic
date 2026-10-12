@@ -5,6 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DentiVault - Clinical Staff Registration</title>
   <link rel="stylesheet" href="css/style.css">
+  <style>
+    .password-wrapper {
+      position: relative;
+    }
+    .toggle-pass-btn {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 0;
+      line-height: 1;
+    }
+    .toggle-pass-btn:hover {
+      color: #e2e8f0;
+    }
+  </style>
 </head>
 <body>
   <nav class="navbar">
@@ -13,6 +34,21 @@
 
   <main class="container" style="padding-top: 3rem; padding-bottom: 4rem; display: flex; justify-content: center;">
     <div style="max-width: 520px; width: 100%;">
+      
+      <!-- Quick Demo Assist Banner -->
+      <div style="background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.3); border-radius: var(--radius-md); padding: 0.85rem 1rem; margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <span style="font-size: 1.25rem;">💡</span>
+          <div>
+            <div style="font-size: 0.8rem; font-weight: 700; color: #ffffff;">Need a quick test?</div>
+            <div style="font-size: 0.72rem; color: #94a3b8;">1-click autofill with valid demo data</div>
+          </div>
+        </div>
+        <button type="button" id="autofill-btn" class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.35rem 0.75rem; border-color: #06b6d4; color: #22d3ee;">
+          ⚡ Autofill Demo
+        </button>
+      </div>
+
       <div class="card">
         <div class="card-header" style="text-align: center; display: block;">
           <div class="brand-icon" style="margin: 0 auto 0.75rem auto; width: 3rem; height: 3rem; font-size: 1.5rem; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3);">
@@ -24,21 +60,32 @@
 
         <form id="register-form">
           <div class="form-group">
-            <label for="name" class="form-label">Full Name</label>
-            <input type="text" id="name" class="form-input" placeholder="e.g. Alex Hunter" required autocomplete="name">
+            <label for="name" class="form-label">Full Name &amp; Title</label>
+            <input type="text" id="name" class="form-input" placeholder="e.g. Dr. Sarah Mensah" required autocomplete="name">
+            <span style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.25rem; display: block;">Hint: Your professional doctor or staff name</span>
           </div>
 
           <div class="form-group">
-            <label for="email" class="form-label">Email Address</label>
-            <input type="email" id="email" class="form-input" placeholder="alex@secureauth.com" required autocomplete="email">
+            <label for="email" class="form-label">Clinical Staff Email</label>
+            <input type="email" id="email" class="form-input" placeholder="e.g. dr.sarah@dentivault.com or sarah@gmail.com" required autocomplete="email">
+            <span style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.25rem; display: block;">Hint: Standard email format (name@domain.com)</span>
           </div>
 
           <div class="form-group">
-            <label for="password" class="form-label">Password</label>
-            <input type="password" id="password" class="form-input" placeholder="Min. 12 characters" required autocomplete="new-password">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+              <label for="password" class="form-label" style="margin-bottom: 0;">Master Password</label>
+              <button type="button" id="gen-pass-btn" style="background: none; border: none; font-size: 0.72rem; color: var(--accent-cyan); cursor: pointer; font-weight: 600;">
+                ⚡ Generate Strong Password
+              </button>
+            </div>
+            
+            <div class="password-wrapper">
+              <input type="password" id="password" class="form-input" placeholder="e.g. DentalStaff@2026!" required autocomplete="new-password" style="padding-right: 2.5rem;">
+              <button type="button" class="toggle-pass-btn" id="toggle-pass-btn" title="Show/Hide Password">👁️</button>
+            </div>
             
             <!-- Real-time NIST Password Strength Meter -->
-            <div class="meter-bar-container">
+            <div class="meter-bar-container" style="margin-top: 0.5rem;">
               <div id="meter-bar" class="meter-bar"></div>
             </div>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.35rem;">
@@ -57,14 +104,18 @@
 
           <div class="form-group">
             <label for="password_confirmation" class="form-label">Confirm Password</label>
-            <input type="password" id="password_confirmation" class="form-input" placeholder="Re-enter password" required autocomplete="new-password">
+            <div class="password-wrapper">
+              <input type="password" id="password_confirmation" class="form-input" placeholder="Re-enter password" required autocomplete="new-password" style="padding-right: 2.5rem;">
+              <button type="button" class="toggle-pass-btn" id="toggle-confirm-pass-btn" title="Show/Hide Password">👁️</button>
+            </div>
+            <div id="match-status" style="font-size: 0.72rem; margin-top: 0.25rem;"></div>
           </div>
 
           <div id="error-alert" style="display: none; background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.3); color: #fb7185; padding: 0.75rem 1rem; border-radius: var(--radius-md); font-size: 0.85rem; margin-bottom: 1.25rem;">
           </div>
 
           <button type="submit" id="submit-btn" class="btn btn-primary btn-block">
-            Create Account
+            Complete Staff Registration &rarr;
           </button>
         </form>
 
@@ -78,12 +129,71 @@
   <script src="js/app.js"></script>
   <script>
     const passwordInput = document.getElementById('password');
+    const confirmInput = document.getElementById('password_confirmation');
     const meterBar = document.getElementById('meter-bar');
     const strengthLabel = document.getElementById('strength-label');
+    const matchStatus = document.getElementById('match-status');
+    const togglePassBtn = document.getElementById('toggle-pass-btn');
+    const toggleConfirmBtn = document.getElementById('toggle-confirm-pass-btn');
+    const autofillBtn = document.getElementById('autofill-btn');
+    const genPassBtn = document.getElementById('gen-pass-btn');
+
+    // Eye Toggles
+    togglePassBtn.addEventListener('click', () => {
+      const isPass = passwordInput.type === 'password';
+      passwordInput.type = isPass ? 'text' : 'password';
+      togglePassBtn.innerText = isPass ? '🔒' : '👁️';
+    });
+
+    toggleConfirmBtn.addEventListener('click', () => {
+      const isPass = confirmInput.type === 'password';
+      confirmInput.type = isPass ? 'text' : 'password';
+      toggleConfirmBtn.innerText = isPass ? '🔒' : '👁️';
+    });
+
+    // Generator & Autofill
+    function generatePass() {
+      return 'DentalStaff#' + Math.floor(Math.random() * 9000 + 1000) + '!';
+    }
+
+    genPassBtn.addEventListener('click', () => {
+      const p = generatePass();
+      passwordInput.value = p;
+      confirmInput.value = p;
+      passwordInput.dispatchEvent(new Event('input'));
+      confirmInput.dispatchEvent(new Event('input'));
+    });
+
+    autofillBtn.addEventListener('click', () => {
+      document.getElementById('name').value = 'Dr. Sarah Mensah';
+      document.getElementById('email').value = 'sarah.dentist' + Math.floor(Math.random() * 900 + 100) + '@dentivault.com';
+      const p = 'DentalStaff@2026!';
+      passwordInput.value = p;
+      confirmInput.value = p;
+      passwordInput.dispatchEvent(new Event('input'));
+      confirmInput.dispatchEvent(new Event('input'));
+    });
+
+    function checkMatch() {
+      if (!confirmInput.value) {
+        matchStatus.innerText = '';
+        return;
+      }
+      if (passwordInput.value === confirmInput.value) {
+        matchStatus.innerText = '✓ Passwords match perfectly!';
+        matchStatus.style.color = '#34d399';
+      } else {
+        matchStatus.innerText = '✕ Passwords do not match';
+        matchStatus.style.color = '#f87171';
+      }
+    }
+
+    confirmInput.addEventListener('input', checkMatch);
 
     passwordInput.addEventListener('input', () => {
       const pwd = passwordInput.value;
       const res = evaluatePasswordStrength(pwd);
+      checkMatch();
 
       // Update Meter Bar
       meterBar.className = `meter-bar ${res.level}`;
@@ -98,73 +208,17 @@
       updateCriteria('crit-symbol', res.checks.symbol, 'Special symbol (!@#$%^&*)');
     });
 
-    function updateCriteria(id, isValid, text) {
+    function updateCriteria(id, valid, label) {
       const el = document.getElementById(id);
-      el.className = `criteria-item ${isValid ? 'valid' : 'invalid'}`;
-      el.innerText = `${isValid ? '✓' : '✕'} ${text}`;
-    }
-
-    document.getElementById('register-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const name = document.getElementById('name').value.trim();
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-      const password_confirmation = document.getElementById('password_confirmation').value;
-      const submitBtn = document.getElementById('submit-btn');
-      const errorAlert = document.getElementById('error-alert');
-
-      if (password !== password_confirmation) {
-        errorAlert.innerText = 'Passwords do not match.';
-        errorAlert.style.display = 'block';
-        return;
-      }
-
-      if (password.length < 12) {
-        errorAlert.innerText = 'Password must be at least 12 characters (NIST SP 800-63B).';
-        errorAlert.style.display = 'block';
-        return;
-      }
-
-      errorAlert.style.display = 'none';
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = '⏳ Creating account &amp; signing in...';
-
-      const response = await apiRequest('auth/register', {
-        method: 'POST',
-        body: JSON.stringify({ name, email, password }),
-        skipAuthRedirect: true
-      });
-
-      if (response.ok && response.data.success) {
-        Auth.setToken(response.data.token);
-        Auth.setUser(response.data.user);
-        
-        errorAlert.style.background = 'rgba(16, 185, 129, 0.15)';
-        errorAlert.style.borderColor = 'rgba(16, 185, 129, 0.3)';
-        errorAlert.style.color = '#34d399';
-        errorAlert.innerHTML = '✓ <strong>Account created successfully!</strong> Redirecting to your Security Dashboard...';
-        errorAlert.style.display = 'block';
-
-        showToast('Account registered successfully!', 'success');
-        setTimeout(() => {
-          window.location.href = 'dashboard.html';
-        }, 500);
+      if (!el) return;
+      if (valid) {
+        el.className = 'criteria-item valid';
+        el.innerText = `✓ ${label}`;
       } else {
-        submitBtn.disabled = false;
-        submitBtn.innerText = 'Create Account';
-
-        let msg = response.data.message || 'Registration failed.';
-        if (response.data.errors) {
-          msg = Object.values(response.data.errors).flat().join(' ');
-        }
-        errorAlert.style.background = 'rgba(244, 63, 94, 0.15)';
-        errorAlert.style.borderColor = 'rgba(244, 63, 94, 0.3)';
-        errorAlert.style.color = '#fb7185';
-        errorAlert.innerText = msg;
-        errorAlert.style.display = 'block';
-        showToast(msg, 'error');
+        el.className = 'criteria-item invalid';
+        el.innerText = `✕ ${label}`;
       }
-    });
+    }
   </script>
 </body>
 </html>

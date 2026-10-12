@@ -73,13 +73,13 @@
 
                         @if(Auth::user()->hasRole(['Admin', 'SuperAdmin']))
                             <a href="{{ route('admin.dashboard') }}" class="px-3 py-2 rounded-lg transition-colors {{ request()->routeIs('admin.dashboard') ? 'bg-purple-950/60 border border-purple-500/30 text-purple-300 font-semibold' : 'text-slate-300 hover:text-purple-300 hover:bg-slate-900' }}">
-                                Staff Directory & Roles
+                                Staff & Roles
                             </a>
                             <a href="{{ route('admin.backups') }}" class="px-3 py-2 rounded-lg transition-colors {{ request()->routeIs('admin.backups') ? 'bg-cyan-950/60 border border-cyan-500/30 text-cyan-300 font-semibold' : 'text-slate-300 hover:text-cyan-300 hover:bg-slate-900' }}">
-                                3-2-1 Encrypted Backups
+                                3-2-1 Backup Vault
                             </a>
                             <a href="{{ route('audit.dashboard') }}" class="px-3 py-2 rounded-lg transition-colors {{ request()->routeIs('audit.*') ? 'bg-amber-950/60 border border-amber-500/30 text-amber-300 font-semibold' : 'text-slate-300 hover:text-amber-300 hover:bg-slate-900' }}">
-                                HIPAA Audit Trail
+                                Security Audit Trail
                             </a>
                         @endif
                     </nav>
