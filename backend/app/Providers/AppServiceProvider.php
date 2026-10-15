@@ -21,8 +21,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if (config('app.env') === 'production' || isset($_SERVER['HTTP_X_FORWARDED_PROTO']) || isset($_SERVER['VERCEL'])) {
-            \Illuminate\Support\Facades\URL::forceScheme('https');
+        if (isset($_SERVER['VERCEL']) || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')) {
+            if (!in_array(request()->getHost(), ['127.0.0.1', 'localhost'])) {
+                \Illuminate\Support\Facades\URL::forceScheme('https');
+            }
         }
 
         // 1. Implicit SuperAdmin authorization: Grants all abilities
