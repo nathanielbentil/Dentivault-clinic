@@ -174,44 +174,78 @@
             </div>
         </div>
 
-        <!-- 5 Main Navigation Tabs -->
-        <div class="border-b border-slate-800">
-            <nav class="flex flex-wrap gap-2 sm:gap-4 text-xs font-bold" aria-label="Tabs">
+        <!-- Modern Hospital Navigation & Governance Segmented Bar -->
+        <div class="glass-card p-1.5 rounded-2xl border border-slate-800 shadow-xl flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2">
+            <!-- Left Group: Core Clinical Operations -->
+            <div class="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0">
+                <span class="text-[10px] uppercase font-bold tracking-wider text-slate-500 px-2 hidden sm:inline">Clinical:</span>
+                
+                <!-- Tab 1: Patients -->
                 <button @click="activeTab = 'patients'"
-                    :class="activeTab === 'patients' ? 'border-cyan-500 text-cyan-400 bg-cyan-950/40' : 'border-transparent text-slate-400 hover:text-slate-200'"
-                    class="py-3 px-4 border-b-2 rounded-t-xl transition-all flex items-center gap-2">
+                    :class="activeTab === 'patients' 
+                        ? 'bg-cyan-950/80 text-cyan-300 border-cyan-500/50 shadow-md shadow-cyan-950/50 ring-1 ring-cyan-500/30' 
+                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900 border-transparent'"
+                    class="px-3.5 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-2 whitespace-nowrap">
                     <span>🏥</span>
-                    <span>Patient Wards & Records ({{ $totalPatients }})</span>
+                    <span>Patient Wards</span>
+                    <span class="px-1.5 py-0.5 rounded-md text-[10px] font-mono bg-cyan-900/60 text-cyan-300 border border-cyan-700/50">
+                        {{ $totalPatients }}
+                    </span>
                 </button>
 
+                <!-- Tab 2: Staff Directory -->
                 <button @click="activeTab = 'staff'"
-                    :class="activeTab === 'staff' ? 'border-purple-500 text-purple-400 bg-purple-950/40' : 'border-transparent text-slate-400 hover:text-slate-200'"
-                    class="py-3 px-4 border-b-2 rounded-t-xl transition-all flex items-center gap-2">
+                    :class="activeTab === 'staff' 
+                        ? 'bg-purple-950/80 text-purple-300 border-purple-500/50 shadow-md shadow-purple-950/50 ring-1 ring-purple-500/30' 
+                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900 border-transparent'"
+                    class="px-3.5 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-2 whitespace-nowrap">
                     <span>👥</span>
-                    <span>Staff Directory & 6 Roles ({{ $staffUsers->count() }})</span>
+                    <span>Staff Directory</span>
+                    <span class="px-1.5 py-0.5 rounded-md text-[10px] font-mono bg-purple-900/60 text-purple-300 border border-purple-700/50">
+                        {{ $staffUsers->count() }}
+                    </span>
                 </button>
+            </div>
 
+            <!-- Right Group: Security, Audit & System Governance -->
+            <div class="flex items-center gap-1.5 overflow-x-auto pt-1 lg:pt-0 border-t lg:border-t-0 lg:border-l border-slate-800 lg:pl-3">
+                <span class="text-[10px] uppercase font-bold tracking-wider text-slate-500 px-2 hidden sm:inline">Security:</span>
+
+                <!-- Tab 3: Security Inspector -->
                 <button @click="activeTab = 'telemetry'"
-                    :class="activeTab === 'telemetry' ? 'border-emerald-500 text-emerald-400 bg-emerald-950/40' : 'border-transparent text-slate-400 hover:text-slate-200'"
-                    class="py-3 px-4 border-b-2 rounded-t-xl transition-all flex items-center gap-2">
+                    :class="activeTab === 'telemetry' 
+                        ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/50 shadow-md shadow-emerald-950/50 ring-1 ring-emerald-500/30' 
+                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900 border-transparent'"
+                    class="px-3 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 whitespace-nowrap">
                     <span>🛡️</span>
-                    <span>Parameterized SQL & Security Inspector</span>
+                    <span>Security Telemetry</span>
                 </button>
 
+                <!-- Tab 4: Audit Vault -->
                 <button @click="activeTab = 'archive'"
-                    :class="activeTab === 'archive' ? 'border-rose-500 text-rose-400 bg-rose-950/40' : 'border-transparent text-slate-400 hover:text-slate-200'"
-                    class="py-3 px-4 border-b-2 rounded-t-xl transition-all flex items-center gap-2">
+                    :class="activeTab === 'archive' 
+                        ? 'bg-rose-950/80 text-rose-300 border-rose-500/50 shadow-md shadow-rose-950/50 ring-1 ring-rose-500/30' 
+                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900 border-transparent'"
+                    class="px-3 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 whitespace-nowrap">
                     <span>🗃️</span>
-                    <span>Deleted Users Audit Vault ({{ $archivedUsers->count() }})</span>
+                    <span>Audit Vault</span>
+                    @if($archivedUsers->count() > 0)
+                        <span class="px-1.5 py-0.5 rounded-md text-[10px] font-mono bg-rose-900/60 text-rose-300 border border-rose-700/50">
+                            {{ $archivedUsers->count() }}
+                        </span>
+                    @endif
                 </button>
 
+                <!-- Tab 5: Restore Points -->
                 <button @click="activeTab = 'config'"
-                    :class="activeTab === 'config' ? 'border-amber-500 text-amber-400 bg-amber-950/40' : 'border-transparent text-slate-400 hover:text-slate-200'"
-                    class="py-3 px-4 border-b-2 rounded-t-xl transition-all flex items-center gap-2">
+                    :class="activeTab === 'config' 
+                        ? 'bg-amber-950/80 text-amber-300 border-amber-500/50 shadow-md shadow-amber-950/50 ring-1 ring-amber-500/30' 
+                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900 border-transparent'"
+                    class="px-3 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 whitespace-nowrap">
                     <span>⚙️</span>
-                    <span>Configuration Restore Points</span>
+                    <span>Restore Points</span>
                 </button>
-            </nav>
+            </div>
         </div>
 
         <!-- ======================================================== -->
