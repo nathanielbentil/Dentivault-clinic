@@ -519,70 +519,76 @@
                     </button>
                 @endif
 
-                <!-- Doctor & Pharmacist: Prescriptions Station -->
+                <!-- Doctor & Pharmacist: Prescriptions Station (Dedicated Page) -->
                 @if(in_array($userRole, ['Doctor', 'Pharmacist']))
-                    <button @click="switchTab('prescriptions')"
-                        :class="activeTab === 'prescriptions' 
-                            ? 'border-cyan-500 bg-cyan-950/70 ring-2 ring-cyan-500/50 shadow-xl shadow-cyan-950/50' 
-                            : 'border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-slate-700'"
-                        class="p-4 rounded-2xl border text-left transition-all relative overflow-hidden group cursor-pointer">
+                    <a href="{{ route('doctor.prescriptions') }}"
+                        class="p-4 rounded-2xl border border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-cyan-500/60 hover:ring-2 hover:ring-cyan-500/30 text-left transition-all relative overflow-hidden group cursor-pointer block">
                         <div class="flex items-center justify-between">
-                            <span class="text-3xl">💊</span>
-                            <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-cyan-950 text-cyan-300 border border-cyan-800">
-                                38 Orders
-                            </span>
+                            <span class="text-3xl group-hover:scale-110 transition-transform">💊</span>
+                            <div class="flex items-center gap-1.5">
+                                <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-cyan-950 text-cyan-300 border border-cyan-800">
+                                    38 Orders
+                                </span>
+                                <span class="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-cyan-500 text-slate-950">
+                                    Open Page ↗
+                                </span>
+                            </div>
                         </div>
-                        <div class="text-sm font-bold text-white mt-3">
+                        <div class="text-sm font-bold text-white mt-3 group-hover:text-cyan-300 transition-colors">
                             Electronic Prescriptions
                         </div>
                         <p class="text-[11px] text-slate-400 mt-0.5">
-                            Clinical Diagnoses & Treatment Regimens
+                            Dedicated Terminal: Orders, Rx Signing & Interaction Lab
                         </p>
-                    </button>
+                    </a>
                 @endif
 
-                <!-- Nurse: Shift Vitals Logger -->
+                <!-- Nurse: Shift Vitals Logger (Dedicated Page) -->
                 @if($userRole === 'Nurse')
-                    <button @click="switchTab('vitals')"
-                        :class="activeTab === 'vitals' 
-                            ? 'border-pink-500 bg-pink-950/70 ring-2 ring-pink-500/50 shadow-xl shadow-pink-950/50' 
-                            : 'border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-slate-700'"
-                        class="p-4 rounded-2xl border text-left transition-all relative overflow-hidden group cursor-pointer">
+                    <a href="{{ route('nurse.vitals') }}"
+                        class="p-4 rounded-2xl border border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-pink-500/60 hover:ring-2 hover:ring-pink-500/30 text-left transition-all relative overflow-hidden group cursor-pointer block">
                         <div class="flex items-center justify-between">
-                            <span class="text-3xl">⏱️</span>
-                            <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-pink-950 text-pink-300 border border-pink-800">
-                                7 Due
-                            </span>
+                            <span class="text-3xl group-hover:scale-110 transition-transform">⏱️</span>
+                            <div class="flex items-center gap-1.5">
+                                <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-pink-950 text-pink-300 border border-pink-800">
+                                    7 Due
+                                </span>
+                                <span class="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-pink-500 text-slate-950">
+                                    Open Page ↗
+                                </span>
+                            </div>
                         </div>
-                        <div class="text-sm font-bold text-white mt-3">
+                        <div class="text-sm font-bold text-white mt-3 group-hover:text-pink-300 transition-colors">
                             Shift Nursing Vitals Station
                         </div>
                         <p class="text-[11px] text-slate-400 mt-0.5">
-                            Blood Pressure, Pulse, Temp & SpO2
+                            Dedicated Terminal: Bed Telemetry, BP/HR & SBAR Briefing
                         </p>
-                    </button>
+                    </a>
                 @endif
 
-                <!-- Pharmacist: Dispensary Queue -->
+                <!-- Pharmacist: Dispensary Queue (Dedicated Page) -->
                 @if($userRole === 'Pharmacist')
-                    <button @click="switchTab('pharmacy')"
-                        :class="activeTab === 'pharmacy' 
-                            ? 'border-amber-500 bg-amber-950/70 ring-2 ring-amber-500/50 shadow-xl shadow-amber-950/50' 
-                            : 'border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-slate-700'"
-                        class="p-4 rounded-2xl border text-left transition-all relative overflow-hidden group cursor-pointer">
+                    <a href="{{ route('pharmacy.dispensary') }}"
+                        class="p-4 rounded-2xl border border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-amber-500/60 hover:ring-2 hover:ring-amber-500/30 text-left transition-all relative overflow-hidden group cursor-pointer block">
                         <div class="flex items-center justify-between">
-                            <span class="text-3xl">📦</span>
-                            <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-amber-950 text-amber-300 border border-amber-800">
-                                19 Pending
-                            </span>
+                            <span class="text-3xl group-hover:scale-110 transition-transform">📦</span>
+                            <div class="flex items-center gap-1.5">
+                                <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-amber-950 text-amber-300 border border-amber-800">
+                                    19 Pending
+                                </span>
+                                <span class="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-amber-500 text-slate-950">
+                                    Open Page ↗
+                                </span>
+                            </div>
                         </div>
-                        <div class="text-sm font-bold text-white mt-3">
+                        <div class="text-sm font-bold text-white mt-3 group-hover:text-amber-300 transition-colors">
                             Dispensary Fulfillment Queue
                         </div>
                         <p class="text-[11px] text-slate-400 mt-0.5">
-                            Prescription Verification & Dispensing
+                            Dedicated Terminal: Batch Dispensing & Barcode Reader
                         </p>
-                    </button>
+                    </a>
                 @endif
 
                 <!-- Auditor: Cryptographic Audit Vault -->
@@ -607,26 +613,28 @@
                     </button>
                 @endif
 
-                <!-- Admin & Auditor: Security Telemetry -->
+                <!-- Admin & Auditor: Security Telemetry (Dedicated Page) -->
                 @if(in_array($userRole, ['Admin', 'Auditor']))
-                    <button @click="switchTab('telemetry')"
-                        :class="activeTab === 'telemetry' 
-                            ? 'border-emerald-500 bg-emerald-950/70 ring-2 ring-emerald-500/50 shadow-xl shadow-emerald-950/50' 
-                            : 'border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-slate-700'"
-                        class="p-4 rounded-2xl border text-left transition-all relative overflow-hidden group cursor-pointer">
+                    <a href="{{ route('security.telemetry') }}"
+                        class="p-4 rounded-2xl border border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-emerald-500/60 hover:ring-2 hover:ring-emerald-500/30 text-left transition-all relative overflow-hidden group cursor-pointer block">
                         <div class="flex items-center justify-between">
-                            <span class="text-3xl">🛡️</span>
-                            <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">
-                                Benchmark
-                            </span>
+                            <span class="text-3xl group-hover:scale-110 transition-transform">🛡️</span>
+                            <div class="flex items-center gap-1.5">
+                                <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">
+                                    Benchmark
+                                </span>
+                                <span class="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500 text-slate-950">
+                                    Open Lab ↗
+                                </span>
+                            </div>
                         </div>
-                        <div class="text-sm font-bold text-white mt-3">
+                        <div class="text-sm font-bold text-white mt-3 group-hover:text-emerald-300 transition-colors">
                             Security Telemetry & SQL Defense
                         </div>
                         <p class="text-[11px] text-slate-400 mt-0.5">
-                            Argon2id Benchmarks & PDO Parameterization
+                            Dedicated Lab: Live SQL Injection Lab & Argon2id Benchmarks
                         </p>
-                    </button>
+                    </a>
                 @endif
 
                 <!-- Auditor: Patient Access Trail -->
@@ -672,25 +680,27 @@
                         </p>
                     </button>
 
-                    <!-- Admin: Backups & Restore Points -->
-                    <button @click="switchTab('config')"
-                        :class="activeTab === 'config' 
-                            ? 'border-amber-500 bg-amber-950/70 ring-2 ring-amber-500/50 shadow-xl shadow-amber-950/50' 
-                            : 'border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-slate-700'"
-                        class="p-4 rounded-2xl border text-left transition-all relative overflow-hidden group cursor-pointer">
+                    <!-- Admin: Backups & Restore Points (Dedicated Page Link) -->
+                    <a href="{{ route('admin.backups') }}"
+                        class="p-4 rounded-2xl border border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-amber-500/60 hover:ring-2 hover:ring-amber-500/30 text-left transition-all relative overflow-hidden group cursor-pointer block">
                         <div class="flex items-center justify-between">
-                            <span class="text-3xl">💾</span>
-                            <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-amber-950 text-amber-300 border border-amber-800">
-                                3-2-1 DR
-                            </span>
+                            <span class="text-3xl group-hover:scale-110 transition-transform">💾</span>
+                            <div class="flex items-center gap-1.5">
+                                <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-amber-950 text-amber-300 border border-amber-800">
+                                    3-2-1 DR
+                                </span>
+                                <span class="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-amber-500 text-slate-950">
+                                    Open Station ↗
+                                </span>
+                            </div>
                         </div>
-                        <div class="text-sm font-bold text-white mt-3">
+                        <div class="text-sm font-bold text-white mt-3 group-hover:text-amber-300 transition-colors">
                             Backups & Restore Points
                         </div>
                         <p class="text-[11px] text-slate-400 mt-0.5">
-                            X25519 Encryption & Rollback Engine
+                            Dedicated Terminal: X25519 Encryption & DR Drill Engine
                         </p>
-                    </button>
+                    </a>
                 @endif
 
             </div>

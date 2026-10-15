@@ -23,6 +23,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/biometric/register-verify', [\App\Http\Controllers\BiometricAuthController::class, 'registerVerify'])->name('biometric.register-verify');
     Route::delete('/biometric/credentials/{credential}', [\App\Http\Controllers\BiometricAuthController::class, 'destroy'])->name('biometric.destroy');
 
+    // 1.2 Dedicated Specialized Clinical & Security Workstations (Separate Pages)
+    Route::get('/doctor/prescriptions', [\App\Http\Controllers\ClinicalStationController::class, 'prescriptions'])->name('doctor.prescriptions');
+    Route::get('/nurse/vitals', [\App\Http\Controllers\ClinicalStationController::class, 'vitals'])->name('nurse.vitals');
+    Route::get('/pharmacy/dispensary', [\App\Http\Controllers\ClinicalStationController::class, 'dispensary'])->name('pharmacy.dispensary');
+    Route::get('/security/telemetry', [\App\Http\Controllers\ClinicalStationController::class, 'telemetry'])->name('security.telemetry');
+
     // 2. Chief Admin Suite
     Route::prefix('admin')->name('admin.')->middleware(['role:Admin,SuperAdmin'])->group(function () {
         Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
