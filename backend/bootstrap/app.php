@@ -15,6 +15,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // Trust all upstream reverse proxies (essential for Vercel SSL detection)
+        $middleware->trustProxies(at: '*');
+
         // Global Middleware: Applied to all incoming HTTP requests
         $middleware->append(SecurityHeadersMiddleware::class);
 

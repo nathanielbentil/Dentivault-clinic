@@ -34,13 +34,50 @@ class CustomerController extends Controller
             ]);
         }
 
-        $patients = \App\Models\Patient::latest()->get();
+        $patients = \App\Models\Patient::latest()->take(52)->get();
         $totalPatients = \App\Models\Patient::count();
-        $activeTreatments = \App\Models\Patient::where('status', 'In Progress')->count();
-        $completedCases = \App\Models\Patient::where('status', 'Completed')->count();
+        $admittedPatients = \App\Models\Patient::where('admission_status', 'Admitted')->count();
+        $icuPatients = \App\Models\Patient::where('admission_status', 'ICU')->count();
+        $outpatients = \App\Models\Patient::where('admission_status', 'Outpatient')->count();
         $totalStaff = \App\Models\User::count();
 
-        return view('dashboard', compact('user', 'accountData', 'patients', 'totalPatients', 'activeTreatments', 'completedCases', 'totalStaff'));
+        return view('dashboard', compact('user', 'accountData', 'patients', 'totalPatients', 'admittedPatients', 'icuPatients', 'outpatients', 'totalStaff'));
+    }
+
+    /**
+     * =========================================================================
+     * REQUIREMENT #5: PARAMETERIZED SQL QUERIES (PDO PREPARED STATEMENTS)
+     * =========================================================================
+     * 
+     * HOW THIS PREVENTS SQL INJECTION:
+     * 1. The query template is compiled by PostgreSQL before data is attached.
+     * 2. The input is passed separately as a bound parameter in the array [?].
+     * 3. Malicious characters like ' OR '1'='1' -- are treated as harmless
+     *    literal string data, never as executable SQL instructions.
+     */
+    public function testParameterizedQuery(Request $request): JsonResponse
+    {
+        $input = $request->input('query_input', "' OR '1'='1' --");
+
+        // RAW PARAMETERIZED PDO QUERY DEMONSTRATION
+        // Notice the placeholder '?' and the binding array [$input]
+        $sql = 'SELECT id, patient_code, name, ward_room, blood_group, admission_status FROM patients WHERE patient_code = ? AND deleted_at IS NULL';
+        
+        $bindings = [$input];
+        $results = \Illuminate\Support\Facades\DB::select($sql, $bindings);
+
+        return response()->json([
+            'status' => 'success',
+            'security_type' => 'PDO Parameterized Prepared Statement',
+            'raw_sql_statement' => $sql,
+            'bound_parameters' => $bindings,
+            'injection_neutralized' => true,
+            'rows_returned' => count($results),
+            'data' => $results,
+            'academic_explanation' => count($results) === 0
+                ? "BLOCKED: 0 Rows Returned. The PostgreSQL engine treated the payload as literal string characters, looking for a patient with code literally equal to \"$input\". Attack neutralized!"
+                : "SUCCESS: Found patient record using parameterized placeholder '?' without vulnerability to injection."
+        ]);
     }
 
     /**

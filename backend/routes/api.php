@@ -35,10 +35,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('auth/password', [AuthController::class, 'updatePassword']);
     Route::post('auth/logout', [AuthController::class, 'logout']);
 
-    // Dental Patient & Clinical EHR Routes
-    Route::get('patients', [PatientController::class, 'index']);
-    Route::post('patients', [PatientController::class, 'store']);
-    Route::delete('patients/{id}', [PatientController::class, 'destroy']);
+    // Hospital Patient & Clinical EHR Routes
+    Route::get('patients', [PatientController::class, 'index'])->name('api.patients.index');
+    Route::post('patients', [PatientController::class, 'store'])->name('api.patients.store');
+    Route::delete('patients/{id}', [PatientController::class, 'destroy'])->name('api.patients.destroy');
 
     // Two-Factor Authentication Management
     Route::prefix('2fa')->group(function () {

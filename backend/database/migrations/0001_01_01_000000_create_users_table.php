@@ -17,8 +17,12 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             
-            // Password Security & Pepper Versioning
+            // Role & Permissions
+            $table->string('role', 50)->default('Doctor')->index();
+
+            // Password Security, Explicit Salt & Pepper Versioning
             $table->string('password');
+            $table->string('salt', 64)->nullable(); // Explicit cryptographic salt visible in DB
             $table->string('pepper_version', 10)->default('v1');
             $table->timestamp('password_changed_at')->nullable();
             $table->boolean('require_password_change')->default(false);
@@ -38,6 +42,7 @@ return new class extends Migration
             $table->string('last_login_ip', 45)->nullable();
             $table->rememberToken();
             $table->timestamps();
+            $table->softDeletes(); // Audit preservation: deleted users are NEVER erased permanently!
 
             // Compound Indexes for fast threat detection and querying
             $table->index(['status', 'lockout_until']);

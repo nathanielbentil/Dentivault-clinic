@@ -6,6 +6,7 @@ use App\Models\AuditLog;
 use App\Models\Patient;
 use App\Models\Permission;
 use App\Models\Role;
+use App\Models\SystemConfiguration;
 use App\Models\User;
 use App\Services\PasswordService;
 use Illuminate\Database\Seeder;
@@ -13,32 +14,36 @@ use Illuminate\Database\Seeder;
 class RoleAndPermissionSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * Run the database seeds for MediVault Hospital Management System.
      */
     public function run(): void
     {
-        // 1. Define Granular Permissions across Dental & Security Modules
+        // ------------------------------------------------------------------
+        // 1. Define Granular Permissions across Hospital Modules
+        // ------------------------------------------------------------------
         $permissions = [
-            // Dental Clinical Module
-            ['name' => 'View Dental Patients', 'slug' => 'patients.view', 'module' => 'clinical', 'description' => 'View patient dental charts and medical histories'],
-            ['name' => 'Create Dental Chart', 'slug' => 'patients.create', 'module' => 'clinical', 'description' => 'Register new patients and record treatment procedures'],
-            ['name' => 'Edit Dental Chart', 'slug' => 'patients.edit', 'module' => 'clinical', 'description' => 'Update clinical tooth notes and treatment status'],
-            ['name' => 'Delete Dental Patient', 'slug' => 'patients.delete', 'module' => 'clinical', 'description' => 'Remove patient records from the clinic directory'],
+            // Clinical Patient Management
+            ['name' => 'View Patient Records', 'slug' => 'patients.view', 'module' => 'clinical', 'description' => 'View patient medical charts, admissions, and history'],
+            ['name' => 'Admit New Patient', 'slug' => 'patients.create', 'module' => 'clinical', 'description' => 'Register and admit new patients to hospital wards'],
+            ['name' => 'Update Medical Chart', 'slug' => 'patients.edit', 'module' => 'clinical', 'description' => 'Update diagnoses, vital signs, and treatment notes'],
+            ['name' => 'Discharge Patient', 'slug' => 'patients.delete', 'module' => 'clinical', 'description' => 'Process clinical patient discharge'],
 
-            // Staff & User Management Module
-            ['name' => 'View Staff Directory', 'slug' => 'users.view', 'module' => 'staff', 'description' => 'View list of clinic dentists, hygienists, and managers'],
-            ['name' => 'Manage Staff Roles', 'slug' => 'users.manage_roles', 'module' => 'staff', 'description' => 'Assign and change user permissions and roles'],
+            // Medical Diagnostics & Prescriptions
+            ['name' => 'Record Physician Diagnosis', 'slug' => 'medical.diagnose', 'module' => 'medical', 'description' => 'Write clinical assessments and order laboratory tests'],
+            ['name' => 'Prescribe Medications', 'slug' => 'medical.prescribe', 'module' => 'medical', 'description' => 'Issue pharmaceutical prescriptions'],
+            ['name' => 'Record Nurse Vitals', 'slug' => 'nursing.vitals', 'module' => 'nursing', 'description' => 'Log patient blood pressure, pulse, temperature, SpO2'],
+            ['name' => 'Dispense Medications', 'slug' => 'pharmacy.dispense', 'module' => 'pharmacy', 'description' => 'Dispense prescription drugs from hospital pharmacy'],
 
-            // HIPAA Audit Trail & Security Telemetry
-            ['name' => 'View HIPAA Audit Trail', 'slug' => 'audit.view', 'module' => 'audit', 'description' => 'Read immutable cryptographic access and clinical logs'],
-            ['name' => 'Verify Log Integrity', 'slug' => 'audit.verify', 'module' => 'audit', 'description' => 'Run SHA-256 hash-chain verification engine'],
+            // Staff & Security Administration
+            ['name' => 'View Staff Directory', 'slug' => 'users.view', 'module' => 'staff', 'description' => 'Inspect hospital personnel and assigned roles'],
+            ['name' => 'Manage Staff & Roles', 'slug' => 'users.manage', 'module' => 'staff', 'description' => 'Create staff, assign RBAC roles, and manage access'],
+            ['name' => 'Soft Delete Staff User', 'slug' => 'users.delete', 'module' => 'staff', 'description' => 'Archive staff member with audit retention'],
+            ['name' => 'Restore Soft-Deleted Staff', 'slug' => 'users.restore', 'module' => 'staff', 'description' => 'Restore archived staff member from audit archive'],
 
-            // 3-2-1 Asymmetric Vault & Disaster Recovery
-            ['name' => 'Trigger Age Backup', 'slug' => 'backup.create', 'module' => 'backup', 'description' => 'Create Age X25519 encrypted patient database archive'],
-            ['name' => 'Sync Cloud Backup', 'slug' => 'backup.cloud_sync', 'module' => 'backup', 'description' => 'Replicate encrypted archive to offsite cloud storage'],
-
-            // Self-Service Controls
-            ['name' => 'Manage Own Profile & 2FA', 'slug' => 'account.manage', 'module' => 'account', 'description' => 'Update display name, password, and Google Authenticator 2FA'],
+            // HIPAA Audit Trail & Configuration Restore Points
+            ['name' => 'View HIPAA Audit Trail', 'slug' => 'audit.view', 'module' => 'audit', 'description' => 'Read immutable cryptographic access logs and deleted archives'],
+            ['name' => 'Verify Hash Chain Integrity', 'slug' => 'audit.verify', 'module' => 'audit', 'description' => 'Verify SHA-256 tamper-proof log chains'],
+            ['name' => 'Manage System Config & Restore Points', 'slug' => 'config.manage', 'module' => 'system', 'description' => 'Create and rollback configuration restore points'],
         ];
 
         $permissionModels = [];
@@ -49,24 +54,26 @@ class RoleAndPermissionSeeder extends Seeder
             );
         }
 
-        // 2. Define the 3 Core Roles: Admin, Manager, Dentist (and User alias)
-        // Role 1: Admin (Chief Medical Officer & Compliance Director)
+        // ------------------------------------------------------------------
+        // 2. Define the 6 Hospital Roles with Distinct Authorizations
+        // ------------------------------------------------------------------
+        // Role 1: Chief Medical Director (Super Admin)
         $adminRole = Role::updateOrCreate(
             ['slug' => 'Admin'],
             [
-                'name' => 'Chief Administrator',
-                'description' => 'Full administrative access, staff role management, HIPAA audit chain verification, and 3-2-1 backup vault',
+                'name' => 'Chief Medical Director',
+                'description' => 'Full administrative access, staff role management, configuration restore points, and HIPAA audit trails',
                 'is_system' => true,
             ]
         );
         $adminRole->permissions()->sync(array_values(array_map(fn($p) => $p->id, $permissionModels)));
 
-        // Role 2: Manager (Clinic Practice Manager)
+        // Role 2: Hospital Operations Manager
         $managerRole = Role::updateOrCreate(
             ['slug' => 'Manager'],
             [
-                'name' => 'Clinic Practice Manager',
-                'description' => 'Clinic operations, patient registration, staff directory, and treatment plan oversight',
+                'name' => 'Hospital Operations Manager',
+                'description' => 'Patient admissions, ward beds, staff directory, and clinic flow oversight',
                 'is_system' => true,
             ]
         );
@@ -74,194 +81,264 @@ class RoleAndPermissionSeeder extends Seeder
             $permissionModels['patients.view']->id,
             $permissionModels['patients.create']->id,
             $permissionModels['patients.edit']->id,
-            $permissionModels['patients.delete']->id,
             $permissionModels['users.view']->id,
-            $permissionModels['account.manage']->id,
         ]);
 
-        // Role 3: Dentist / Clinical Practitioner
-        $dentistRole = Role::updateOrCreate(
-            ['slug' => 'Dentist'],
+        // Role 3: Attending Doctor / Physician
+        $doctorRole = Role::updateOrCreate(
+            ['slug' => 'Doctor'],
             [
-                'name' => 'Attending Dentist',
-                'description' => 'Clinical dental practitioner with patient chart viewing, tooth diagnostics, and treatment charting',
+                'name' => 'Attending Physician / Doctor',
+                'description' => 'Clinical diagnosis, patient examinations, treatment charting, and drug prescriptions',
                 'is_system' => true,
             ]
         );
-        $dentistRole->permissions()->sync([
+        $doctorRole->permissions()->sync([
             $permissionModels['patients.view']->id,
             $permissionModels['patients.create']->id,
             $permissionModels['patients.edit']->id,
-            $permissionModels['account.manage']->id,
+            $permissionModels['medical.diagnose']->id,
+            $permissionModels['medical.prescribe']->id,
         ]);
 
-        // Role 4: User (Standard User alias mapped to Dentist permissions for 100% test compatibility)
-        $userRole = Role::updateOrCreate(
-            ['slug' => 'User'],
+        // Role 4: Ward Nurse
+        $nurseRole = Role::updateOrCreate(
+            ['slug' => 'Nurse'],
             [
-                'name' => 'Dentist / Clinical Staff',
-                'description' => 'Clinical staff member with patient chart access and self-service 2FA controls',
+                'name' => 'Ward Nurse / Registered Nurse',
+                'description' => 'Patient vital signs monitoring (BP, Temp, Pulse), medication administration, ward monitoring',
                 'is_system' => true,
             ]
         );
-        $userRole->permissions()->sync([
+        $nurseRole->permissions()->sync([
             $permissionModels['patients.view']->id,
-            $permissionModels['patients.create']->id,
             $permissionModels['patients.edit']->id,
-            $permissionModels['account.manage']->id,
+            $permissionModels['nursing.vitals']->id,
         ]);
 
-        // 3. Seed Users across the 3 roles
-        // Admin: Dr. Prof. Nathaniel Bentil (Chief Dental Director & Administrator)
-        $adminPass = PasswordService::hash('Admin@Dental2026!');
-        $adminUser = User::updateOrCreate(
-            ['email' => 'admin@dentivault.com'],
+        // Role 5: Hospital Pharmacist
+        $pharmacistRole = Role::updateOrCreate(
+            ['slug' => 'Pharmacist'],
             [
-                'name' => 'Dr. Prof. Nathaniel Bentil',
-                'password' => $adminPass['hash'],
-                'pepper_version' => $adminPass['pepper_version'],
-                'status' => 'active',
-                'email_verified_at' => now(),
-                'two_factor_secret' => null,
-                'two_factor_confirmed_at' => null,
-                'two_factor_recovery_codes' => null,
+                'name' => 'Hospital Pharmacist',
+                'description' => 'Prescription review, drug dispensing, medication stock management',
+                'is_system' => true,
             ]
         );
-        $adminUser->roles()->sync([$adminRole->id => ['assigned_by' => null, 'created_at' => now()]]);
+        $pharmacistRole->permissions()->sync([
+            $permissionModels['patients.view']->id,
+            $permissionModels['pharmacy.dispense']->id,
+        ]);
 
-        // Secondary Admin Alias for Dr. Prof. Nathaniel Bentil
-        $natinoPass = PasswordService::hash('Admin@SecureAuth2026!');
-        $natinoUser = User::updateOrCreate(
-            ['email' => 'natinobentil22@gmail.com'],
+        // Role 6: Compliance & HIPAA Auditor
+        $auditorRole = Role::updateOrCreate(
+            ['slug' => 'Auditor'],
             [
-                'name' => 'Dr. Prof. Nathaniel Bentil',
-                'password' => $natinoPass['hash'],
-                'pepper_version' => $natinoPass['pepper_version'],
-                'status' => 'active',
-                'email_verified_at' => now(),
-                'two_factor_secret' => null,
-                'two_factor_confirmed_at' => null,
-                'two_factor_recovery_codes' => null,
+                'name' => 'Compliance & HIPAA Auditor',
+                'description' => 'Read-only access to cryptographic audit logs, soft-deleted user archives, and forensic verification',
+                'is_system' => true,
             ]
         );
-        $natinoUser->roles()->sync([$adminRole->id => ['assigned_by' => null, 'created_at' => now()]]);
+        $auditorRole->permissions()->sync([
+            $permissionModels['patients.view']->id,
+            $permissionModels['audit.view']->id,
+            $permissionModels['audit.verify']->id,
+            $permissionModels['users.view']->id,
+        ]);
 
-        // Role 2: Clinic Practice Manager (Dr. Bright Ainoo)
-        $mgrPass = PasswordService::hash('Manager@Dental2026!');
-        $mgrUser = User::updateOrCreate(
-            ['email' => 'manager@dentivault.com'],
+        // ------------------------------------------------------------------
+        // 3. Seed Hospital Staff Users (with Salt, Pepper, and Argon2id Hashes)
+        // ------------------------------------------------------------------
+        $staffMembers = [
+            [
+                'name' => 'Dr. Prof. Nathaniel Bentil',
+                'email' => 'admin@medivault.cloud',
+                'password' => 'Admin@MediVault2026!',
+                'role' => 'Admin',
+                'roleModel' => $adminRole,
+            ],
             [
                 'name' => 'Dr. Bright Ainoo',
-                'password' => $mgrPass['hash'],
-                'pepper_version' => $mgrPass['pepper_version'],
-                'status' => 'active',
-                'email_verified_at' => now(),
-                'two_factor_secret' => null,
-                'two_factor_confirmed_at' => null,
-                'two_factor_recovery_codes' => null,
-            ]
-        );
-        $mgrUser->roles()->sync([$managerRole->id => ['assigned_by' => $adminUser->id, 'created_at' => now()]]);
-
-        // Role 3: Attending Dentist (Dr. Isaac Donkoh)
-        $dentistPass = PasswordService::hash('Dentist@Dental2026!');
-        $dentistUser = User::updateOrCreate(
-            ['email' => 'dentist@dentivault.com'],
-            [
-                'name' => 'Dr. Isaac Donkoh',
-                'password' => $dentistPass['hash'],
-                'pepper_version' => $dentistPass['pepper_version'],
-                'status' => 'active',
-                'email_verified_at' => now(),
-                'two_factor_secret' => null,
-                'two_factor_confirmed_at' => null,
-                'two_factor_recovery_codes' => null,
-            ]
-        );
-        $dentistUser->roles()->sync([$dentistRole->id => ['assigned_by' => $adminUser->id, 'created_at' => now()]]);
-
-        // 4. Seed 5 Realistic Dental Patients
-        $demoPatients = [
-            [
-                'patient_code' => 'DENT-1001',
-                'name' => 'Emily Watson',
-                'age' => 28,
-                'gender' => 'Female',
-                'phone' => '+1 (555) 234-5678',
-                'medical_history' => 'Penicillin allergy; No known bleeding disorders',
-                'tooth_number' => '#14 (Upper Left 1st Molar)',
-                'procedure' => 'Composite Resin Restoration (Class II)',
-                'clinical_notes' => 'Deep occlusal-distal caries removed. 2% Lidocaine with 1:100,000 Epinephrine administered. Etched, bonded, and incremental composite placed with cured polish. Occlusion checked and verified.',
-                'attending_dentist' => 'Dr. Isaac Donkoh',
-                'status' => 'Completed',
+                'email' => 'manager@medivault.cloud',
+                'password' => 'Manager@MediVault2026!',
+                'role' => 'Manager',
+                'roleModel' => $managerRole,
             ],
             [
-                'patient_code' => 'DENT-1002',
-                'name' => 'Marcus Vance',
-                'age' => 45,
-                'gender' => 'Male',
-                'phone' => '+1 (555) 876-5432',
-                'medical_history' => 'Hypertension (Controlled on Lisinopril)',
-                'tooth_number' => '#19 (Lower Left 1st Molar)',
-                'procedure' => 'Endodontic Root Canal Therapy (Phase 1)',
-                'clinical_notes' => 'Irreversible pulpitis diagnosed. Access cavity prepared. Working lengths established via apex locator: MB 21mm, ML 21.5mm, D 22mm. Biomechanical debridement with NaOCl irrigation. Calcium hydroxide paste placed with Cavit temporary seal.',
-                'attending_dentist' => 'Dr. Prof. Nathaniel Bentil',
-                'status' => 'In Treatment',
+                'name' => 'Dr. Isaac Donkoh, MD',
+                'email' => 'doctor@medivault.cloud',
+                'password' => 'Doctor@MediVault2026!',
+                'role' => 'Doctor',
+                'roleModel' => $doctorRole,
             ],
             [
-                'patient_code' => 'DENT-1003',
-                'name' => 'Sophia Rodriguez',
-                'age' => 34,
-                'gender' => 'Female',
-                'phone' => '+1 (555) 345-6789',
-                'medical_history' => 'Latex sensitivity; Asthmatic (inhaler on-hand)',
-                'tooth_number' => 'Full Arch (Maxilla & Mandible)',
-                'procedure' => 'Comprehensive Ultrasonic Periodontal Scaling',
-                'clinical_notes' => 'Full periodontal probing depths recorded (2-3mm generalized). Moderate subgingival calculus removed with ultrasonic scaler and Gracey curettes. Prophy paste polishing and 5% sodium fluoride varnish applied.',
-                'attending_dentist' => 'Dr. Bright Ainoo',
-                'status' => 'Completed',
+                'name' => 'Nurse Beatrice Mensah, RN',
+                'email' => 'nurse@medivault.cloud',
+                'password' => 'Nurse@MediVault2026!',
+                'role' => 'Nurse',
+                'roleModel' => $nurseRole,
             ],
             [
-                'patient_code' => 'DENT-1004',
-                'name' => 'David Chen',
-                'age' => 52,
-                'gender' => 'Male',
-                'phone' => '+1 (555) 987-6543',
-                'medical_history' => 'Type 2 Diabetes (HbA1c 6.4%)',
-                'tooth_number' => '#8 (Upper Right Central Incisor)',
-                'procedure' => 'Porcelain-Fused-to-Zirconia Crown Prep',
-                'clinical_notes' => 'Old chipped veneer removed. Tooth prepared with 1.0mm circumferential chamfer margin. Retraction cord placed. Digital intraoral scan sent to dental lab (Shade Vita A2). Acrylic provisional crown seated with TempBond.',
-                'attending_dentist' => 'Dr. Prof. Nathaniel Bentil',
-                'status' => 'In Treatment',
+                'name' => 'Pharm. Kwabena Appiah',
+                'email' => 'pharmacist@medivault.cloud',
+                'password' => 'Pharm@MediVault2026!',
+                'role' => 'Pharmacist',
+                'roleModel' => $pharmacistRole,
             ],
             [
-                'patient_code' => 'DENT-1005',
-                'name' => 'Olivia Taylor',
-                'age' => 22,
-                'gender' => 'Female',
-                'phone' => '+1 (555) 456-7890',
-                'medical_history' => 'No medical contraindications',
-                'tooth_number' => '#1, #16, #17, #32 (Third Molars)',
-                'procedure' => 'Wisdom Teeth Extraction Assessment & OPG',
-                'clinical_notes' => 'Panoramic radiograph (OPG) taken. Bilateral lower wisdom teeth (#17, #32) mesioangularly impacted with recurrent pericoronitis. Treatment plan options discussed. Scheduled for oral surgery under IV sedation.',
-                'attending_dentist' => 'Dr. Isaac Donkoh',
-                'status' => 'Scheduled',
+                'name' => 'Auditor Samuel Osei',
+                'email' => 'auditor@medivault.cloud',
+                'password' => 'Auditor@MediVault2026!',
+                'role' => 'Auditor',
+                'roleModel' => $auditorRole,
             ],
         ];
 
-        foreach ($demoPatients as $p) {
-            Patient::updateOrCreate(['patient_code' => $p['patient_code']], $p);
+        foreach ($staffMembers as $s) {
+            $hashResult = PasswordService::hash($s['password']);
+            $user = User::withTrashed()->updateOrCreate(
+                ['email' => $s['email']],
+                [
+                    'name' => $s['name'],
+                    'role' => $s['role'],
+                    'password' => $hashResult['hash'],
+                    'salt' => $hashResult['salt'],
+                    'pepper_version' => $hashResult['pepper_version'],
+                    'status' => 'active',
+                    'email_verified_at' => now(),
+                    'deleted_at' => null,
+                ]
+            );
+            $user->roles()->sync([$s['roleModel']->id => ['created_at' => now()]]);
         }
 
-        // 5. Record Genesis/Seed Audit Log
-        AuditLog::record(
-            eventType: 'system.clinic_seeded',
-            description: 'Seeded DentiVault 3-Tier RBAC roles (Admin, Manager, Dentist) and 5 patient clinical records.',
-            severity: 'notice',
-            payload: [
-                'roles' => ['Admin', 'Manager', 'Dentist'],
-                'patients_seeded' => count($demoPatients),
+        // Pre-seed an Archived / Soft-Deleted Staff Member to demonstrate Requirement #7!
+        $archivedHash = PasswordService::hash('Archived@Pass2026!');
+        $archivedUser = User::withTrashed()->updateOrCreate(
+            ['email' => 'archived.staff@medivault.cloud'],
+            [
+                'name' => 'Dr. Francis Cudjoe (Former Physician)',
+                'role' => 'Doctor',
+                'password' => $archivedHash['hash'],
+                'salt' => $archivedHash['salt'],
+                'pepper_version' => $archivedHash['pepper_version'],
+                'status' => 'suspended',
+                'email_verified_at' => now(),
+                'deleted_at' => now()->subDays(3), // Soft-deleted 3 days ago for audit inspection!
             ]
+        );
+        $archivedUser->roles()->sync([$doctorRole->id => ['created_at' => now()->subDays(10)]]);
+
+        // ------------------------------------------------------------------
+        // 4. Seed Configuration Restore Points (Requirement #9)
+        // ------------------------------------------------------------------
+        SystemConfiguration::updateOrCreate(
+            ['snapshot_name' => 'Baseline Config v1.0 (Standard Clinical)'],
+            [
+                'description' => 'Hospital standard security profile with 30-min sessions and 5-attempt brute-force protection',
+                'session_lifetime_minutes' => 30,
+                'max_login_attempts' => 5,
+                'lockout_duration_minutes' => 15,
+                'enforce_2fa_for_all_roles' => true,
+                'pepper_version' => 'v1',
+                'ip_rate_limiting_enabled' => true,
+                'maintenance_mode' => false,
+                'created_by' => 'Dr. Prof. Nathaniel Bentil (Chief Medical Director)',
+                'is_active' => true,
+            ]
+        );
+
+        SystemConfiguration::updateOrCreate(
+            ['snapshot_name' => 'High-Security Zero-Trust Lockdown'],
+            [
+                'description' => 'Hardened clinical profile with 15-min session timeout, 3-attempt lockout, and mandatory biometric auth',
+                'session_lifetime_minutes' => 15,
+                'max_login_attempts' => 3,
+                'lockout_duration_minutes' => 30,
+                'enforce_2fa_for_all_roles' => true,
+                'pepper_version' => 'v1',
+                'ip_rate_limiting_enabled' => true,
+                'maintenance_mode' => false,
+                'created_by' => 'Dr. Prof. Nathaniel Bentil (Chief Medical Director)',
+                'is_active' => false,
+            ]
+        );
+
+        // ------------------------------------------------------------------
+        // 5. Seed 50+ Realistic Hospital Patients & Medical Records (Requirement #9)
+        // ------------------------------------------------------------------
+        $firstNames = ['Emily', 'Marcus', 'Sophia', 'David', 'Olivia', 'James', 'Grace', 'Daniel', 'Chloe', 'Alexander',
+                       'Hannah', 'Michael', 'Ava', 'Benjamin', 'Mia', 'William', 'Charlotte', 'Lucas', 'Amelia', 'Ethan',
+                       'Harper', 'Henry', 'Evelyn', 'Sebastian', 'Abigail', 'Jack', 'Ella', 'Matthew', 'Avery', 'Samuel',
+                       'Scarlett', 'Joseph', 'Madison', 'Levi', 'Victoria', 'Mateo', 'Aria', 'David', 'Penelope', 'John',
+                       'Riley', 'Wyatt', 'Layla', 'Carter', 'Lillian', 'Julian', 'Nora', 'Luke', 'Zoey', 'Grayson',
+                       'Stella', 'Leo'];
+        $lastNames  = ['Watson', 'Vance', 'Rodriguez', 'Chen', 'Taylor', 'Smith', 'Johnson', 'Brown', 'Davis', 'Miller',
+                       'Wilson', 'Moore', 'Anderson', 'Thomas', 'Jackson', 'White', 'Harris', 'Martin', 'Thompson', 'Garcia',
+                       'Martinez', 'Robinson', 'Clark', 'Lewis', 'Lee', 'Walker', 'Hall', 'Allen', 'Young', 'Hernandez',
+                       'King', 'Wright', 'Lopez', 'Hill', 'Scott', 'Green', 'Adams', 'Baker', 'Gonzalez', 'Nelson',
+                       'Carter', 'Mitchell', 'Perez', 'Roberts', 'Turner', 'Phillips', 'Campbell', 'Parker', 'Evans', 'Edwards',
+                       'Collins', 'Stewart'];
+        $bloodGroups = ['O+', 'A+', 'B+', 'AB+', 'O-', 'A-', 'B-', 'AB-'];
+        $wards       = ['General Ward 1 (Bed 01)', 'General Ward 2 (Bed 04)', 'ICU - Trauma Unit (Bed 02)', 'Surgical Ward A (Bed 08)', 
+                        'Pediatric Wing (Room 102)', 'Cardiology Care Unit (CCU 03)', 'Outpatient Consultation Suite 4', 'Emergency Triage Bed 06'];
+        $statuses    = ['Admitted', 'Outpatient', 'ICU', 'Discharged'];
+        $conditions  = [
+            ['Acute Appendicitis', 'Laparoscopic appendectomy performed. Post-op recovery in progress.', 'IV Cefazolin 1g, Tramadol 50mg PRN', 'Penicillin Allergy', 'BP: 124/82 | HR: 74 | Temp: 37.1°C | SpO2: 98%'],
+            ['Type 2 Diabetes with Neuropathy', 'Routine glycemic control check. HbA1c at 7.2%. Foot examination normal.', 'Metformin 850mg BID, Glimepiride 2mg', 'None Reported', 'BP: 130/84 | HR: 68 | Temp: 36.6°C | SpO2: 99%'],
+            ['Hypertensive Urgency', 'Admitted for blood pressure stabilization. IV Labetalol administered.', 'Lisinopril 20mg, Amlodipine 5mg Daily', 'Sulfa Drugs', 'BP: 168/104 | HR: 88 | Temp: 36.8°C | SpO2: 97%'],
+            ['Community-Acquired Pneumonia', 'Right lower lobe consolidation noted on chest X-ray. Sputum culture pending.', 'Azithromycin 500mg, Ceftriaxone 1g IV', 'None Reported', 'BP: 118/76 | HR: 84 | Temp: 38.4°C | SpO2: 94%'],
+            ['Fracture of Left Tibia (Closed)', 'Closed reduction completed with fiberglass cast application. Crutch training given.', 'Ibuprofen 400mg TID, Paracetamol 1g QID', 'Latex Sensitivity', 'BP: 122/80 | HR: 76 | Temp: 36.7°C | SpO2: 99%'],
+            ['Gastroesophageal Reflux Disease (GERD)', 'Endoscopy scheduled. Lifestyle dietary counseling provided.', 'Omeprazole 40mg Once Daily Before Breakfast', 'None Reported', 'BP: 120/78 | HR: 70 | Temp: 36.6°C | SpO2: 99%'],
+            ['Severe Asthma Exacerbation', 'Nebulized Albuterol/Ipratropium given in emergency triage. Peak flow improved 40%.', 'Prednisone 40mg Oral, Salbutamol Inhaler PRN', 'Aspirin (AERD)', 'BP: 128/82 | HR: 92 | Temp: 37.0°C | SpO2: 95%'],
+            ['Coronary Artery Disease (Post-Stent)', 'Routine cardiology follow-up. Echocardiogram shows EF 55%. Stable.', 'Aspirin 81mg, Clopidogrel 75mg, Atorvastatin 40mg', 'None Reported', 'BP: 116/74 | HR: 62 | Temp: 36.5°C | SpO2: 98%'],
+        ];
+
+        for ($i = 0; $i < 52; $i++) {
+            $code = 'MED-' . (1001 + $i);
+            $fullName = $firstNames[$i % count($firstNames)] . ' ' . $lastNames[$i % count($lastNames)];
+            $cond = $conditions[$i % count($conditions)];
+            $status = $statuses[$i % count($statuses)];
+            $ward = $status === 'Outpatient' ? 'Outpatient Clinic Room ' . (($i % 6) + 1) : $wards[$i % count($wards)];
+
+            Patient::updateOrCreate(
+                ['patient_code' => $code],
+                [
+                    'name' => $fullName,
+                    'age' => rand(18, 82),
+                    'gender' => ($i % 2 === 0) ? 'Female' : 'Male',
+                    'blood_group' => $bloodGroups[$i % count($bloodGroups)],
+                    'phone' => '+1 (555) ' . rand(100, 999) . '-' . rand(1000, 9999),
+                    'email' => strtolower(str_replace(' ', '.', $fullName)) . '@patient.medivault.cloud',
+                    'ward_room' => $ward,
+                    'admission_status' => $status,
+                    'diagnosis' => $cond[0],
+                    'treatment_plan' => $cond[1],
+                    'prescription' => $cond[2],
+                    'allergies' => $cond[3],
+                    'medical_history' => 'Medical record verified under HIPAA privacy protocols.',
+                    'vitals_summary' => $cond[4],
+                    'attending_doctor' => ($i % 2 === 0) ? 'Dr. Isaac Donkoh, MD' : 'Dr. Prof. Nathaniel Bentil',
+                    'assigned_nurse' => 'Nurse Beatrice Mensah, RN',
+                ]
+            );
+        }
+
+        // ------------------------------------------------------------------
+        // 6. Record Genesis HIPAA Cryptographic Audit Log
+        // ------------------------------------------------------------------
+        AuditLog::record(
+            eventType: 'system.hospital_seeded',
+            description: 'MediVault initialized with 6 Enterprise RBAC roles, 52 admitted hospital patients, and configuration snapshot.',
+            userId: 1,
+            severity: 'notice'
+        );
+
+        AuditLog::record(
+            eventType: 'user.soft_deleted',
+            description: 'Staff member Dr. Francis Cudjoe archived with Soft Delete. Record preserved in audit vault.',
+            userId: 1,
+            severity: 'warning'
         );
     }
 }

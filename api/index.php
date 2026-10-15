@@ -1,5 +1,10 @@
 <?php
 
+if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
+    $_SERVER['HTTPS'] = 'on';
+    $_SERVER['SERVER_PORT'] = 443;
+}
+
 $runtimeDirs = [
     '/tmp/storage/framework/views',
     '/tmp/storage/framework/cache',
@@ -11,20 +16,6 @@ $runtimeDirs = [
 foreach ($runtimeDirs as $dir) {
     if (!is_dir($dir)) {
         @mkdir($dir, 0755, true);
-    }
-}
-
-// Ensure SQLite database exists in writable /tmp
-$tmpDb = '/tmp/database.sqlite';
-if (!file_exists($tmpDb) || filesize($tmpDb) === 0) {
-    $seededDb = __DIR__ . '/../backend/database/database.sqlite.seed';
-    if (!file_exists($seededDb)) {
-        $seededDb = __DIR__ . '/../backend/database/database.sqlite';
-    }
-    if (file_exists($seededDb)) {
-        copy($seededDb, $tmpDb);
-    } else {
-        touch($tmpDb);
     }
 }
 

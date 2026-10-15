@@ -13,6 +13,7 @@ Route::get('/', function () {
 Route::middleware(['auth'])->group(function () {
     // 1. Customer / Clinical Staff Dashboard
     Route::get('/dashboard', [CustomerController::class, 'dashboard'])->name('dashboard');
+    Route::post('/sql/test-parameterized', [CustomerController::class, 'testParameterizedQuery'])->name('sql.test');
     Route::post('/profile/update-name', [CustomerController::class, 'updateName'])->name('profile.update-name');
     Route::post('/profile/update-email', [CustomerController::class, 'updateEmail'])->name('profile.update-email');
     Route::post('/profile/update-password', [CustomerController::class, 'updatePassword'])->name('profile.update-password');
@@ -25,8 +26,14 @@ Route::middleware(['auth'])->group(function () {
     // 2. Chief Admin Suite
     Route::prefix('admin')->name('admin.')->middleware(['role:Admin,SuperAdmin'])->group(function () {
         Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
+        Route::post('/users', [AdminController::class, 'storeUser'])->name('users.store');
         Route::post('/users/{user}/assign-role', [AdminController::class, 'assignRole'])->name('users.assign-role');
         Route::delete('/users/{user}', [AdminController::class, 'destroy'])->name('users.destroy');
+        Route::post('/users/{id}/restore', [AdminController::class, 'restoreUser'])->name('users.restore');
+        Route::put('/users/{id}', [AdminController::class, 'updateStaff'])->name('users.update');
+        Route::post('/users/{id}/reset-password', [AdminController::class, 'resetStaffPassword'])->name('users.reset-password');
+        Route::post('/users/{id}/unlock', [AdminController::class, 'unlockStaff'])->name('users.unlock');
+        Route::post('/config/{id}/rollback', [AdminController::class, 'rollbackConfiguration'])->name('config.rollback');
         Route::get('/backups', [AdminController::class, 'backups'])->name('backups');
         Route::post('/backups/trigger', [AdminController::class, 'triggerBackup'])->name('backups.trigger');
         Route::post('/backups/drill', [AdminController::class, 'triggerDrill'])->name('backups.drill');

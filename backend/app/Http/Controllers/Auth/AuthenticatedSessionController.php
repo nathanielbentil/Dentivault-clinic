@@ -57,7 +57,7 @@ class AuthenticatedSessionController extends Controller
                 ]);
             }
 
-            return redirect()->route('two-factor.challenge');
+            return redirect('/two-factor-challenge');
         }
 
         // Standard Login
@@ -78,7 +78,7 @@ class AuthenticatedSessionController extends Controller
             ]);
         }
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        return redirect('/dashboard');
     }
 
     /**

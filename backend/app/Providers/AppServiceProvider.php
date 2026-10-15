@@ -21,6 +21,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        if (config('app.env') === 'production' || isset($_SERVER['HTTP_X_FORWARDED_PROTO']) || isset($_SERVER['VERCEL'])) {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
+        }
+
         // 1. Implicit SuperAdmin authorization: Grants all abilities
         Gate::before(function (User $user, string $ability) {
             if ($user->hasRole('SuperAdmin')) {

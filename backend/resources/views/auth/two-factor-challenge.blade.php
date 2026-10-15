@@ -23,7 +23,7 @@
             </button>
         </div>
 
-        <form method="POST" action="{{ route('two-factor.login') }}" class="space-y-4">
+        <form method="POST" action="/two-factor-challenge" class="space-y-4">
             @csrf
 
             <!-- Standard 6-digit TOTP Input -->

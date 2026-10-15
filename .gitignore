@@ -12,6 +12,9 @@
 *.sql.gz
 *.age
 *.tar.gz
+*.sqbpro
+*.sqlite
+*.sqlite3
 backups/local/
 backups/restore-tests/
 
@@ -49,3 +52,5 @@ Thumbs.db
 .DS_Store
 .idea/
 .vscode/
+
+.vercel

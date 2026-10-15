@@ -13,18 +13,25 @@ return new class extends Migration
     {
         Schema::create('patients', function (Blueprint $table) {
             $table->id();
-            $table->string('patient_code')->unique(); // e.g. DENT-1001
-            $table->string('name');
+            $table->string('patient_code')->unique(); // e.g. MED-1001
+            $table->string('name')->index();
             $table->integer('age');
             $table->string('gender', 10);
+            $table->string('blood_group', 10)->default('O+');
             $table->string('phone', 30)->nullable();
-            $table->string('medical_history')->nullable(); // Allergies, Conditions
-            $table->string('tooth_number', 20)->nullable(); // e.g. #14 Upper Left Molar
-            $table->string('procedure')->nullable(); // e.g. Composite Filling, Root Canal
-            $table->text('clinical_notes')->nullable();
-            $table->string('attending_dentist')->nullable();
-            $table->enum('status', ['Scheduled', 'In Treatment', 'Completed'])->default('Scheduled');
+            $table->string('email', 100)->nullable();
+            $table->string('ward_room', 50)->default('General Ward 1');
+            $table->enum('admission_status', ['Admitted', 'Outpatient', 'ICU', 'Discharged'])->default('Outpatient')->index();
+            $table->string('diagnosis')->nullable();
+            $table->text('treatment_plan')->nullable();
+            $table->text('prescription')->nullable();
+            $table->string('allergies')->default('None Reported');
+            $table->text('medical_history')->nullable();
+            $table->string('vitals_summary')->nullable(); // BP, Pulse, Temp, SpO2
+            $table->string('attending_doctor')->nullable()->index();
+            $table->string('assigned_nurse')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

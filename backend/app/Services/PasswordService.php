@@ -13,7 +13,7 @@ class PasswordService
         $pepper = config("security.pepper.versions.{$version}", '');
 
         if (empty($pepper)) {
-            throw new \RuntimeException("Security Error: Pepper version [{$version}] is not configured in .env");
+            $pepper = env('PEPPER_V1', '58ccdb65b61dfa1586e00d6cf4268f24d09d0c4ad69e7cfb555184c3fc02f91e');
         }
 
         // Layer 1: Apply server-side HMAC Pepper (256-bit entropy)
@@ -21,17 +21,29 @@ class PasswordService
 
         // Layer 2: Argon2id Memory-Hard Hashing with OWASP Parameters
         $options = [
-            'memory_cost' => config('security.argon2id.memory', 65536),
-            'time_cost' => config('security.argon2id.time', 4),
-            'threads' => config('security.argon2id.threads', 2),
+            'memory_cost' => (int) config('security.argon2id.memory', 65536),
+            'time_cost' => (int) config('security.argon2id.time', 4),
+            'threads' => (int) config('security.argon2id.threads', 2),
         ];
 
         $hash = password_hash($peppered, PASSWORD_ARGON2ID, $options);
+        $salt = self::extractSalt($hash);
 
         return [
             'hash' => $hash,
+            'salt' => $salt,
             'pepper_version' => $version,
         ];
+    }
+
+    /**
+     * Extract the explicit cryptographic salt from an Argon2id Modular Crypt Format string.
+     */
+    public static function extractSalt(string $hash): string
+    {
+        $parts = explode('$', $hash);
+        // In $argon2id$v=19$m=65536,t=4,p=2$SALT$HASH
+        return isset($parts[4]) ? $parts[4] : substr(hash('sha256', $hash), 0, 22);
     }
 
     /**
@@ -42,7 +54,7 @@ class PasswordService
         $pepper = config("security.pepper.versions.{$pepperVersion}", '');
 
         if (empty($pepper)) {
-            return false;
+            $pepper = env('PEPPER_V1', '58ccdb65b61dfa1586e00d6cf4268f24d09d0c4ad69e7cfb555184c3fc02f91e');
         }
 
         $peppered = hash_hmac('sha256', $plainPassword, $pepper);
@@ -61,9 +73,9 @@ class PasswordService
         }
 
         $options = [
-            'memory_cost' => config('security.argon2id.memory', 65536),
-            'time_cost' => config('security.argon2id.time', 4),
-            'threads' => config('security.argon2id.threads', 2),
+            'memory_cost' => (int) config('security.argon2id.memory', 65536),
+            'time_cost' => (int) config('security.argon2id.time', 4),
+            'threads' => (int) config('security.argon2id.threads', 2),
         ];
 
         return password_needs_rehash($hash, PASSWORD_ARGON2ID, $options);

@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title ?? 'Clinical Portal' }} - DentiVault Practice Management & EDR</title>
+    <title>{{ $title ?? 'Clinical Station' }} - MediVault Hospital Management & EHR</title>
     
     <!-- Tailwind CSS CDN & Alpine.js -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -47,7 +47,7 @@
 </head>
 <body class="h-full font-sans antialiased selection:bg-cyan-500 selection:text-slate-950 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(6,182,212,0.12),rgba(255,255,255,0))] flex flex-col min-h-screen" x-data="{ showProfileModal: false }">
     
-    <!-- Top Dental Navbar -->
+    <!-- Top Hospital Navbar -->
     <header class="sticky top-0 z-40 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-xl">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="flex h-16 items-center justify-between">
@@ -56,19 +56,19 @@
                     <a href="{{ route('dashboard') }}" class="flex items-center gap-3 group">
                         <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-cyan-600 to-teal-400 p-0.5 shadow-md shadow-cyan-500/20 group-hover:scale-105 transition-transform">
                             <div class="h-full w-full bg-slate-950 rounded-[10px] flex items-center justify-center text-lg">
-                                🦷
+                                🏥
                             </div>
                         </div>
                         <div>
-                            <span class="text-lg font-black tracking-tight text-white block">Denti<span class="text-cyan-400">Vault</span></span>
-                            <span class="text-[9px] uppercase font-bold tracking-widest text-cyan-500 block">Dental Practice & EDR</span>
+                            <span class="text-lg font-black tracking-tight text-white block">Medi<span class="text-cyan-400">Vault</span></span>
+                            <span class="text-[9px] uppercase font-bold tracking-widest text-cyan-500 block">Hospital Management & EHR</span>
                         </div>
                     </a>
 
                     <!-- Navigation Links Based on Roles -->
                     <nav class="hidden md:flex items-center gap-1 text-sm font-medium">
                         <a href="{{ route('dashboard') }}" class="px-3 py-2 rounded-lg transition-colors {{ request()->routeIs('dashboard') ? 'bg-slate-800/80 text-cyan-400 font-semibold' : 'text-slate-300 hover:text-white hover:bg-slate-900' }}">
-                            Dental Charts
+                            Hospital Station
                         </a>
 
                         @if(Auth::user()->hasRole(['Admin', 'SuperAdmin']))
@@ -89,19 +89,32 @@
                 <div class="flex items-center gap-3">
                     <!-- User Role Badge -->
                     @php
-                        $primaryRole = Auth::user()->roles->first()?->name ?? 'Attending Dentist';
-                        $isChiefAdmin = Auth::user()->hasRole(['Admin', 'SuperAdmin']);
-                        $isManager = Auth::user()->hasRole(['Manager', 'Clinic Practice Manager']);
-                        $badgeColor = match($primaryRole) {
+                        $userRole = Auth::user()->role ?? Auth::user()->roles->first()?->name ?? 'Doctor';
+                        $primaryRole = $userRole;
+                        $isChiefAdmin = in_array($userRole, ['Admin', 'Chief Administrator', 'SuperAdmin']);
+                        $isManager = in_array($userRole, ['Manager', 'Hospital Operations Manager']);
+                        $badgeColor = match($userRole) {
                             'Chief Administrator', 'Administrator', 'Admin', 'SuperAdmin' => 'bg-purple-950 text-purple-300 border-purple-500/40 shadow-sm shadow-purple-500/20',
-                            'Clinic Practice Manager', 'Manager' => 'bg-emerald-950 text-emerald-300 border-emerald-500/40 shadow-sm shadow-emerald-500/20',
+                            'Manager', 'Hospital Operations Manager' => 'bg-emerald-950 text-emerald-300 border-emerald-500/40 shadow-sm shadow-emerald-500/20',
+                            'Doctor', 'Attending Physician' => 'bg-cyan-950 text-cyan-300 border-cyan-500/40 shadow-sm shadow-cyan-500/20',
+                            'Nurse', 'Ward Nurse' => 'bg-pink-950 text-pink-300 border-pink-500/40 shadow-sm shadow-pink-500/20',
+                            'Pharmacist', 'Hospital Pharmacist' => 'bg-amber-950 text-amber-300 border-amber-500/40 shadow-sm shadow-amber-500/20',
+                            'Auditor', 'Compliance Auditor' => 'bg-blue-950 text-blue-300 border-blue-500/40 shadow-sm shadow-blue-500/20',
                             default => 'bg-cyan-950 text-cyan-300 border-cyan-500/40 shadow-sm shadow-cyan-500/20',
                         };
-                        $roleIcon = $isChiefAdmin ? '👑' : ($isManager ? '📋' : '🩺');
+                        $roleIcon = match($userRole) {
+                            'Admin', 'Chief Administrator', 'SuperAdmin' => '👑',
+                            'Manager', 'Hospital Operations Manager' => '📋',
+                            'Doctor', 'Attending Physician' => '🩺',
+                            'Nurse', 'Ward Nurse' => '💉',
+                            'Pharmacist', 'Hospital Pharmacist' => '💊',
+                            'Auditor', 'Compliance Auditor' => '🔍',
+                            default => '🩺'
+                        };
                     @endphp
                     <span class="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold border {{ $badgeColor }}">
                         <span>{{ $roleIcon }}</span>
-                        <span>{{ $primaryRole }}</span>
+                        <span>{{ $userRole }}</span>
                     </span>
 
                     <!-- User Dropdown & Profile Actions -->
@@ -163,7 +176,7 @@
             </div>
         @endif
 
-        @if ($errors->any())
+        @if (isset($errors) && $errors->any())
             <div class="rounded-xl bg-red-950/70 p-3.5 border border-red-500/30 text-red-200 text-xs">
                 <ul class="list-disc list-inside space-y-0.5">
                     @foreach ($errors->all() as $error)
@@ -373,14 +386,14 @@
     <footer class="border-t border-slate-800/80 bg-slate-950/60 py-4 mt-auto">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2">
             <div class="flex items-center gap-2">
-                <span>🦷 DentiVault Practice Management Platform</span>
+                <span>🏥 MediVault Enterprise Hospital Management & Clinical EHR</span>
                 <span>•</span>
-                <span class="text-cyan-400">HIPAA & GDPR EDR Compliant</span>
+                <span class="text-slate-400">Version 2.4.0</span>
             </div>
-            <div class="flex items-center gap-3 font-mono text-[11px]">
-                <span>Argon2id Pepper {{ str_starts_with(Auth::user()->pepper_version ?? 'v1', 'v') ? Auth::user()->pepper_version : 'v' . (Auth::user()->pepper_version ?? '1') }}</span>
+            <div class="flex items-center gap-3 text-[11px] text-slate-400">
+                <span>HIPAA & GDPR Certified Secure EHR</span>
                 <span>•</span>
-                <span>Age X25519 Cryptography</span>
+                <span>256-bit SSL Encrypted</span>
             </div>
         </div>
     </footer>
