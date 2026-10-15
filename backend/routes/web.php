@@ -46,7 +46,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // 3. Security & HIPAA Audit Forensics Hub
-    Route::prefix('audit')->name('audit.')->middleware(['role:Admin,SuperAdmin,SecurityAuditor'])->group(function () {
+    Route::prefix('audit')->name('audit.')->middleware(['role:Admin,SuperAdmin,SecurityAuditor,Auditor'])->group(function () {
         Route::get('/dashboard', [AuditorController::class, 'index'])->name('dashboard');
         Route::get('/verify-integrity', [AuditorController::class, 'verifyIntegrity'])->name('verify-integrity');
     });

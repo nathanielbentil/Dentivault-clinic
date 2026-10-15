@@ -499,24 +499,47 @@
 
                 <!-- Admin & Manager: Staff Directory -->
                 @if(in_array($userRole, ['Admin', 'Manager']))
-                    <button @click="switchTab('staff')"
-                        :class="activeTab === 'staff' 
-                            ? 'border-purple-500 bg-purple-950/70 ring-2 ring-purple-500/50 shadow-xl shadow-purple-950/50' 
-                            : 'border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-slate-700'"
-                        class="p-4 rounded-2xl border text-left transition-all relative overflow-hidden group cursor-pointer">
-                        <div class="flex items-center justify-between">
-                            <span class="text-3xl">👥</span>
-                            <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-purple-950 text-purple-300 border border-purple-800">
-                                {{ $staffUsers->count() }} Staff
-                            </span>
-                        </div>
-                        <div class="text-sm font-bold text-white mt-3">
-                            Personnel Directory
-                        </div>
-                        <p class="text-[11px] text-slate-400 mt-0.5">
-                            {{ $userRole === 'Admin' ? 'Argon2id Hashes & Master Controls' : 'Shift Roster (Read-Only)' }}
-                        </p>
-                    </button>
+                    @if($userRole === 'Manager')
+                        <a href="{{ route('branch.dashboard') }}"
+                            class="p-4 rounded-2xl border border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-emerald-500/60 hover:ring-2 hover:ring-emerald-500/30 text-left transition-all relative overflow-hidden group cursor-pointer block">
+                            <div class="flex items-center justify-between">
+                                <span class="text-3xl group-hover:scale-110 transition-transform">👥</span>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">
+                                        {{ $staffUsers->count() }} Staff
+                                    </span>
+                                    <span class="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500 text-slate-950">
+                                        Open Operations ↗
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="text-sm font-bold text-white mt-3 group-hover:text-emerald-300 transition-colors">
+                                Personnel Directory & Operations
+                            </div>
+                            <p class="text-[11px] text-slate-400 mt-0.5">
+                                Dedicated Portal: Customer Account Identity & Lockout Resets
+                            </p>
+                        </a>
+                    @else
+                        <button @click="switchTab('staff')"
+                            :class="activeTab === 'staff' 
+                                ? 'border-purple-500 bg-purple-950/70 ring-2 ring-purple-500/50 shadow-xl shadow-purple-950/50' 
+                                : 'border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-slate-700'"
+                            class="p-4 rounded-2xl border text-left transition-all relative overflow-hidden group cursor-pointer">
+                            <div class="flex items-center justify-between">
+                                <span class="text-3xl">👥</span>
+                                <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-purple-950 text-purple-300 border border-purple-800">
+                                    {{ $staffUsers->count() }} Staff
+                                </span>
+                            </div>
+                            <div class="text-sm font-bold text-white mt-3">
+                                Personnel Directory
+                            </div>
+                            <p class="text-[11px] text-slate-400 mt-0.5">
+                                Argon2id Hashes & Master Controls
+                            </p>
+                        </button>
+                    @endif
                 @endif
 
                 <!-- Doctor & Pharmacist: Prescriptions Station (Dedicated Page) -->
@@ -591,26 +614,28 @@
                     </a>
                 @endif
 
-                <!-- Auditor: Cryptographic Audit Vault -->
+                <!-- Auditor: Cryptographic Audit Vault (Dedicated Page) -->
                 @if($userRole === 'Auditor')
-                    <button @click="switchTab('archive')"
-                        :class="activeTab === 'archive' 
-                            ? 'border-rose-500 bg-rose-950/70 ring-2 ring-rose-500/50 shadow-xl shadow-rose-950/50' 
-                            : 'border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-slate-700'"
-                        class="p-4 rounded-2xl border text-left transition-all relative overflow-hidden group cursor-pointer">
+                    <a href="{{ route('audit.dashboard') }}"
+                        class="p-4 rounded-2xl border border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-rose-500/60 hover:ring-2 hover:ring-rose-500/30 text-left transition-all relative overflow-hidden group cursor-pointer block">
                         <div class="flex items-center justify-between">
-                            <span class="text-3xl">🗃️</span>
-                            <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-rose-950 text-rose-300 border border-rose-800">
-                                {{ $archivedUsers->count() }} Archives
-                            </span>
+                            <span class="text-3xl group-hover:scale-110 transition-transform">🗃️</span>
+                            <div class="flex items-center gap-1.5">
+                                <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-rose-950 text-rose-300 border border-rose-800">
+                                    Forensics Hub
+                                </span>
+                                <span class="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-rose-500 text-slate-950">
+                                    Open Hub ↗
+                                </span>
+                            </div>
                         </div>
-                        <div class="text-sm font-bold text-white mt-3">
-                            Cryptographic Audit Vault
+                        <div class="text-sm font-bold text-white mt-3 group-hover:text-rose-300 transition-colors">
+                            Cryptographic Audit Vault & Forensics
                         </div>
                         <p class="text-[11px] text-slate-400 mt-0.5">
-                            Soft-Deleted Users & HIPAA Retention
+                            Dedicated Hub: SHA-256 Chained Integrity & Anomaly Detection
                         </p>
-                    </button>
+                    </a>
                 @endif
 
                 <!-- Admin & Auditor: Security Telemetry (Dedicated Page) -->
