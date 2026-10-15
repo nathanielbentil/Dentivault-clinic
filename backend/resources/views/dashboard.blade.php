@@ -47,6 +47,15 @@
         activeTab: '{{ in_array($userRole, ['Auditor']) ? 'archive' : ($userRole === 'Pharmacist' ? 'pharmacy' : ($userRole === 'Nurse' ? 'vitals' : 'patients')) }}',
         search: '',
         statusFilter: 'all',
+        switchTab(tab) {
+            this.activeTab = tab;
+            this.$nextTick(() => {
+                const el = document.getElementById('workstation-content');
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        },
         showRegisterModal: false,
         showNewStaffModal: false,
         showEditStaffModal: false,
@@ -458,11 +467,11 @@
                 
                 <!-- Tab: Patients (Admin, Manager, Doctor, Nurse, Pharmacist) -->
                 @if($userRole !== 'Auditor')
-                    <button @click="activeTab = 'patients'"
+                    <button @click="switchTab('patients')"
                         :class="activeTab === 'patients' 
                             ? 'border-{{ $roleColor }}-500 bg-{{ $roleColor }}-950/70 ring-2 ring-{{ $roleColor }}-500/50 shadow-xl shadow-{{ $roleColor }}-950/50' 
                             : 'border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-slate-700'"
-                        class="p-4 rounded-2xl border text-left transition-all relative overflow-hidden group">
+                        class="p-4 rounded-2xl border text-left transition-all relative overflow-hidden group cursor-pointer">
                         <div class="flex items-center justify-between">
                             <span class="text-3xl">🏥</span>
                             <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-cyan-950 text-cyan-300 border border-cyan-800">
@@ -490,11 +499,11 @@
 
                 <!-- Admin & Manager: Staff Directory -->
                 @if(in_array($userRole, ['Admin', 'Manager']))
-                    <button @click="activeTab = 'staff'"
+                    <button @click="switchTab('staff')"
                         :class="activeTab === 'staff' 
                             ? 'border-purple-500 bg-purple-950/70 ring-2 ring-purple-500/50 shadow-xl shadow-purple-950/50' 
                             : 'border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-slate-700'"
-                        class="p-4 rounded-2xl border text-left transition-all relative overflow-hidden group">
+                        class="p-4 rounded-2xl border text-left transition-all relative overflow-hidden group cursor-pointer">
                         <div class="flex items-center justify-between">
                             <span class="text-3xl">👥</span>
                             <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-purple-950 text-purple-300 border border-purple-800">
@@ -512,11 +521,11 @@
 
                 <!-- Doctor & Pharmacist: Prescriptions Station -->
                 @if(in_array($userRole, ['Doctor', 'Pharmacist']))
-                    <button @click="activeTab = 'prescriptions'"
+                    <button @click="switchTab('prescriptions')"
                         :class="activeTab === 'prescriptions' 
                             ? 'border-cyan-500 bg-cyan-950/70 ring-2 ring-cyan-500/50 shadow-xl shadow-cyan-950/50' 
                             : 'border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-slate-700'"
-                        class="p-4 rounded-2xl border text-left transition-all relative overflow-hidden group">
+                        class="p-4 rounded-2xl border text-left transition-all relative overflow-hidden group cursor-pointer">
                         <div class="flex items-center justify-between">
                             <span class="text-3xl">💊</span>
                             <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-cyan-950 text-cyan-300 border border-cyan-800">
@@ -534,11 +543,11 @@
 
                 <!-- Nurse: Shift Vitals Logger -->
                 @if($userRole === 'Nurse')
-                    <button @click="activeTab = 'vitals'"
+                    <button @click="switchTab('vitals')"
                         :class="activeTab === 'vitals' 
                             ? 'border-pink-500 bg-pink-950/70 ring-2 ring-pink-500/50 shadow-xl shadow-pink-950/50' 
                             : 'border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-slate-700'"
-                        class="p-4 rounded-2xl border text-left transition-all relative overflow-hidden group">
+                        class="p-4 rounded-2xl border text-left transition-all relative overflow-hidden group cursor-pointer">
                         <div class="flex items-center justify-between">
                             <span class="text-3xl">⏱️</span>
                             <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-pink-950 text-pink-300 border border-pink-800">
@@ -556,11 +565,11 @@
 
                 <!-- Pharmacist: Dispensary Queue -->
                 @if($userRole === 'Pharmacist')
-                    <button @click="activeTab = 'pharmacy'"
+                    <button @click="switchTab('pharmacy')"
                         :class="activeTab === 'pharmacy' 
                             ? 'border-amber-500 bg-amber-950/70 ring-2 ring-amber-500/50 shadow-xl shadow-amber-950/50' 
                             : 'border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-slate-700'"
-                        class="p-4 rounded-2xl border text-left transition-all relative overflow-hidden group">
+                        class="p-4 rounded-2xl border text-left transition-all relative overflow-hidden group cursor-pointer">
                         <div class="flex items-center justify-between">
                             <span class="text-3xl">📦</span>
                             <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-amber-950 text-amber-300 border border-amber-800">
@@ -578,11 +587,11 @@
 
                 <!-- Auditor: Cryptographic Audit Vault -->
                 @if($userRole === 'Auditor')
-                    <button @click="activeTab = 'archive'"
+                    <button @click="switchTab('archive')"
                         :class="activeTab === 'archive' 
                             ? 'border-rose-500 bg-rose-950/70 ring-2 ring-rose-500/50 shadow-xl shadow-rose-950/50' 
                             : 'border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-slate-700'"
-                        class="p-4 rounded-2xl border text-left transition-all relative overflow-hidden group">
+                        class="p-4 rounded-2xl border text-left transition-all relative overflow-hidden group cursor-pointer">
                         <div class="flex items-center justify-between">
                             <span class="text-3xl">🗃️</span>
                             <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-rose-950 text-rose-300 border border-rose-800">
@@ -600,11 +609,11 @@
 
                 <!-- Admin & Auditor: Security Telemetry -->
                 @if(in_array($userRole, ['Admin', 'Auditor']))
-                    <button @click="activeTab = 'telemetry'"
+                    <button @click="switchTab('telemetry')"
                         :class="activeTab === 'telemetry' 
                             ? 'border-emerald-500 bg-emerald-950/70 ring-2 ring-emerald-500/50 shadow-xl shadow-emerald-950/50' 
                             : 'border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-slate-700'"
-                        class="p-4 rounded-2xl border text-left transition-all relative overflow-hidden group">
+                        class="p-4 rounded-2xl border text-left transition-all relative overflow-hidden group cursor-pointer">
                         <div class="flex items-center justify-between">
                             <span class="text-3xl">🛡️</span>
                             <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">
@@ -622,11 +631,11 @@
 
                 <!-- Auditor: Patient Access Trail -->
                 @if($userRole === 'Auditor')
-                    <button @click="activeTab = 'patients'"
+                    <button @click="switchTab('patients')"
                         :class="activeTab === 'patients' 
                             ? 'border-blue-500 bg-blue-950/70 ring-2 ring-blue-500/50 shadow-xl shadow-blue-950/50' 
                             : 'border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-slate-700'"
-                        class="p-4 rounded-2xl border text-left transition-all relative overflow-hidden group">
+                        class="p-4 rounded-2xl border text-left transition-all relative overflow-hidden group cursor-pointer">
                         <div class="flex items-center justify-between">
                             <span class="text-3xl">👁️</span>
                             <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-blue-950 text-blue-300 border border-blue-800">
@@ -644,11 +653,11 @@
 
                 <!-- Admin: Audit Vault -->
                 @if($userRole === 'Admin')
-                    <button @click="activeTab = 'archive'"
+                    <button @click="switchTab('archive')"
                         :class="activeTab === 'archive' 
                             ? 'border-rose-500 bg-rose-950/70 ring-2 ring-rose-500/50 shadow-xl shadow-rose-950/50' 
                             : 'border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-slate-700'"
-                        class="p-4 rounded-2xl border text-left transition-all relative overflow-hidden group">
+                        class="p-4 rounded-2xl border text-left transition-all relative overflow-hidden group cursor-pointer">
                         <div class="flex items-center justify-between">
                             <span class="text-3xl">🗃️</span>
                             <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-rose-950 text-rose-300 border border-rose-800">
@@ -664,11 +673,11 @@
                     </button>
 
                     <!-- Admin: Backups & Restore Points -->
-                    <button @click="activeTab = 'config'"
+                    <button @click="switchTab('config')"
                         :class="activeTab === 'config' 
                             ? 'border-amber-500 bg-amber-950/70 ring-2 ring-amber-500/50 shadow-xl shadow-amber-950/50' 
                             : 'border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-slate-700'"
-                        class="p-4 rounded-2xl border text-left transition-all relative overflow-hidden group">
+                        class="p-4 rounded-2xl border text-left transition-all relative overflow-hidden group cursor-pointer">
                         <div class="flex items-center justify-between">
                             <span class="text-3xl">💾</span>
                             <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-amber-950 text-amber-300 border border-amber-800">
@@ -686,6 +695,11 @@
 
             </div>
         </div>
+
+        <!-- ======================================================== -->
+        <!-- WORKSTATION CONTENT CONTAINER (AUTO-SCROLL TARGET)       -->
+        <!-- ======================================================== -->
+        <div id="workstation-content" class="scroll-mt-8 space-y-6">
 
         <!-- ======================================================== -->
         <!-- TAB 1: 52 HOSPITAL PATIENTS & CLINICAL CHARTS            -->
@@ -1570,6 +1584,7 @@
                     </span>
                 </div>
             </div>
+        </div>
         </div>
 
         <!-- Modal 1: Register New Patient -->
