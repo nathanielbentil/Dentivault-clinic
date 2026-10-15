@@ -111,98 +111,6 @@
             }
         }
     }" class="space-y-6">
-
-        <!-- RBAC 1-CLICK ROLE DEMONSTRATOR BAR (For Teacher & Defense) -->
-        <div class="glass-card rounded-2xl p-4 border border-slate-800 bg-slate-900/90 shadow-xl space-y-3">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-slate-800 pb-2.5">
-                <div class="flex items-center gap-2">
-                    <span class="text-base">🛡️</span>
-                    <span class="text-xs font-bold text-white uppercase tracking-wider">
-                        Role-Based Access Control (RBAC) Simulator:
-                    </span>
-                    <span class="text-[11px] text-slate-400 hidden sm:inline">
-                        1-Click switch identity to test authorization permissions
-                    </span>
-                </div>
-                <div class="text-[11px] font-mono text-cyan-400 bg-cyan-950/60 px-2.5 py-0.5 rounded-full border border-cyan-800/60 flex items-center gap-1.5">
-                    <span>Active Session:</span>
-                    <strong class="text-white">{{ $userRole }}</strong>
-                </div>
-            </div>
-
-            <!-- The 6 Role Buttons -->
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
-                @foreach([
-                    ['role' => 'Admin', 'icon' => '👑', 'label' => 'Chief Admin', 'color' => 'purple', 'sub' => 'All Modules & Controls'],
-                    ['role' => 'Manager', 'icon' => '📋', 'label' => 'Ops Manager', 'color' => 'emerald', 'sub' => 'Wards & Bed Capacity'],
-                    ['role' => 'Doctor', 'icon' => '🩺', 'label' => 'Attending Doctor', 'color' => 'cyan', 'sub' => 'Diagnosis & Prescriptions'],
-                    ['role' => 'Nurse', 'icon' => '💉', 'label' => 'Ward Nurse', 'color' => 'pink', 'sub' => 'Vitals & In-Patient Beds'],
-                    ['role' => 'Pharmacist', 'icon' => '💊', 'label' => 'Pharmacist', 'color' => 'amber', 'sub' => 'Dispensary & Orders'],
-                    ['role' => 'Auditor', 'icon' => '🔍', 'label' => 'HIPAA Auditor', 'color' => 'blue', 'sub' => 'Read-Only Audit Trail'],
-                ] as $demoRole)
-                    <form method="POST" action="{{ route('demo.switch-role', $demoRole['role']) }}" class="w-full">
-                        @csrf
-                        <button type="submit" 
-                            class="w-full text-left p-2.5 rounded-xl border transition-all {{ $userRole === $demoRole['role'] ? 'border-' . $demoRole['color'] . '-500 bg-' . $demoRole['color'] . '-950/70 ring-2 ring-' . $demoRole['color'] . '-500/40' : 'border-slate-800 bg-slate-950/60 hover:bg-slate-900 hover:border-slate-700' }}">
-                            <div class="flex items-center justify-between">
-                                <span class="text-base">{{ $demoRole['icon'] }}</span>
-                                @if($userRole === $demoRole['role'])
-                                    <span class="text-[9px] font-bold uppercase px-1.5 py-0.2 rounded bg-{{ $demoRole['color'] }}-500 text-slate-950">Active</span>
-                                @endif
-                            </div>
-                            <div class="text-xs font-bold text-white mt-1.5">{{ $demoRole['label'] }}</div>
-                            <div class="text-[10px] text-slate-400 truncate">{{ $demoRole['sub'] }}</div>
-                        </button>
-                    </form>
-                @endforeach
-            </div>
-
-            <!-- RBAC Permission Transparency Notice -->
-            <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800/80 text-xs flex flex-col md:flex-row md:items-center justify-between gap-2">
-                <div class="flex items-center gap-2 flex-wrap">
-                    <span class="text-emerald-400 font-bold flex items-center gap-1">
-                        <span>✓</span>
-                        <span>Granted Permissions:</span>
-                    </span>
-                    <span class="text-[11px] text-slate-300 font-mono">
-                        @if($userRole === 'Admin')
-                            [patients.*] [users.*] [audit.*] [config.manage] [security.master]
-                        @elseif($userRole === 'Manager')
-                            [patients.view] [patients.create] [patients.edit] [users.view]
-                        @elseif($userRole === 'Doctor')
-                            [patients.view] [patients.edit] [medical.diagnose] [medical.prescribe]
-                        @elseif($userRole === 'Nurse')
-                            [patients.view] [patients.edit] [nursing.vitals] [nursing.chart]
-                        @elseif($userRole === 'Pharmacist')
-                            [patients.view] [pharmacy.dispense] [pharmacy.inventory]
-                        @elseif($userRole === 'Auditor')
-                            [audit.view] [audit.verify] [patients.view (read-only)]
-                        @endif
-                    </span>
-                </div>
-                <div class="flex items-center gap-2 flex-wrap">
-                    <span class="text-rose-400 font-bold flex items-center gap-1">
-                        <span>✗</span>
-                        <span>Restricted Modules:</span>
-                    </span>
-                    <span class="text-[11px] text-slate-400 font-mono">
-                        @if($userRole === 'Admin')
-                            None (SuperAdmin Full Bypass)
-                        @elseif($userRole === 'Manager')
-                            [users.manage] [config.manage] [security.telemetry]
-                        @elseif($userRole === 'Doctor')
-                            [users.manage] [audit.manage] [config.manage]
-                        @elseif($userRole === 'Nurse')
-                            [patients.create] [users.manage] [config.manage]
-                        @elseif($userRole === 'Pharmacist')
-                            [patients.create] [users.manage] [config.manage]
-                        @elseif($userRole === 'Auditor')
-                            [ALL WRITE/DELETE/RESET MUTATIONS BLOCKED]
-                        @endif
-                    </span>
-                </div>
-            </div>
-        </div>
         
         <!-- Welcome Header Banner -->
         <div class="glass-card rounded-2xl p-6 sm:p-8 border border-slate-800 bg-gradient-to-r from-slate-950 via-slate-900 to-{{ $roleColor }}-950/40 relative overflow-hidden">
@@ -279,7 +187,82 @@
             </div>
         </div>
 
-        <!-- Role-Specific Clinical & Operational KPIs -->
+        <!-- Active Security Clearance & Role Authority Banner -->
+        <div class="glass-card rounded-2xl p-5 border border-{{ $roleColor }}-500/30 bg-gradient-to-r from-slate-900 via-slate-900/90 to-{{ $roleColor }}-950/20 shadow-lg">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div class="flex items-center gap-3.5">
+                    <div class="h-12 w-12 rounded-2xl bg-{{ $roleColor }}-950/80 border border-{{ $roleColor }}-500/40 flex items-center justify-center text-2xl shadow-inner">
+                        {{ $roleIcon }}
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold uppercase tracking-wider text-{{ $roleColor }}-400">
+                                @if($userRole === 'Admin')
+                                    Security Clearance: Level 5 • Executive Directorate
+                                @elseif($userRole === 'Manager')
+                                    Security Clearance: Level 4 • Clinical Operations
+                                @elseif($userRole === 'Doctor')
+                                    Security Clearance: Level 4 • Attending Physician
+                                @elseif($userRole === 'Nurse')
+                                    Security Clearance: Level 3 • In-Patient Nursing
+                                @elseif($userRole === 'Pharmacist')
+                                    Security Clearance: Level 3 • Hospital Dispensary
+                                @elseif($userRole === 'Auditor')
+                                    Security Clearance: Level 4 • Compliance & Forensics
+                                @endif
+                            </span>
+                            <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-950 text-slate-300 border border-slate-800 font-mono">
+                                Authenticated Session
+                            </span>
+                        </div>
+                        <h2 class="text-lg font-bold text-white mt-0.5">
+                            {{ $user->name }} • Assigned Station: <span class="text-{{ $roleColor }}-300">{{ $userRole }} Console</span>
+                        </h2>
+                    </div>
+                </div>
+
+                <!-- Granted vs Blocked Scope for this logged in user -->
+                <div class="flex flex-col sm:flex-row sm:items-center gap-3 text-xs">
+                    <div class="px-3.5 py-2 rounded-xl bg-slate-950/80 border border-emerald-500/30">
+                        <span class="text-[10px] uppercase font-bold text-emerald-400 block mb-0.5">Authorized Scope:</span>
+                        <span class="font-mono text-slate-200 text-[11px]">
+                            @if($userRole === 'Admin')
+                                All Modules • Full SuperAdmin Access
+                            @elseif($userRole === 'Manager')
+                                Ward Beds • Patient Admissions • Staff Directory
+                            @elseif($userRole === 'Doctor')
+                                Clinical Diagnoses • Electronic Prescriptions (Rx)
+                            @elseif($userRole === 'Nurse')
+                                Bed Vitals Telemetry • Medication Administration
+                            @elseif($userRole === 'Pharmacist')
+                                Prescription Review • Medication Dispensing
+                            @elseif($userRole === 'Auditor')
+                                Cryptographic Audit Vault • Tamper Verification
+                            @endif
+                        </span>
+                    </div>
+
+                    <div class="px-3.5 py-2 rounded-xl bg-slate-950/80 border border-rose-500/30">
+                        <span class="text-[10px] uppercase font-bold text-rose-400 block mb-0.5">Access Restrictions:</span>
+                        <span class="font-mono text-slate-400 text-[11px]">
+                            @if($userRole === 'Admin')
+                                Immutable Audit Deletion Blocked
+                            @elseif($userRole === 'Manager')
+                                IT Telemetry • Password Resets • Backups
+                            @elseif($userRole === 'Doctor')
+                                User Management • Audit Vault • Restore Points
+                            @elseif($userRole === 'Nurse')
+                                Patient Admitting • Writing Prescriptions • Users
+                            @elseif($userRole === 'Pharmacist')
+                                Writing Diagnoses • Patient Admitting • Backups
+                            @elseif($userRole === 'Auditor')
+                                All Write / Update / Delete Mutations Blocked
+                            @endif
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             @if($userRole === 'Doctor')
                 <!-- Doctor KPIs -->
@@ -458,121 +441,249 @@
             @endif
         </div>
 
-        <!-- Modern Hospital Navigation & Role-Enforced Segmented Bar -->
-        <div class="glass-card p-1.5 rounded-2xl border border-slate-800 shadow-xl flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2">
-            <!-- Left Group: Clinical & Professional Operations -->
-            <div class="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0">
-                <span class="text-[10px] uppercase font-bold tracking-wider text-slate-500 px-2 hidden sm:inline">Modules:</span>
-                
-                <!-- Tab 1: Patients (Available to All Roles) -->
-                <button @click="activeTab = 'patients'"
-                    :class="activeTab === 'patients' 
-                        ? 'bg-cyan-950/80 text-cyan-300 border-cyan-500/50 shadow-md shadow-cyan-950/50 ring-1 ring-cyan-500/30' 
-                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900 border-transparent'"
-                    class="px-3.5 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-2 whitespace-nowrap">
-                    <span>🏥</span>
-                    <span>Patient Wards</span>
-                    <span class="px-1.5 py-0.5 rounded-md text-[10px] font-mono bg-cyan-900/60 text-cyan-300 border border-cyan-700/50">
-                        {{ $totalPatients }}
-                    </span>
-                </button>
+        <!-- Big, Bold, High-Visibility Role Workstation Tabs -->
+        <div class="space-y-3">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                <span class="text-xs uppercase font-bold tracking-wider text-slate-400 flex items-center gap-2">
+                    <span class="text-{{ $roleColor }}-400 text-sm">●</span>
+                    <span class="text-white">Authorized Workstations & Modules:</span>
+                </span>
+                <span class="text-[11px] text-{{ $roleColor }}-400 font-mono bg-{{ $roleColor }}-950/60 px-2.5 py-0.5 rounded-full border border-{{ $roleColor }}-800/60">
+                    {{ $userRole }} Dashboard
+                </span>
+            </div>
 
-                <!-- Tab 2: Staff Directory (Admin & Manager ONLY) -->
+            <!-- Prominent Workstation Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-{{ $userRole === 'Admin' ? '5' : ($userRole === 'Auditor' ? '3' : '2') }} gap-3">
+                
+                <!-- Tab: Patients (Admin, Manager, Doctor, Nurse, Pharmacist) -->
+                @if($userRole !== 'Auditor')
+                    <button @click="activeTab = 'patients'"
+                        :class="activeTab === 'patients' 
+                            ? 'border-{{ $roleColor }}-500 bg-{{ $roleColor }}-950/70 ring-2 ring-{{ $roleColor }}-500/50 shadow-xl shadow-{{ $roleColor }}-950/50' 
+                            : 'border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-slate-700'"
+                        class="p-4 rounded-2xl border text-left transition-all relative overflow-hidden group">
+                        <div class="flex items-center justify-between">
+                            <span class="text-3xl">🏥</span>
+                            <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-cyan-950 text-cyan-300 border border-cyan-800">
+                                {{ $totalPatients }} Patients
+                            </span>
+                        </div>
+                        <div class="text-sm font-bold text-white mt-3">
+                            @if($userRole === 'Doctor')
+                                Clinical Wards
+                            @elseif($userRole === 'Nurse')
+                                In-Patient Bed Roster
+                            @elseif($userRole === 'Manager')
+                                Ward Bed Capacity
+                            @elseif($userRole === 'Pharmacist')
+                                Patient Medical Charts
+                            @else
+                                Patient Clinical Wards
+                            @endif
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-0.5">
+                            52 Active Hospital Records
+                        </p>
+                    </button>
+                @endif
+
+                <!-- Admin & Manager: Staff Directory -->
                 @if(in_array($userRole, ['Admin', 'Manager']))
                     <button @click="activeTab = 'staff'"
                         :class="activeTab === 'staff' 
-                            ? 'bg-purple-950/80 text-purple-300 border-purple-500/50 shadow-md shadow-purple-950/50 ring-1 ring-purple-500/30' 
-                            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900 border-transparent'"
-                        class="px-3.5 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-2 whitespace-nowrap">
-                        <span>👥</span>
-                        <span>Staff Directory</span>
-                        <span class="px-1.5 py-0.5 rounded-md text-[10px] font-mono bg-purple-900/60 text-purple-300 border border-purple-700/50">
-                            {{ $staffUsers->count() }}
-                        </span>
+                            ? 'border-purple-500 bg-purple-950/70 ring-2 ring-purple-500/50 shadow-xl shadow-purple-950/50' 
+                            : 'border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-slate-700'"
+                        class="p-4 rounded-2xl border text-left transition-all relative overflow-hidden group">
+                        <div class="flex items-center justify-between">
+                            <span class="text-3xl">👥</span>
+                            <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-purple-950 text-purple-300 border border-purple-800">
+                                {{ $staffUsers->count() }} Staff
+                            </span>
+                        </div>
+                        <div class="text-sm font-bold text-white mt-3">
+                            Personnel Directory
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-0.5">
+                            {{ $userRole === 'Admin' ? 'Argon2id Hashes & Master Controls' : 'Shift Roster (Read-Only)' }}
+                        </p>
                     </button>
                 @endif
 
-                <!-- Tab: Doctor Prescriptions (Doctor & Pharmacist) -->
-                @if(in_array($userRole, ['Doctor', 'Pharmacist', 'Admin']))
+                <!-- Doctor & Pharmacist: Prescriptions Station -->
+                @if(in_array($userRole, ['Doctor', 'Pharmacist']))
                     <button @click="activeTab = 'prescriptions'"
                         :class="activeTab === 'prescriptions' 
-                            ? 'bg-cyan-950/80 text-cyan-300 border-cyan-500/50 shadow-md shadow-cyan-950/50 ring-1 ring-cyan-500/30' 
-                            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900 border-transparent'"
-                        class="px-3.5 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 whitespace-nowrap">
-                        <span>💊</span>
-                        <span>Prescriptions Station</span>
+                            ? 'border-cyan-500 bg-cyan-950/70 ring-2 ring-cyan-500/50 shadow-xl shadow-cyan-950/50' 
+                            : 'border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-slate-700'"
+                        class="p-4 rounded-2xl border text-left transition-all relative overflow-hidden group">
+                        <div class="flex items-center justify-between">
+                            <span class="text-3xl">💊</span>
+                            <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-cyan-950 text-cyan-300 border border-cyan-800">
+                                38 Orders
+                            </span>
+                        </div>
+                        <div class="text-sm font-bold text-white mt-3">
+                            Electronic Prescriptions
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-0.5">
+                            Clinical Diagnoses & Treatment Regimens
+                        </p>
                     </button>
                 @endif
 
-                <!-- Tab: Nurse Vitals (Nurse & Doctor) -->
-                @if(in_array($userRole, ['Nurse', 'Doctor', 'Admin']))
+                <!-- Nurse: Shift Vitals Logger -->
+                @if($userRole === 'Nurse')
                     <button @click="activeTab = 'vitals'"
                         :class="activeTab === 'vitals' 
-                            ? 'bg-pink-950/80 text-pink-300 border-pink-500/50 shadow-md shadow-pink-950/50 ring-1 ring-pink-500/30' 
-                            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900 border-transparent'"
-                        class="px-3.5 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 whitespace-nowrap">
-                        <span>⏱️</span>
-                        <span>Nursing Vitals Logger</span>
+                            ? 'border-pink-500 bg-pink-950/70 ring-2 ring-pink-500/50 shadow-xl shadow-pink-950/50' 
+                            : 'border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-slate-700'"
+                        class="p-4 rounded-2xl border text-left transition-all relative overflow-hidden group">
+                        <div class="flex items-center justify-between">
+                            <span class="text-3xl">⏱️</span>
+                            <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-pink-950 text-pink-300 border border-pink-800">
+                                7 Due
+                            </span>
+                        </div>
+                        <div class="text-sm font-bold text-white mt-3">
+                            Shift Nursing Vitals Station
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-0.5">
+                            Blood Pressure, Pulse, Temp & SpO2
+                        </p>
                     </button>
                 @endif
 
-                <!-- Tab: Pharmacist Dispensary (Pharmacist) -->
-                @if(in_array($userRole, ['Pharmacist', 'Admin']))
+                <!-- Pharmacist: Dispensary Queue -->
+                @if($userRole === 'Pharmacist')
                     <button @click="activeTab = 'pharmacy'"
                         :class="activeTab === 'pharmacy' 
-                            ? 'bg-amber-950/80 text-amber-300 border-amber-500/50 shadow-md shadow-amber-950/50 ring-1 ring-amber-500/30' 
-                            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900 border-transparent'"
-                        class="px-3.5 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 whitespace-nowrap">
-                        <span>📦</span>
-                        <span>Dispensary Queue</span>
+                            ? 'border-amber-500 bg-amber-950/70 ring-2 ring-amber-500/50 shadow-xl shadow-amber-950/50' 
+                            : 'border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-slate-700'"
+                        class="p-4 rounded-2xl border text-left transition-all relative overflow-hidden group">
+                        <div class="flex items-center justify-between">
+                            <span class="text-3xl">📦</span>
+                            <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-amber-950 text-amber-300 border border-amber-800">
+                                19 Pending
+                            </span>
+                        </div>
+                        <div class="text-sm font-bold text-white mt-3">
+                            Dispensary Fulfillment Queue
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-0.5">
+                            Prescription Verification & Dispensing
+                        </p>
                     </button>
                 @endif
-            </div>
 
-            <!-- Right Group: Security, Audit & System Governance -->
-            <div class="flex items-center gap-1.5 overflow-x-auto pt-1 lg:pt-0 border-t lg:border-t-0 lg:border-l border-slate-800 lg:pl-3">
-                <span class="text-[10px] uppercase font-bold tracking-wider text-slate-500 px-2 hidden sm:inline">Governance:</span>
+                <!-- Auditor: Cryptographic Audit Vault -->
+                @if($userRole === 'Auditor')
+                    <button @click="activeTab = 'archive'"
+                        :class="activeTab === 'archive' 
+                            ? 'border-rose-500 bg-rose-950/70 ring-2 ring-rose-500/50 shadow-xl shadow-rose-950/50' 
+                            : 'border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-slate-700'"
+                        class="p-4 rounded-2xl border text-left transition-all relative overflow-hidden group">
+                        <div class="flex items-center justify-between">
+                            <span class="text-3xl">🗃️</span>
+                            <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-rose-950 text-rose-300 border border-rose-800">
+                                {{ $archivedUsers->count() }} Archives
+                            </span>
+                        </div>
+                        <div class="text-sm font-bold text-white mt-3">
+                            Cryptographic Audit Vault
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-0.5">
+                            Soft-Deleted Users & HIPAA Retention
+                        </p>
+                    </button>
+                @endif
 
-                <!-- Tab 3: Security Telemetry (Admin & Auditor ONLY) -->
+                <!-- Admin & Auditor: Security Telemetry -->
                 @if(in_array($userRole, ['Admin', 'Auditor']))
                     <button @click="activeTab = 'telemetry'"
                         :class="activeTab === 'telemetry' 
-                            ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/50 shadow-md shadow-emerald-950/50 ring-1 ring-emerald-500/30' 
-                            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900 border-transparent'"
-                        class="px-3 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 whitespace-nowrap">
-                        <span>🛡️</span>
-                        <span>Security Telemetry</span>
+                            ? 'border-emerald-500 bg-emerald-950/70 ring-2 ring-emerald-500/50 shadow-xl shadow-emerald-950/50' 
+                            : 'border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-slate-700'"
+                        class="p-4 rounded-2xl border text-left transition-all relative overflow-hidden group">
+                        <div class="flex items-center justify-between">
+                            <span class="text-3xl">🛡️</span>
+                            <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">
+                                Benchmark
+                            </span>
+                        </div>
+                        <div class="text-sm font-bold text-white mt-3">
+                            Security Telemetry & SQL Defense
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-0.5">
+                            Argon2id Benchmarks & PDO Parameterization
+                        </p>
                     </button>
                 @endif
 
-                <!-- Tab 4: Audit Vault (Admin & Auditor ONLY) -->
-                @if(in_array($userRole, ['Admin', 'Auditor']))
+                <!-- Auditor: Patient Access Trail -->
+                @if($userRole === 'Auditor')
+                    <button @click="activeTab = 'patients'"
+                        :class="activeTab === 'patients' 
+                            ? 'border-blue-500 bg-blue-950/70 ring-2 ring-blue-500/50 shadow-xl shadow-blue-950/50' 
+                            : 'border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-slate-700'"
+                        class="p-4 rounded-2xl border text-left transition-all relative overflow-hidden group">
+                        <div class="flex items-center justify-between">
+                            <span class="text-3xl">👁️</span>
+                            <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-blue-950 text-blue-300 border border-blue-800">
+                                Read-Only
+                            </span>
+                        </div>
+                        <div class="text-sm font-bold text-white mt-3">
+                            Patient Records Audit Log
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-0.5">
+                            Read-Only Medical Chart Verification
+                        </p>
+                    </button>
+                @endif
+
+                <!-- Admin: Audit Vault -->
+                @if($userRole === 'Admin')
                     <button @click="activeTab = 'archive'"
                         :class="activeTab === 'archive' 
-                            ? 'bg-rose-950/80 text-rose-300 border-rose-500/50 shadow-md shadow-rose-950/50 ring-1 ring-rose-500/30' 
-                            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900 border-transparent'"
-                        class="px-3 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 whitespace-nowrap">
-                        <span>🗃️</span>
-                        <span>Audit Vault</span>
-                        @if($archivedUsers->count() > 0)
-                            <span class="px-1.5 py-0.5 rounded-md text-[10px] font-mono bg-rose-900/60 text-rose-300 border border-rose-700/50">
-                                {{ $archivedUsers->count() }}
+                            ? 'border-rose-500 bg-rose-950/70 ring-2 ring-rose-500/50 shadow-xl shadow-rose-950/50' 
+                            : 'border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-slate-700'"
+                        class="p-4 rounded-2xl border text-left transition-all relative overflow-hidden group">
+                        <div class="flex items-center justify-between">
+                            <span class="text-3xl">🗃️</span>
+                            <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-rose-950 text-rose-300 border border-rose-800">
+                                {{ $archivedUsers->count() }} Archived
                             </span>
-                        @endif
+                        </div>
+                        <div class="text-sm font-bold text-white mt-3">
+                            Audit Vault & Archive
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-0.5">
+                            Soft-Deleted Accounts & Restoration
+                        </p>
+                    </button>
+
+                    <!-- Admin: Backups & Restore Points -->
+                    <button @click="activeTab = 'config'"
+                        :class="activeTab === 'config' 
+                            ? 'border-amber-500 bg-amber-950/70 ring-2 ring-amber-500/50 shadow-xl shadow-amber-950/50' 
+                            : 'border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-slate-700'"
+                        class="p-4 rounded-2xl border text-left transition-all relative overflow-hidden group">
+                        <div class="flex items-center justify-between">
+                            <span class="text-3xl">💾</span>
+                            <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-amber-950 text-amber-300 border border-amber-800">
+                                3-2-1 DR
+                            </span>
+                        </div>
+                        <div class="text-sm font-bold text-white mt-3">
+                            Backups & Restore Points
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-0.5">
+                            X25519 Encryption & Rollback Engine
+                        </p>
                     </button>
                 @endif
 
-                <!-- Tab 5: Restore Points (Admin ONLY) -->
-                @if($userRole === 'Admin')
-                    <button @click="activeTab = 'config'"
-                        :class="activeTab === 'config' 
-                            ? 'bg-amber-950/80 text-amber-300 border-amber-500/50 shadow-md shadow-amber-950/50 ring-1 ring-amber-500/30' 
-                            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900 border-transparent'"
-                        class="px-3 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 whitespace-nowrap">
-                        <span>⚙️</span>
-                        <span>Restore Points</span>
-                    </button>
-                @endif
             </div>
         </div>
 
