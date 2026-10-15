@@ -23,6 +23,27 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/biometric/register-verify', [\App\Http\Controllers\BiometricAuthController::class, 'registerVerify'])->name('biometric.register-verify');
     Route::delete('/biometric/credentials/{credential}', [\App\Http\Controllers\BiometricAuthController::class, 'destroy'])->name('biometric.destroy');
 
+    // 1.2 Interactive RBAC Role Switcher (Academic Defense / Demonstration)
+    Route::post('/demo/switch-role/{role}', function ($role) {
+        $emailMap = [
+            'Admin' => 'admin@medivault.cloud',
+            'Manager' => 'manager@medivault.cloud',
+            'Doctor' => 'doctor@medivault.cloud',
+            'Nurse' => 'nurse@medivault.cloud',
+            'Pharmacist' => 'pharmacist@medivault.cloud',
+            'Auditor' => 'auditor@medivault.cloud',
+        ];
+
+        if (isset($emailMap[$role])) {
+            $target = \App\Models\User::where('email', $emailMap[$role])->first();
+            if ($target) {
+                \Illuminate\Support\Facades\Auth::login($target);
+                return redirect()->route('dashboard')->with('status', "RBAC Context Activated: You are now logged in as {$target->name} ({$role})");
+            }
+        }
+        return back()->with('error', 'Role not found.');
+    })->name('demo.switch-role');
+
     // 2. Chief Admin Suite
     Route::prefix('admin')->name('admin.')->middleware(['role:Admin,SuperAdmin'])->group(function () {
         Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');

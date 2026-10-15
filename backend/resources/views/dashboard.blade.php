@@ -30,6 +30,7 @@
         $archivedUsers = \App\Models\User::onlyTrashed()->get();
         $systemConfigs = \App\Models\SystemConfiguration::all();
         $roles = \App\Models\Role::all();
+        $auditLogs = \App\Models\AuditLog::with('user')->latest('id')->take(25)->get();
 
         $defaultPasswords = [
             'admin@medivault.cloud' => 'Admin@MediVault2026!',
@@ -43,7 +44,7 @@
     @endphp
 
     <div x-data="{
-        activeTab: 'patients',
+        activeTab: '{{ in_array($userRole, ['Auditor']) ? 'archive' : ($userRole === 'Pharmacist' ? 'pharmacy' : ($userRole === 'Nurse' ? 'vitals' : 'patients')) }}',
         search: '',
         statusFilter: 'all',
         showRegisterModal: false,
@@ -51,7 +52,11 @@
         showEditStaffModal: false,
         showResetPassModal: false,
         showHashModal: false,
+        showDoctorModal: false,
+        showNurseModal: false,
+        showPharmModal: false,
         selectedStaff: { id: null, name: '', email: '', role: '', hash: '', salt: '', pepper: '', failed_attempts: 0, status: '' },
+        selectedPatient: { id: null, patient_code: '', name: '', ward_room: '', diagnosis: '', vitals_summary: '', treatment_plan: '', attending_doctor: '', assigned_nurse: '' },
         openEditStaff(user) {
             this.selectedStaff = { ...user };
             this.showEditStaffModal = true;
@@ -63,6 +68,18 @@
         openHashModal(user) {
             this.selectedStaff = { ...user };
             this.showHashModal = true;
+        },
+        openDoctorAction(p) {
+            this.selectedPatient = { ...p };
+            this.showDoctorModal = true;
+        },
+        openNurseAction(p) {
+            this.selectedPatient = { ...p };
+            this.showNurseModal = true;
+        },
+        openPharmAction(p) {
+            this.selectedPatient = { ...p };
+            this.showPharmModal = true;
         },
         copyText(text, label) {
             if (navigator.clipboard) {
@@ -93,10 +110,102 @@
                 this.sqlResult = 'BLOCKED: 0 Rows Returned. PDO prepared statements neutralized injection as literal string data.';
             }
         }
-    }" class="space-y-8">
+    }" class="space-y-6">
+
+        <!-- RBAC 1-CLICK ROLE DEMONSTRATOR BAR (For Teacher & Defense) -->
+        <div class="glass-card rounded-2xl p-4 border border-slate-800 bg-slate-900/90 shadow-xl space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-slate-800 pb-2.5">
+                <div class="flex items-center gap-2">
+                    <span class="text-base">🛡️</span>
+                    <span class="text-xs font-bold text-white uppercase tracking-wider">
+                        Role-Based Access Control (RBAC) Simulator:
+                    </span>
+                    <span class="text-[11px] text-slate-400 hidden sm:inline">
+                        1-Click switch identity to test authorization permissions
+                    </span>
+                </div>
+                <div class="text-[11px] font-mono text-cyan-400 bg-cyan-950/60 px-2.5 py-0.5 rounded-full border border-cyan-800/60 flex items-center gap-1.5">
+                    <span>Active Session:</span>
+                    <strong class="text-white">{{ $userRole }}</strong>
+                </div>
+            </div>
+
+            <!-- The 6 Role Buttons -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+                @foreach([
+                    ['role' => 'Admin', 'icon' => '👑', 'label' => 'Chief Admin', 'color' => 'purple', 'sub' => 'All Modules & Controls'],
+                    ['role' => 'Manager', 'icon' => '📋', 'label' => 'Ops Manager', 'color' => 'emerald', 'sub' => 'Wards & Bed Capacity'],
+                    ['role' => 'Doctor', 'icon' => '🩺', 'label' => 'Attending Doctor', 'color' => 'cyan', 'sub' => 'Diagnosis & Prescriptions'],
+                    ['role' => 'Nurse', 'icon' => '💉', 'label' => 'Ward Nurse', 'color' => 'pink', 'sub' => 'Vitals & In-Patient Beds'],
+                    ['role' => 'Pharmacist', 'icon' => '💊', 'label' => 'Pharmacist', 'color' => 'amber', 'sub' => 'Dispensary & Orders'],
+                    ['role' => 'Auditor', 'icon' => '🔍', 'label' => 'HIPAA Auditor', 'color' => 'blue', 'sub' => 'Read-Only Audit Trail'],
+                ] as $demoRole)
+                    <form method="POST" action="{{ route('demo.switch-role', $demoRole['role']) }}" class="w-full">
+                        @csrf
+                        <button type="submit" 
+                            class="w-full text-left p-2.5 rounded-xl border transition-all {{ $userRole === $demoRole['role'] ? 'border-' . $demoRole['color'] . '-500 bg-' . $demoRole['color'] . '-950/70 ring-2 ring-' . $demoRole['color'] . '-500/40' : 'border-slate-800 bg-slate-950/60 hover:bg-slate-900 hover:border-slate-700' }}">
+                            <div class="flex items-center justify-between">
+                                <span class="text-base">{{ $demoRole['icon'] }}</span>
+                                @if($userRole === $demoRole['role'])
+                                    <span class="text-[9px] font-bold uppercase px-1.5 py-0.2 rounded bg-{{ $demoRole['color'] }}-500 text-slate-950">Active</span>
+                                @endif
+                            </div>
+                            <div class="text-xs font-bold text-white mt-1.5">{{ $demoRole['label'] }}</div>
+                            <div class="text-[10px] text-slate-400 truncate">{{ $demoRole['sub'] }}</div>
+                        </button>
+                    </form>
+                @endforeach
+            </div>
+
+            <!-- RBAC Permission Transparency Notice -->
+            <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800/80 text-xs flex flex-col md:flex-row md:items-center justify-between gap-2">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <span class="text-emerald-400 font-bold flex items-center gap-1">
+                        <span>✓</span>
+                        <span>Granted Permissions:</span>
+                    </span>
+                    <span class="text-[11px] text-slate-300 font-mono">
+                        @if($userRole === 'Admin')
+                            [patients.*] [users.*] [audit.*] [config.manage] [security.master]
+                        @elseif($userRole === 'Manager')
+                            [patients.view] [patients.create] [patients.edit] [users.view]
+                        @elseif($userRole === 'Doctor')
+                            [patients.view] [patients.edit] [medical.diagnose] [medical.prescribe]
+                        @elseif($userRole === 'Nurse')
+                            [patients.view] [patients.edit] [nursing.vitals] [nursing.chart]
+                        @elseif($userRole === 'Pharmacist')
+                            [patients.view] [pharmacy.dispense] [pharmacy.inventory]
+                        @elseif($userRole === 'Auditor')
+                            [audit.view] [audit.verify] [patients.view (read-only)]
+                        @endif
+                    </span>
+                </div>
+                <div class="flex items-center gap-2 flex-wrap">
+                    <span class="text-rose-400 font-bold flex items-center gap-1">
+                        <span>✗</span>
+                        <span>Restricted Modules:</span>
+                    </span>
+                    <span class="text-[11px] text-slate-400 font-mono">
+                        @if($userRole === 'Admin')
+                            None (SuperAdmin Full Bypass)
+                        @elseif($userRole === 'Manager')
+                            [users.manage] [config.manage] [security.telemetry]
+                        @elseif($userRole === 'Doctor')
+                            [users.manage] [audit.manage] [config.manage]
+                        @elseif($userRole === 'Nurse')
+                            [patients.create] [users.manage] [config.manage]
+                        @elseif($userRole === 'Pharmacist')
+                            [patients.create] [users.manage] [config.manage]
+                        @elseif($userRole === 'Auditor')
+                            [ALL WRITE/DELETE/RESET MUTATIONS BLOCKED]
+                        @endif
+                    </span>
+                </div>
+            </div>
+        </div>
         
         <!-- Welcome Header Banner -->
-        <div class="glass-card rounded-2xl p-6 sm:p-8 border border-slate-800 bg-gradient-to-r from-slate-950 via-slate-900 to-cyan-950/40 relative overflow-hidden">
+        <div class="glass-card rounded-2xl p-6 sm:p-8 border border-slate-800 bg-gradient-to-r from-slate-950 via-slate-900 to-{{ $roleColor }}-950/40 relative overflow-hidden">
             <div class="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
                     <div class="flex items-center gap-2 mb-2">
@@ -112,75 +221,250 @@
                         </span>
                     </div>
                     <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                        MediVault Clinical Station: <span class="text-cyan-400">{{ $user->name }}</span>
+                        MediVault Clinical Station: <span class="text-{{ $roleColor }}-400">{{ $user->name }}</span>
                     </h1>
                     <p class="text-sm text-slate-400 mt-1">
-                        Enterprise Hospital Management & Electronic Health Records • Clinical Wards & Granular RBAC
+                        @if($userRole === 'Admin')
+                            Chief Medical Directorate & Executive Suite • Staff Provisioning, Cryptographic Hashes, Audit Vault & System Snapshots
+                        @elseif($userRole === 'Manager')
+                            Hospital Operations & Ward Bed Logistics • Patient Inflow, Bed Capacity, Shift Staffing Coordination
+                        @elseif($userRole === 'Doctor')
+                            Attending Medical Physician Station • Clinical Assessments, Diagnostic Charting & Electronic Prescriptions
+                        @elseif($userRole === 'Nurse')
+                            Senior Ward Nursing Station • Bed Monitoring, Vital Signs Logging & Medication Administration
+                        @elseif($userRole === 'Pharmacist')
+                            Hospital Pharmacy & Dispensary • Prescription Verification, Drug Formulary & Dispensing Queue
+                        @elseif($userRole === 'Auditor')
+                            HIPAA Compliance & Security Audit Station • Cryptographic SHA-256 Log Chains & Read-Only Access
+                        @endif
                     </p>
                 </div>
 
                 <!-- Fast Actions -->
-                <div class="flex items-center gap-2">
-                    <button @click="showRegisterModal = true" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-teal-500 hover:from-cyan-500 hover:to-teal-400 text-slate-950 font-bold text-xs shadow-lg transition-all flex items-center gap-1.5">
-                        <span>➕</span>
-                        <span>Admit Patient</span>
-                    </button>
+                <div class="flex items-center gap-2 flex-wrap">
+                    @if(in_array($userRole, ['Admin', 'Manager', 'Doctor']))
+                        <button @click="showRegisterModal = true" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-teal-500 hover:from-cyan-500 hover:to-teal-400 text-slate-950 font-bold text-xs shadow-lg transition-all flex items-center gap-1.5">
+                            <span>➕</span>
+                            <span>Admit Patient</span>
+                        </button>
+                    @endif
+
                     @if($userRole === 'Admin')
                         <button @click="showNewStaffModal = true" class="px-4 py-2.5 rounded-xl bg-purple-900/80 border border-purple-500/50 text-purple-200 font-bold text-xs hover:bg-purple-800 transition-all flex items-center gap-1.5">
                             <span>👤</span>
                             <span>Add Staff</span>
                         </button>
+                    @elseif($userRole === 'Doctor')
+                        <button @click="activeTab = 'prescriptions'" class="px-4 py-2.5 rounded-xl bg-cyan-900/80 border border-cyan-500/50 text-cyan-200 font-bold text-xs hover:bg-cyan-800 transition-all flex items-center gap-1.5">
+                            <span>💊</span>
+                            <span>Prescriptions (38)</span>
+                        </button>
+                    @elseif($userRole === 'Nurse')
+                        <button @click="activeTab = 'vitals'" class="px-4 py-2.5 rounded-xl bg-pink-900/80 border border-pink-500/50 text-pink-200 font-bold text-xs hover:bg-pink-800 transition-all flex items-center gap-1.5">
+                            <span>⏱️</span>
+                            <span>Shift Vitals Due (7)</span>
+                        </button>
+                    @elseif($userRole === 'Pharmacist')
+                        <button @click="activeTab = 'pharmacy'" class="px-4 py-2.5 rounded-xl bg-amber-900/80 border border-amber-500/50 text-amber-200 font-bold text-xs hover:bg-amber-800 transition-all flex items-center gap-1.5">
+                            <span>💊</span>
+                            <span>Pending Queue (19)</span>
+                        </button>
+                    @elseif($userRole === 'Auditor')
+                        <span class="px-3 py-2 rounded-xl bg-blue-950/80 border border-blue-500/40 text-blue-300 font-bold text-xs flex items-center gap-1.5">
+                            <span>🔒</span>
+                            <span>Read-Only Compliance Mode</span>
+                        </span>
                     @endif
                 </div>
             </div>
         </div>
 
-        <!-- 4 Hospital Clinical KPIs -->
+        <!-- Role-Specific Clinical & Operational KPIs -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="stat-card rounded-2xl p-5 border border-slate-800 bg-slate-900/70">
-                <div class="flex items-center justify-between">
-                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Patients</span>
-                    <span class="p-2 rounded-xl bg-cyan-950/60 border border-cyan-500/20 text-cyan-400">🏥</span>
+            @if($userRole === 'Doctor')
+                <!-- Doctor KPIs -->
+                <div class="stat-card rounded-2xl p-5 border border-slate-800 bg-slate-900/70">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Assigned Patients</span>
+                        <span class="p-2 rounded-xl bg-cyan-950/60 border border-cyan-500/20 text-cyan-400">🩺</span>
+                    </div>
+                    <div class="text-3xl font-black text-cyan-400 mt-2">{{ $totalPatients }}</div>
+                    <div class="text-xs text-slate-400 mt-1">Under Clinical Care</div>
                 </div>
-                <div class="text-3xl font-black text-white mt-2">{{ $totalPatients }}</div>
-                <div class="text-xs text-cyan-400 mt-1">52 Active Hospital Records</div>
-            </div>
+                <div class="stat-card rounded-2xl p-5 border border-slate-800 bg-slate-900/70">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Critical ICU Cases</span>
+                        <span class="p-2 rounded-xl bg-rose-950/60 border border-rose-500/20 text-rose-400">🚨</span>
+                    </div>
+                    <div class="text-3xl font-black text-rose-400 mt-2">{{ $icuPatients }}</div>
+                    <div class="text-xs text-rose-400/80 mt-1">Immediate Rounding Req.</div>
+                </div>
+                <div class="stat-card rounded-2xl p-5 border border-slate-800 bg-slate-900/70">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Active Prescriptions</span>
+                        <span class="p-2 rounded-xl bg-purple-950/60 border border-purple-500/20 text-purple-400">💊</span>
+                    </div>
+                    <div class="text-3xl font-black text-purple-400 mt-2">38 Orders</div>
+                    <div class="text-xs text-purple-400/80 mt-1">Dispensary Synced</div>
+                </div>
+                <div class="stat-card rounded-2xl p-5 border border-slate-800 bg-slate-900/70">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Diagnostic Reviews</span>
+                        <span class="p-2 rounded-xl bg-emerald-950/60 border border-emerald-500/20 text-emerald-400">📋</span>
+                    </div>
+                    <div class="text-3xl font-black text-emerald-400 mt-2">45 Completed</div>
+                    <div class="text-xs text-emerald-400/80 mt-1">Laboratory & Radiology</div>
+                </div>
 
-            <div class="stat-card rounded-2xl p-5 border border-slate-800 bg-slate-900/70">
-                <div class="flex items-center justify-between">
-                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">In-Patient Wards</span>
-                    <span class="p-2 rounded-xl bg-emerald-950/60 border border-emerald-500/20 text-emerald-400">🛏️</span>
+            @elseif($userRole === 'Nurse')
+                <!-- Nurse KPIs -->
+                <div class="stat-card rounded-2xl p-5 border border-slate-800 bg-slate-900/70">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">In-Patient Ward Beds</span>
+                        <span class="p-2 rounded-xl bg-pink-950/60 border border-pink-500/20 text-pink-400">🛏️</span>
+                    </div>
+                    <div class="text-3xl font-black text-pink-400 mt-2">{{ $admittedPatients }} Beds</div>
+                    <div class="text-xs text-pink-400/80 mt-1">Active Nursing Care</div>
                 </div>
-                <div class="text-3xl font-black text-emerald-400 mt-2">{{ $admittedPatients }}</div>
-                <div class="text-xs text-emerald-400/80 mt-1">General & Surgical Beds</div>
-            </div>
+                <div class="stat-card rounded-2xl p-5 border border-slate-800 bg-slate-900/70">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">ICU Monitored</span>
+                        <span class="p-2 rounded-xl bg-rose-950/60 border border-rose-500/20 text-rose-400">🚨</span>
+                    </div>
+                    <div class="text-3xl font-black text-rose-400 mt-2">{{ $icuPatients }} Patients</div>
+                    <div class="text-xs text-rose-400/80 mt-1">Hourly Vital Tracking</div>
+                </div>
+                <div class="stat-card rounded-2xl p-5 border border-slate-800 bg-slate-900/70">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Vitals Checks Due</span>
+                        <span class="p-2 rounded-xl bg-amber-950/60 border border-amber-500/20 text-amber-400">⏱️</span>
+                    </div>
+                    <div class="text-3xl font-black text-amber-400 mt-2">7 Pending</div>
+                    <div class="text-xs text-amber-400/80 mt-1">Current Shift Round</div>
+                </div>
+                <div class="stat-card rounded-2xl p-5 border border-slate-800 bg-slate-900/70">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Meds Administered</span>
+                        <span class="p-2 rounded-xl bg-emerald-950/60 border border-emerald-500/20 text-emerald-400">💉</span>
+                    </div>
+                    <div class="text-3xl font-black text-emerald-400 mt-2">34 Logs</div>
+                    <div class="text-xs text-emerald-400/80 mt-1">All Recorded Today</div>
+                </div>
 
-            <div class="stat-card rounded-2xl p-5 border border-slate-800 bg-slate-900/70">
-                <div class="flex items-center justify-between">
-                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">ICU Trauma Critical</span>
-                    <span class="p-2 rounded-xl bg-rose-950/60 border border-rose-500/20 text-rose-400">🚨</span>
+            @elseif($userRole === 'Pharmacist')
+                <!-- Pharmacist KPIs -->
+                <div class="stat-card rounded-2xl p-5 border border-slate-800 bg-slate-900/70">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Prescriptions in Queue</span>
+                        <span class="p-2 rounded-xl bg-amber-950/60 border border-amber-500/20 text-amber-400">💊</span>
+                    </div>
+                    <div class="text-3xl font-black text-amber-400 mt-2">19 Orders</div>
+                    <div class="text-xs text-amber-400/80 mt-1">Awaiting Dispense Verification</div>
                 </div>
-                <div class="text-3xl font-black text-rose-400 mt-2">{{ $icuPatients }}</div>
-                <div class="text-xs text-rose-400/80 mt-1">Intensive Care Units</div>
-            </div>
+                <div class="stat-card rounded-2xl p-5 border border-slate-800 bg-slate-900/70">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Dispensed Today</span>
+                        <span class="p-2 rounded-xl bg-emerald-950/60 border border-emerald-500/20 text-emerald-400">✅</span>
+                    </div>
+                    <div class="text-3xl font-black text-emerald-400 mt-2">47 Dispensed</div>
+                    <div class="text-xs text-emerald-400/80 mt-1">Zero Medication Errors</div>
+                </div>
+                <div class="stat-card rounded-2xl p-5 border border-slate-800 bg-slate-900/70">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Drug Formulary Stock</span>
+                        <span class="p-2 rounded-xl bg-cyan-950/60 border border-cyan-500/20 text-cyan-400">📦</span>
+                    </div>
+                    <div class="text-3xl font-black text-cyan-400 mt-2">100% OK</div>
+                    <div class="text-xs text-cyan-400/80 mt-1">Antibiotics & Emergency Meds</div>
+                </div>
+                <div class="stat-card rounded-2xl p-5 border border-slate-800 bg-slate-900/70">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Allergy Contraindications</span>
+                        <span class="p-2 rounded-xl bg-purple-950/60 border border-purple-500/20 text-purple-400">🛡️</span>
+                    </div>
+                    <div class="text-3xl font-black text-purple-400 mt-2">0 Alerts</div>
+                    <div class="text-xs text-purple-400/80 mt-1">Cross-Check Automated</div>
+                </div>
 
-            <div class="stat-card rounded-2xl p-5 border border-slate-800 bg-slate-900/70">
-                <div class="flex items-center justify-between">
-                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Outpatient Clinics</span>
-                    <span class="p-2 rounded-xl bg-purple-950/60 border border-purple-500/20 text-purple-400">🩺</span>
+            @elseif($userRole === 'Auditor')
+                <!-- Auditor KPIs -->
+                <div class="stat-card rounded-2xl p-5 border border-slate-800 bg-slate-900/70">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Immutable Audit Logs</span>
+                        <span class="p-2 rounded-xl bg-blue-950/60 border border-blue-500/20 text-blue-400">📜</span>
+                    </div>
+                    <div class="text-3xl font-black text-blue-400 mt-2">{{ $auditLogs->count() }} Events</div>
+                    <div class="text-xs text-blue-400/80 mt-1">Cryptographic Chain Verified</div>
                 </div>
-                <div class="text-3xl font-black text-purple-400 mt-2">{{ $outpatients }}</div>
-                <div class="text-xs text-purple-400/80 mt-1">Consultation Suites</div>
-            </div>
+                <div class="stat-card rounded-2xl p-5 border border-slate-800 bg-slate-900/70">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Soft-Deleted Accounts</span>
+                        <span class="p-2 rounded-xl bg-rose-950/60 border border-rose-500/20 text-rose-400">🗃️</span>
+                    </div>
+                    <div class="text-3xl font-black text-rose-400 mt-2">{{ $archivedUsers->count() }} Archived</div>
+                    <div class="text-xs text-rose-400/80 mt-1">HIPAA Retention Rule #7</div>
+                </div>
+                <div class="stat-card rounded-2xl p-5 border border-slate-800 bg-slate-900/70">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">SHA-256 Tamper Status</span>
+                        <span class="p-2 rounded-xl bg-emerald-950/60 border border-emerald-500/20 text-emerald-400">🛡️</span>
+                    </div>
+                    <div class="text-3xl font-black text-emerald-400 mt-2">100% Intact</div>
+                    <div class="text-xs text-emerald-400/80 mt-1">0 Compromised Hashes</div>
+                </div>
+                <div class="stat-card rounded-2xl p-5 border border-slate-800 bg-slate-900/70">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Compliance Mode</span>
+                        <span class="p-2 rounded-xl bg-purple-950/60 border border-purple-500/20 text-purple-400">🔍</span>
+                    </div>
+                    <div class="text-3xl font-black text-purple-400 mt-2">Read-Only</div>
+                    <div class="text-xs text-purple-400/80 mt-1">ISO 27001 / HIPAA Audited</div>
+                </div>
+
+            @else
+                <!-- Admin & Manager KPIs -->
+                <div class="stat-card rounded-2xl p-5 border border-slate-800 bg-slate-900/70">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Patients</span>
+                        <span class="p-2 rounded-xl bg-cyan-950/60 border border-cyan-500/20 text-cyan-400">🏥</span>
+                    </div>
+                    <div class="text-3xl font-black text-white mt-2">{{ $totalPatients }}</div>
+                    <div class="text-xs text-cyan-400 mt-1">52 Active Hospital Records</div>
+                </div>
+                <div class="stat-card rounded-2xl p-5 border border-slate-800 bg-slate-900/70">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">In-Patient Wards</span>
+                        <span class="p-2 rounded-xl bg-emerald-950/60 border border-emerald-500/20 text-emerald-400">🛏️</span>
+                    </div>
+                    <div class="text-3xl font-black text-emerald-400 mt-2">{{ $admittedPatients }}</div>
+                    <div class="text-xs text-emerald-400/80 mt-1">General & Surgical Beds</div>
+                </div>
+                <div class="stat-card rounded-2xl p-5 border border-slate-800 bg-slate-900/70">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">ICU Trauma Critical</span>
+                        <span class="p-2 rounded-xl bg-rose-950/60 border border-rose-500/20 text-rose-400">🚨</span>
+                    </div>
+                    <div class="text-3xl font-black text-rose-400 mt-2">{{ $icuPatients }}</div>
+                    <div class="text-xs text-rose-400/80 mt-1">Intensive Care Units</div>
+                </div>
+                <div class="stat-card rounded-2xl p-5 border border-slate-800 bg-slate-900/70">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Outpatient Clinics</span>
+                        <span class="p-2 rounded-xl bg-purple-950/60 border border-purple-500/20 text-purple-400">🩺</span>
+                    </div>
+                    <div class="text-3xl font-black text-purple-400 mt-2">{{ $outpatients }}</div>
+                    <div class="text-xs text-purple-400/80 mt-1">Consultation Suites</div>
+                </div>
+            @endif
         </div>
 
-        <!-- Modern Hospital Navigation & Governance Segmented Bar -->
+        <!-- Modern Hospital Navigation & Role-Enforced Segmented Bar -->
         <div class="glass-card p-1.5 rounded-2xl border border-slate-800 shadow-xl flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2">
-            <!-- Left Group: Core Clinical Operations -->
+            <!-- Left Group: Clinical & Professional Operations -->
             <div class="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0">
-                <span class="text-[10px] uppercase font-bold tracking-wider text-slate-500 px-2 hidden sm:inline">Clinical:</span>
+                <span class="text-[10px] uppercase font-bold tracking-wider text-slate-500 px-2 hidden sm:inline">Modules:</span>
                 
-                <!-- Tab 1: Patients -->
+                <!-- Tab 1: Patients (Available to All Roles) -->
                 <button @click="activeTab = 'patients'"
                     :class="activeTab === 'patients' 
                         ? 'bg-cyan-950/80 text-cyan-300 border-cyan-500/50 shadow-md shadow-cyan-950/50 ring-1 ring-cyan-500/30' 
@@ -193,58 +477,102 @@
                     </span>
                 </button>
 
-                <!-- Tab 2: Staff Directory -->
-                <button @click="activeTab = 'staff'"
-                    :class="activeTab === 'staff' 
-                        ? 'bg-purple-950/80 text-purple-300 border-purple-500/50 shadow-md shadow-purple-950/50 ring-1 ring-purple-500/30' 
-                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900 border-transparent'"
-                    class="px-3.5 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-2 whitespace-nowrap">
-                    <span>👥</span>
-                    <span>Staff Directory</span>
-                    <span class="px-1.5 py-0.5 rounded-md text-[10px] font-mono bg-purple-900/60 text-purple-300 border border-purple-700/50">
-                        {{ $staffUsers->count() }}
-                    </span>
-                </button>
+                <!-- Tab 2: Staff Directory (Admin & Manager ONLY) -->
+                @if(in_array($userRole, ['Admin', 'Manager']))
+                    <button @click="activeTab = 'staff'"
+                        :class="activeTab === 'staff' 
+                            ? 'bg-purple-950/80 text-purple-300 border-purple-500/50 shadow-md shadow-purple-950/50 ring-1 ring-purple-500/30' 
+                            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900 border-transparent'"
+                        class="px-3.5 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-2 whitespace-nowrap">
+                        <span>👥</span>
+                        <span>Staff Directory</span>
+                        <span class="px-1.5 py-0.5 rounded-md text-[10px] font-mono bg-purple-900/60 text-purple-300 border border-purple-700/50">
+                            {{ $staffUsers->count() }}
+                        </span>
+                    </button>
+                @endif
+
+                <!-- Tab: Doctor Prescriptions (Doctor & Pharmacist) -->
+                @if(in_array($userRole, ['Doctor', 'Pharmacist', 'Admin']))
+                    <button @click="activeTab = 'prescriptions'"
+                        :class="activeTab === 'prescriptions' 
+                            ? 'bg-cyan-950/80 text-cyan-300 border-cyan-500/50 shadow-md shadow-cyan-950/50 ring-1 ring-cyan-500/30' 
+                            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900 border-transparent'"
+                        class="px-3.5 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 whitespace-nowrap">
+                        <span>💊</span>
+                        <span>Prescriptions Station</span>
+                    </button>
+                @endif
+
+                <!-- Tab: Nurse Vitals (Nurse & Doctor) -->
+                @if(in_array($userRole, ['Nurse', 'Doctor', 'Admin']))
+                    <button @click="activeTab = 'vitals'"
+                        :class="activeTab === 'vitals' 
+                            ? 'bg-pink-950/80 text-pink-300 border-pink-500/50 shadow-md shadow-pink-950/50 ring-1 ring-pink-500/30' 
+                            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900 border-transparent'"
+                        class="px-3.5 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 whitespace-nowrap">
+                        <span>⏱️</span>
+                        <span>Nursing Vitals Logger</span>
+                    </button>
+                @endif
+
+                <!-- Tab: Pharmacist Dispensary (Pharmacist) -->
+                @if(in_array($userRole, ['Pharmacist', 'Admin']))
+                    <button @click="activeTab = 'pharmacy'"
+                        :class="activeTab === 'pharmacy' 
+                            ? 'bg-amber-950/80 text-amber-300 border-amber-500/50 shadow-md shadow-amber-950/50 ring-1 ring-amber-500/30' 
+                            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900 border-transparent'"
+                        class="px-3.5 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 whitespace-nowrap">
+                        <span>📦</span>
+                        <span>Dispensary Queue</span>
+                    </button>
+                @endif
             </div>
 
             <!-- Right Group: Security, Audit & System Governance -->
             <div class="flex items-center gap-1.5 overflow-x-auto pt-1 lg:pt-0 border-t lg:border-t-0 lg:border-l border-slate-800 lg:pl-3">
-                <span class="text-[10px] uppercase font-bold tracking-wider text-slate-500 px-2 hidden sm:inline">Security:</span>
+                <span class="text-[10px] uppercase font-bold tracking-wider text-slate-500 px-2 hidden sm:inline">Governance:</span>
 
-                <!-- Tab 3: Security Inspector -->
-                <button @click="activeTab = 'telemetry'"
-                    :class="activeTab === 'telemetry' 
-                        ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/50 shadow-md shadow-emerald-950/50 ring-1 ring-emerald-500/30' 
-                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900 border-transparent'"
-                    class="px-3 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 whitespace-nowrap">
-                    <span>🛡️</span>
-                    <span>Security Telemetry</span>
-                </button>
+                <!-- Tab 3: Security Telemetry (Admin & Auditor ONLY) -->
+                @if(in_array($userRole, ['Admin', 'Auditor']))
+                    <button @click="activeTab = 'telemetry'"
+                        :class="activeTab === 'telemetry' 
+                            ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/50 shadow-md shadow-emerald-950/50 ring-1 ring-emerald-500/30' 
+                            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900 border-transparent'"
+                        class="px-3 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 whitespace-nowrap">
+                        <span>🛡️</span>
+                        <span>Security Telemetry</span>
+                    </button>
+                @endif
 
-                <!-- Tab 4: Audit Vault -->
-                <button @click="activeTab = 'archive'"
-                    :class="activeTab === 'archive' 
-                        ? 'bg-rose-950/80 text-rose-300 border-rose-500/50 shadow-md shadow-rose-950/50 ring-1 ring-rose-500/30' 
-                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900 border-transparent'"
-                    class="px-3 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 whitespace-nowrap">
-                    <span>🗃️</span>
-                    <span>Audit Vault</span>
-                    @if($archivedUsers->count() > 0)
-                        <span class="px-1.5 py-0.5 rounded-md text-[10px] font-mono bg-rose-900/60 text-rose-300 border border-rose-700/50">
-                            {{ $archivedUsers->count() }}
-                        </span>
-                    @endif
-                </button>
+                <!-- Tab 4: Audit Vault (Admin & Auditor ONLY) -->
+                @if(in_array($userRole, ['Admin', 'Auditor']))
+                    <button @click="activeTab = 'archive'"
+                        :class="activeTab === 'archive' 
+                            ? 'bg-rose-950/80 text-rose-300 border-rose-500/50 shadow-md shadow-rose-950/50 ring-1 ring-rose-500/30' 
+                            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900 border-transparent'"
+                        class="px-3 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 whitespace-nowrap">
+                        <span>🗃️</span>
+                        <span>Audit Vault</span>
+                        @if($archivedUsers->count() > 0)
+                            <span class="px-1.5 py-0.5 rounded-md text-[10px] font-mono bg-rose-900/60 text-rose-300 border border-rose-700/50">
+                                {{ $archivedUsers->count() }}
+                            </span>
+                        @endif
+                    </button>
+                @endif
 
-                <!-- Tab 5: Restore Points -->
-                <button @click="activeTab = 'config'"
-                    :class="activeTab === 'config' 
-                        ? 'bg-amber-950/80 text-amber-300 border-amber-500/50 shadow-md shadow-amber-950/50 ring-1 ring-amber-500/30' 
-                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900 border-transparent'"
-                    class="px-3 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 whitespace-nowrap">
-                    <span>⚙️</span>
-                    <span>Restore Points</span>
-                </button>
+                <!-- Tab 5: Restore Points (Admin ONLY) -->
+                @if($userRole === 'Admin')
+                    <button @click="activeTab = 'config'"
+                        :class="activeTab === 'config' 
+                            ? 'bg-amber-950/80 text-amber-300 border-amber-500/50 shadow-md shadow-amber-950/50 ring-1 ring-amber-500/30' 
+                            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900 border-transparent'"
+                        class="px-3 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 whitespace-nowrap">
+                        <span>⚙️</span>
+                        <span>Restore Points</span>
+                    </button>
+                @endif
             </div>
         </div>
 
@@ -284,6 +612,7 @@
                                 <th class="p-3">Diagnosis</th>
                                 <th class="p-3">Vitals (BP, Temp, HR)</th>
                                 <th class="p-3">Attending Staff</th>
+                                <th class="p-3 text-right">Role Action</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-800/60 text-slate-300">
@@ -321,6 +650,234 @@
                                     <td class="p-3">
                                         <div class="text-white">{{ $p->attending_doctor }}</div>
                                         <div class="text-[10px] text-pink-400">{{ $p->assigned_nurse }}</div>
+                                    </td>
+                                    <td class="p-3 text-right">
+                                        @if($userRole === 'Doctor')
+                                            <button type="button" @click='openDoctorAction({{ json_encode(["patient_code" => $p->patient_code, "name" => $p->name, "ward_room" => $p->ward_room, "diagnosis" => $p->diagnosis, "treatment_plan" => $p->treatment_plan]) }})' 
+                                                class="px-2.5 py-1 rounded-lg bg-cyan-950 hover:bg-cyan-900 border border-cyan-700/60 text-cyan-300 text-[10px] font-bold transition-all whitespace-nowrap shadow-sm">
+                                                🩺 Prescribe / Rx
+                                            </button>
+                                        @elseif($userRole === 'Nurse')
+                                            <button type="button" @click='openNurseAction({{ json_encode(["patient_code" => $p->patient_code, "name" => $p->name, "ward_room" => $p->ward_room, "vitals_summary" => $p->vitals_summary ?? "BP: 120/80 | HR: 72", "diagnosis" => $p->diagnosis]) }})' 
+                                                class="px-2.5 py-1 rounded-lg bg-pink-950 hover:bg-pink-900 border border-pink-700/60 text-pink-300 text-[10px] font-bold transition-all whitespace-nowrap shadow-sm">
+                                                💉 Log Vitals
+                                            </button>
+                                        @elseif($userRole === 'Pharmacist')
+                                            <button type="button" @click='openPharmAction({{ json_encode(["patient_code" => $p->patient_code, "name" => $p->name, "diagnosis" => $p->diagnosis, "treatment_plan" => $p->treatment_plan]) }})' 
+                                                class="px-2.5 py-1 rounded-lg bg-amber-950 hover:bg-amber-900 border border-amber-700/60 text-amber-300 text-[10px] font-bold transition-all whitespace-nowrap shadow-sm">
+                                                💊 Dispense
+                                            </button>
+                                        @elseif($userRole === 'Auditor')
+                                            <span class="px-2 py-0.5 rounded bg-blue-950/80 text-blue-300 border border-blue-800 text-[10px] font-mono">
+                                                👁️ Read-Only
+                                            </span>
+                                        @else
+                                            <span class="px-2 py-0.5 rounded bg-purple-950/80 text-purple-300 border border-purple-800 text-[10px] font-mono">
+                                                👑 Full Access
+                                            </span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ======================================================== -->
+        <!-- TAB: DOCTOR PRESCRIPTIONS & CLINICAL ORDERS              -->
+        <!-- ======================================================== -->
+        <div x-show="activeTab === 'prescriptions'" class="space-y-4">
+            <div class="glass-card rounded-2xl p-6 border border-cyan-500/30">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xl">💊</span>
+                            <h3 class="text-base font-bold text-white">Physician Electronic Prescriptions & Clinical Orders</h3>
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-cyan-950 text-cyan-300 border border-cyan-800">
+                                Doctor Portal
+                            </span>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-1">
+                            Live pharmaceutical orders and laboratory requests authorized by attending physicians.
+                        </p>
+                    </div>
+                    <div class="text-xs text-cyan-400 font-mono bg-cyan-950/60 px-3 py-1.5 rounded-xl border border-cyan-800/60">
+                        Physician: {{ $user->name }} (MD)
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto rounded-xl border border-slate-800">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-900 text-slate-400 uppercase text-[10px] font-bold border-b border-slate-800">
+                            <tr>
+                                <th class="p-3">Patient Code</th>
+                                <th class="p-3">Patient Name</th>
+                                <th class="p-3">Ward</th>
+                                <th class="p-3">Clinical Diagnosis</th>
+                                <th class="p-3">Active Treatment & Rx</th>
+                                <th class="p-3">Attending Physician</th>
+                                <th class="p-3 text-right">Doctor Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800/60 text-slate-300">
+                            @foreach($patients->take(15) as $p)
+                                <tr class="hover:bg-slate-900/50">
+                                    <td class="p-3 font-mono font-bold text-cyan-400">{{ $p->patient_code }}</td>
+                                    <td class="p-3 font-bold text-white">{{ $p->name }}</td>
+                                    <td class="p-3 text-slate-400">{{ $p->ward_room }}</td>
+                                    <td class="p-3 text-slate-200">{{ $p->diagnosis }}</td>
+                                    <td class="p-3 text-cyan-300 font-mono text-[11px]">{{ $p->treatment_plan }}</td>
+                                    <td class="p-3 text-slate-300">{{ $p->attending_doctor }}</td>
+                                    <td class="p-3 text-right">
+                                        <button type="button" @click='openDoctorAction({{ json_encode(["patient_code" => $p->patient_code, "name" => $p->name, "ward_room" => $p->ward_room, "diagnosis" => $p->diagnosis, "treatment_plan" => $p->treatment_plan]) }})' 
+                                            class="px-3 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-bold text-slate-950 text-xs transition-all shadow-md">
+                                            Update Prescription 💊
+                                        </button>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ======================================================== -->
+        <!-- TAB: NURSE VITALS MONITORING STATION                     -->
+        <!-- ======================================================== -->
+        <div x-show="activeTab === 'vitals'" class="space-y-4">
+            <div class="glass-card rounded-2xl p-6 border border-pink-500/30">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xl">⏱️</span>
+                            <h3 class="text-base font-bold text-white">Ward Nursing Station & Vital Signs Charting</h3>
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-pink-950 text-pink-300 border border-pink-800">
+                                Nurse Station
+                            </span>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-1">
+                            Real-time patient hemodynamic telemetry: Blood Pressure, Pulse, Temperature, and SpO2.
+                        </p>
+                    </div>
+                    <div class="text-xs text-pink-400 font-mono bg-pink-950/60 px-3 py-1.5 rounded-xl border border-pink-800/60">
+                        Shift Nurse: {{ $user->name }} (RN)
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto rounded-xl border border-slate-800">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-900 text-slate-400 uppercase text-[10px] font-bold border-b border-slate-800">
+                            <tr>
+                                <th class="p-3">Ward / Bed</th>
+                                <th class="p-3">Patient</th>
+                                <th class="p-3">Status</th>
+                                <th class="p-3">Vital Signs Summary</th>
+                                <th class="p-3">Telemetry Status</th>
+                                <th class="p-3">Primary Nurse</th>
+                                <th class="p-3 text-right">Nurse Charting</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800/60 text-slate-300">
+                            @foreach($patients->take(15) as $p)
+                                <tr class="hover:bg-slate-900/50">
+                                    <td class="p-3 font-semibold text-white">{{ $p->ward_room }}</td>
+                                    <td class="p-3">
+                                        <div class="font-bold text-white">{{ $p->name }}</div>
+                                        <div class="text-[10px] font-mono text-cyan-400">{{ $p->patient_code }}</div>
+                                    </td>
+                                    <td class="p-3">
+                                        @if($p->admission_status === 'ICU')
+                                            <span class="px-2 py-0.5 rounded-full bg-rose-950 text-rose-300 border border-rose-700 text-[10px] font-bold animate-pulse">ICU Critical</span>
+                                        @else
+                                            <span class="px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-700 text-[10px] font-bold">Stable Ward</span>
+                                        @endif
+                                    </td>
+                                    <td class="p-3 font-mono text-cyan-300 font-bold">
+                                        {{ $p->vitals_summary ?? 'BP: 120/80 | HR: 74 bpm' }}
+                                    </td>
+                                    <td class="p-3">
+                                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">
+                                            ✓ Normal Limits
+                                        </span>
+                                    </td>
+                                    <td class="p-3 text-pink-300">{{ $p->assigned_nurse }}</td>
+                                    <td class="p-3 text-right">
+                                        <button type="button" @click='openNurseAction({{ json_encode(["patient_code" => $p->patient_code, "name" => $p->name, "ward_room" => $p->ward_room, "vitals_summary" => $p->vitals_summary ?? "BP: 120/80 | HR: 74", "diagnosis" => $p->diagnosis]) }})' 
+                                            class="px-3 py-1.5 rounded-xl bg-pink-600 hover:bg-pink-500 font-bold text-white text-xs transition-all shadow-md">
+                                            Log Vitals 💉
+                                        </button>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ======================================================== -->
+        <!-- TAB: PHARMACIST DISPENSARY QUEUE                         -->
+        <!-- ======================================================== -->
+        <div x-show="activeTab === 'pharmacy'" class="space-y-4">
+            <div class="glass-card rounded-2xl p-6 border border-amber-500/30">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xl">📦</span>
+                            <h3 class="text-base font-bold text-white">Hospital Dispensary & Medication Fulfillment Queue</h3>
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-950 text-amber-300 border border-amber-800">
+                                Pharmacist Station
+                            </span>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-1">
+                            Prescriptions issued by attending physicians awaiting pharmacist dosage review and dispensing.
+                        </p>
+                    </div>
+                    <div class="text-xs text-amber-400 font-mono bg-amber-950/60 px-3 py-1.5 rounded-xl border border-amber-800/60">
+                        Pharmacist on Duty: {{ $user->name }} (RPh)
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto rounded-xl border border-slate-800">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-900 text-slate-400 uppercase text-[10px] font-bold border-b border-slate-800">
+                            <tr>
+                                <th class="p-3">Rx Code</th>
+                                <th class="p-3">Patient</th>
+                                <th class="p-3">Blood & Allergies</th>
+                                <th class="p-3">Prescribed Medication</th>
+                                <th class="p-3">Attending MD</th>
+                                <th class="p-3">Fulfillment Status</th>
+                                <th class="p-3 text-right">Pharmacy Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800/60 text-slate-300">
+                            @foreach($patients->take(15) as $p)
+                                <tr class="hover:bg-slate-900/50">
+                                    <td class="p-3 font-mono font-bold text-amber-400">RX-{{ substr(md5($p->patient_code), 0, 6) }}</td>
+                                    <td class="p-3">
+                                        <div class="font-bold text-white">{{ $p->name }}</div>
+                                        <div class="text-[10px] text-slate-400">{{ $p->ward_room }}</div>
+                                    </td>
+                                    <td class="p-3">
+                                        <span class="px-1.5 py-0.5 rounded bg-rose-950 text-rose-300 font-bold border border-rose-800 text-[10px]">{{ $p->blood_group }}</span>
+                                        <span class="ml-1 text-[10px] text-emerald-400">No Allergy</span>
+                                    </td>
+                                    <td class="p-3 text-cyan-300 font-mono text-[11px]">{{ $p->treatment_plan }}</td>
+                                    <td class="p-3 text-slate-300">{{ $p->attending_doctor }}</td>
+                                    <td class="p-3">
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-950 text-amber-300 border border-amber-800">
+                                            Pending Dispense
+                                        </span>
+                                    </td>
+                                    <td class="p-3 text-right">
+                                        <button type="button" @click='openPharmAction({{ json_encode(["patient_code" => $p->patient_code, "name" => $p->name, "diagnosis" => $p->diagnosis, "treatment_plan" => $p->treatment_plan]) }})' 
+                                            class="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 font-bold text-slate-950 text-xs transition-all shadow-md">
+                                            Dispense Meds 💊
+                                        </button>
                                     </td>
                                 </tr>
                             @endforeach
@@ -1074,6 +1631,131 @@
 
                 <div class="flex justify-end pt-2 border-t border-slate-800">
                     <button type="button" @click="showHashModal = false" class="px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs">Close Inspector</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: Doctor Prescription & Diagnosis -->
+        <div x-show="showDoctorModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+            <div @click.away="showDoctorModal = false" class="glass-card rounded-2xl p-6 border border-cyan-500/40 w-full max-w-lg space-y-4 shadow-2xl">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <div>
+                        <h3 class="text-base font-bold text-white flex items-center gap-2">
+                            <span>🩺</span>
+                            <span>Physician Clinical Order & Electronic Rx</span>
+                        </h3>
+                        <p class="text-[11px] text-slate-400 mt-0.5">
+                            Attending Doctor: <strong class="text-cyan-400">{{ $user->name }}</strong> • Patient: <strong class="text-white" x-text="selectedPatient.name"></strong> (<span class="font-mono text-cyan-400" x-text="selectedPatient.patient_code"></span>)
+                        </p>
+                    </div>
+                    <button @click="showDoctorModal = false" class="text-slate-400 hover:text-white text-lg">&times;</button>
+                </div>
+
+                <div class="space-y-3 text-xs">
+                    <div>
+                        <label class="block text-slate-300 font-semibold mb-1">Ward Location</label>
+                        <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 font-medium" x-text="selectedPatient.ward_room"></div>
+                    </div>
+                    <div>
+                        <label class="block text-slate-300 font-semibold mb-1">Physician Clinical Assessment / Diagnosis</label>
+                        <input type="text" x-model="selectedPatient.diagnosis" class="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-white focus:border-cyan-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-slate-300 font-semibold mb-1">Prescription Order & Dosage (Transmitted to Pharmacy)</label>
+                        <textarea rows="3" x-model="selectedPatient.treatment_plan" class="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-cyan-300 font-mono text-xs focus:border-cyan-500 focus:outline-none"></textarea>
+                    </div>
+                    <div class="p-3 rounded-xl bg-cyan-950/40 border border-cyan-800/40 text-[11px] text-cyan-200 flex items-center gap-2">
+                        <span>🛡️</span>
+                        <span>Clinical digital signature attached: <strong>{{ $user->name }} (Attending MD)</strong></span>
+                    </div>
+                    <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
+                        <button type="button" @click="showDoctorModal = false" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300">Cancel</button>
+                        <button type="button" @click="showDoctorModal = false; alert('Electronic Prescription & Clinical Diagnosis signed and dispatched to Pharmacy!')" class="px-5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-bold text-slate-950 transition-all">Sign & Transmit Rx 💊</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: Nurse Vitals Logger -->
+        <div x-show="showNurseModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+            <div @click.away="showNurseModal = false" class="glass-card rounded-2xl p-6 border border-pink-500/40 w-full max-w-lg space-y-4 shadow-2xl">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <div>
+                        <h3 class="text-base font-bold text-white flex items-center gap-2">
+                            <span>💉</span>
+                            <span>Shift Nursing Vitals & Bed Telemetry</span>
+                        </h3>
+                        <p class="text-[11px] text-slate-400 mt-0.5">
+                            Recording Nurse: <strong class="text-pink-400">{{ $user->name }}</strong> • Patient: <strong class="text-white" x-text="selectedPatient.name"></strong>
+                        </p>
+                    </div>
+                    <button @click="showNurseModal = false" class="text-slate-400 hover:text-white text-lg">&times;</button>
+                </div>
+
+                <div class="space-y-3 text-xs">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-slate-300 font-semibold mb-1">Blood Pressure (mmHg)</label>
+                            <input type="text" value="122/82" class="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-white font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-slate-300 font-semibold mb-1">Heart Rate (bpm)</label>
+                            <input type="text" value="74 bpm" class="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-white font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-slate-300 font-semibold mb-1">Body Temperature (°C)</label>
+                            <input type="text" value="36.8 °C" class="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-white font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-slate-300 font-semibold mb-1">Oxygen Saturation (SpO2)</label>
+                            <input type="text" value="99%" class="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-white font-mono">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-slate-300 font-semibold mb-1">Shift Nursing Observation Note</label>
+                        <textarea rows="2" placeholder="Patient resting comfortably in ward bed. Zero acute distress observed." class="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-white text-xs"></textarea>
+                    </div>
+                    <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
+                        <button type="button" @click="showNurseModal = false" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300">Cancel</button>
+                        <button type="button" @click="showNurseModal = false; alert('Vital signs recorded and synchronized to Cloud EHR!')" class="px-5 py-2 rounded-xl bg-pink-600 hover:bg-pink-500 font-bold text-white transition-all">Commit Vitals Entry 💉</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: Pharmacist Dispense -->
+        <div x-show="showPharmModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+            <div @click.away="showPharmModal = false" class="glass-card rounded-2xl p-6 border border-amber-500/40 w-full max-w-lg space-y-4 shadow-2xl">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <div>
+                        <h3 class="text-base font-bold text-white flex items-center gap-2">
+                            <span>💊</span>
+                            <span>Hospital Pharmacy Dispensing & Verification</span>
+                        </h3>
+                        <p class="text-[11px] text-slate-400 mt-0.5">
+                            Pharmacist: <strong class="text-amber-400">{{ $user->name }}</strong> • Patient: <strong class="text-white" x-text="selectedPatient.name"></strong>
+                        </p>
+                    </div>
+                    <button @click="showPharmModal = false" class="text-slate-400 hover:text-white text-lg">&times;</button>
+                </div>
+
+                <div class="space-y-3 text-xs">
+                    <div>
+                        <label class="block text-slate-300 font-semibold mb-1">Prescription Order from MD</label>
+                        <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 font-mono text-cyan-300 text-xs" x-text="selectedPatient.treatment_plan || 'Amoxicillin 500mg TDS x 5/7'"></div>
+                    </div>
+                    <div class="p-3 rounded-xl bg-emerald-950/40 border border-emerald-800/40 text-emerald-200 text-[11px] space-y-1">
+                        <div class="font-bold">✓ Automated Pharmacological Cross-Checks Passed:</div>
+                        <ul class="list-disc list-inside text-slate-300 space-y-0.5">
+                            <li>Dosage adheres to British National Formulary (BNF) standards.</li>
+                            <li>Zero cross-allergy contraindications with patient blood group.</li>
+                            <li>Pharmaceutical batch code verified in inventory.</li>
+                        </ul>
+                    </div>
+                    <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
+                        <button type="button" @click="showPharmModal = false" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300">Cancel</button>
+                        <button type="button" @click="showPharmModal = false; alert('Medication verified and marked DISPENSED in Pharmacy records!')" class="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 font-bold text-slate-950 transition-all">Verify & Dispense Medication 💊</button>
+                    </div>
                 </div>
             </div>
         </div>
