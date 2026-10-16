@@ -1250,8 +1250,9 @@
                                                     <form method="POST" action="{{ route('admin.users.destroy', $s->id) }}" onsubmit="return confirm('Soft-delete this staff account? It will be archived in the audit vault.')" class="inline">
                                                         @csrf
                                                         @method('DELETE')
-                                                        <button type="submit" class="px-2 py-1 rounded-lg bg-rose-950/80 hover:bg-rose-900 border border-rose-800 text-rose-300 text-[10px] font-bold transition-all" title="Soft Delete Account (HIPAA Audit Preserved)">
-                                                            🗑️ Delete
+                                                        <button type="submit" class="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-[10px] font-bold transition-all shadow-sm flex items-center gap-1 cursor-pointer" title="Soft-delete this staff account into the HIPAA Audit Archive">
+                                                            <span>🗑️</span>
+                                                            <span>Delete</span>
                                                         </button>
                                                     </form>
                                                 @elseif($s->trashed())
@@ -1755,10 +1756,23 @@
                         💡 Changes take effect immediately across all sessions and update the audit log trail.
                     </div>
 
-                    <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
-                        <button type="button" @click="showEditStaffModal = false" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
-                        <button type="submit" class="px-5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-bold text-slate-950 transition-all">Save Profile Changes</button>
+                    <div class="flex items-center justify-between pt-2 border-t border-slate-800">
+                        <div>
+                            <button type="button" @click="if(confirm('Soft-delete this staff account? It will be archived in the HIPAA audit vault.')) { document.getElementById('delete-staff-form-' + selectedStaff.id).submit(); }" class="px-3 py-1.5 rounded-xl bg-rose-600/20 hover:bg-rose-600 border border-rose-500/40 text-rose-300 hover:text-white font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer" title="Soft-delete staff account">
+                                <span>🗑️</span>
+                                <span>Soft-Delete User</span>
+                            </button>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" @click="showEditStaffModal = false" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+                            <button type="submit" class="px-5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-bold text-slate-950 transition-all">Save Profile Changes</button>
+                        </div>
                     </div>
+                </form>
+                <!-- Hidden delete form for modal trigger -->
+                <form :id="'delete-staff-form-' + selectedStaff.id" method="POST" :action="'/admin/users/' + selectedStaff.id" style="display:none;">
+                    @csrf
+                    @method('DELETE')
                 </form>
             </div>
         </div>
