@@ -28,6 +28,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/nurse/vitals', [\App\Http\Controllers\ClinicalStationController::class, 'vitals'])->name('nurse.vitals');
     Route::get('/pharmacy/dispensary', [\App\Http\Controllers\ClinicalStationController::class, 'dispensary'])->name('pharmacy.dispensary');
     Route::get('/security/telemetry', [\App\Http\Controllers\ClinicalStationController::class, 'telemetry'])->name('security.telemetry');
+    Route::post('/patients/admit', [\App\Http\Controllers\ClinicalStationController::class, 'admitPatient'])->name('patients.admit');
 
     // 2. Chief Admin Suite
     Route::prefix('admin')->name('admin.')->middleware(['role:Admin,SuperAdmin'])->group(function () {

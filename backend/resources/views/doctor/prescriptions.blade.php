@@ -2,6 +2,7 @@
     <div x-data="{
         search: '',
         priorityFilter: 'all',
+        showRegisterModal: false,
         showNewRxModal: false,
         showInteractionModal: false,
         showEditRxModal: false,
@@ -77,6 +78,10 @@
 
                 <!-- Action Controls on Header -->
                 <div class="flex flex-wrap items-center gap-3">
+                    <button @click="showRegisterModal = true" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-teal-500 hover:from-cyan-500 hover:to-teal-400 text-slate-950 font-bold text-xs shadow-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                        <span>➕</span>
+                        <span>Admit Patient</span>
+                    </button>
                     <button @click="showNewRxModal = true" class="px-4 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs shadow-lg shadow-cyan-500/20 transition-all flex items-center gap-2 cursor-pointer">
                         <span>💊</span>
                         <span>+ Draft New Prescription</span>
@@ -367,6 +372,76 @@
                         <button type="button" @click="showEditRxModal = false; alert('Prescription updated and re-verified!')" class="px-5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-bold text-slate-950 transition-all">Save & Sign Order 💊</button>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Modal 4: Admit New Patient (Doctor Station) -->
+        <div x-show="showRegisterModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+            <div @click.away="showRegisterModal = false" class="glass-card rounded-2xl p-6 border border-cyan-500/40 w-full max-w-lg space-y-4 shadow-2xl">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <h3 class="text-base font-bold text-white flex items-center gap-2">
+                        <span>➕</span>
+                        <span>Admit New Hospital Patient (MD Station)</span>
+                    </h3>
+                    <button @click="showRegisterModal = false" class="text-slate-400 hover:text-white text-lg">&times;</button>
+                </div>
+                <form method="POST" action="{{ route('patients.admit') }}" class="space-y-3 text-xs">
+                    @csrf
+                    <div>
+                        <label class="block text-slate-300 font-semibold mb-1">Full Patient Legal Name</label>
+                        <input type="text" name="name" required placeholder="e.g. Eleanor Vance" class="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none">
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div>
+                            <label class="block text-slate-300 font-semibold mb-1">Age</label>
+                            <input type="number" name="age" value="38" min="1" max="120" required class="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-white focus:border-cyan-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-slate-300 font-semibold mb-1">Gender</label>
+                            <select name="gender" class="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-white focus:border-cyan-500 focus:outline-none">
+                                <option value="Female">Female</option>
+                                <option value="Male">Male</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-slate-300 font-semibold mb-1">Blood Group</label>
+                            <select name="blood_group" class="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-white focus:border-cyan-500 focus:outline-none">
+                                <option value="O+">O+</option><option value="A+">A+</option><option value="B+">B+</option><option value="AB+">AB+</option>
+                                <option value="O-">O-</option><option value="A-">A-</option><option value="B-">B-</option><option value="AB-">AB-</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-slate-300 font-semibold mb-1">Admission Status</label>
+                            <select name="admission_status" class="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-white focus:border-cyan-500 focus:outline-none">
+                                <option value="Admitted">In-Patient (Admitted)</option>
+                                <option value="ICU">ICU Critical</option>
+                                <option value="Outpatient">Outpatient Consultation</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-slate-300 font-semibold mb-1">Ward Wing & Bed</label>
+                            <input type="text" name="ward_room" value="General Ward 2 (Bed 05)" required class="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-white focus:border-cyan-500 focus:outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-slate-300 font-semibold mb-1">Primary Clinical Diagnosis</label>
+                        <input type="text" name="diagnosis" value="Post-operative surgical observation & telemetry" required class="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-white focus:border-cyan-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-slate-300 font-semibold mb-1">Initial Treatment Regimen & Orders (Optional)</label>
+                        <input type="text" name="treatment_plan" placeholder="e.g. IV Cefazolin 1g Q8H, Bed rest, SpO2 continuous" class="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none">
+                    </div>
+                    <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
+                        <button type="button" @click="showRegisterModal = false" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-all">Cancel</button>
+                        <button type="submit" class="px-5 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-teal-500 hover:from-cyan-500 hover:to-teal-400 font-bold text-slate-950 transition-all shadow-lg flex items-center gap-1.5 cursor-pointer">
+                            <span>➕</span>
+                            <span>Admit Patient</span>
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
 
