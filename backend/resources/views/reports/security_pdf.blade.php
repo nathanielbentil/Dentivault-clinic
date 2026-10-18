@@ -5,150 +5,107 @@
     <title>Project Report</title>
     <style>
         @page {
-            margin: 28px 32px;
+            margin: 36pt 40pt;
         }
         body {
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            color: #111111;
-            font-size: 10px;
-            line-height: 1.45;
+            font-family: 'Times New Roman', Times, serif;
+            color: #000000;
+            font-size: 10.5pt;
+            line-height: 1.35;
             background-color: #ffffff;
         }
         
-        /* Clean Black & White Header */
-        .report-header {
-            border-bottom: 2px solid #000000;
-            padding-bottom: 8px;
-            margin-bottom: 14px;
-        }
-        .header-title {
-            font-size: 18px;
+        /* Plain Word Headings */
+        h1.doc-title {
+            font-size: 16pt;
             font-weight: bold;
             color: #000000;
+            margin: 0 0 3pt 0;
+            text-align: left;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin: 0;
         }
-        .header-subtitle {
-            font-size: 11.5px;
-            color: #333333;
+        h2.doc-subtitle {
+            font-size: 13pt;
             font-weight: bold;
-            margin-top: 3px;
+            color: #000000;
+            margin: 0 0 14pt 0;
+            text-align: left;
         }
         
-        .meta-table {
-            width: 100%;
-            margin-top: 6px;
-            font-size: 9px;
-            color: #333333;
-            border-top: 1px solid #cccccc;
-            padding-top: 4px;
-        }
-        
-        /* Headings - Clean Greyscale */
         h2 {
-            font-size: 11.5px;
-            color: #000000;
-            border-bottom: 1px solid #333333;
-            padding-bottom: 3px;
-            margin-top: 14px;
-            margin-bottom: 6px;
-            text-transform: uppercase;
+            font-size: 12pt;
             font-weight: bold;
+            color: #000000;
+            margin-top: 14pt;
+            margin-bottom: 5pt;
         }
         h3 {
-            font-size: 10px;
-            color: #111111;
-            margin-top: 8px;
-            margin-bottom: 3px;
+            font-size: 11pt;
             font-weight: bold;
+            color: #000000;
+            margin-top: 10pt;
+            margin-bottom: 3pt;
         }
         p {
-            margin: 3px 0 5px 0;
+            margin: 0 0 6pt 0;
             text-align: justify;
         }
         ul {
-            margin: 3px 0 6px 16px;
+            margin: 0 0 6pt 20pt;
             padding: 0;
         }
         li {
-            margin-bottom: 2px;
+            margin-bottom: 2pt;
         }
         
-        /* Tables - Strict Academic Black & White */
-        table.data-table {
+        /* Standard Word Table (Plain Black Borders, No Shading) */
+        table.word-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 5px;
-            margin-bottom: 8px;
-            font-size: 9px;
+            margin: 6pt 0 10pt 0;
+            font-size: 9.5pt;
         }
-        table.data-table th {
-            background-color: #f0f0f0;
-            color: #000000;
+        table.word-table th {
+            border: 1px solid #000000;
             font-weight: bold;
             text-align: left;
-            padding: 4.5px 6px;
-            border: 1px solid #333333;
-            font-size: 8.5px;
-            text-transform: uppercase;
-        }
-        table.data-table td {
-            padding: 4px 6px;
-            border: 1px solid #666666;
-            vertical-align: middle;
-            color: #111111;
-        }
-        table.data-table tr:nth-child(even) {
-            background-color: #fafafa;
-        }
-        
-        /* Code blocks - Monochrome */
-        code, pre {
-            font-family: 'Courier New', Courier, monospace;
-            background-color: #f4f4f4;
+            padding: 4pt 5pt;
+            background: none;
             color: #000000;
-            padding: 1px 3px;
-            font-size: 8.5px;
-            border: 1px solid #cccccc;
         }
-        .code-box {
-            background-color: #f8f8f8;
+        table.word-table td {
+            border: 1px solid #000000;
+            padding: 3.5pt 5pt;
             color: #000000;
-            padding: 6px 8px;
+            vertical-align: top;
+        }
+        
+        /* Plain Code (Standard Courier Text, No Background) */
+        pre.code-text {
             font-family: 'Courier New', Courier, monospace;
-            font-size: 8px;
-            line-height: 1.35;
-            margin: 5px 0;
-            border: 1px solid #333333;
+            font-size: 9pt;
+            margin: 4pt 0 8pt 15pt;
+            line-height: 1.3;
+            color: #000000;
         }
         
-        /* Notice box - Greyscale */
-        .notice-box {
-            background-color: #f7f7f7;
-            border-left: 3px solid #000000;
-            padding: 5px 8px;
-            margin: 5px 0;
-            font-size: 9px;
-            color: #111111;
-        }
-        
-        /* Figure Box for Database Screenshots */
-        .figure-box {
-            border: 1px solid #333333;
-            padding: 5px;
-            margin: 8px 0;
-            background-color: #ffffff;
+        /* Standard Word Image Insertion */
+        .word-image-container {
+            margin: 10pt 0;
             text-align: center;
         }
-        .figure-caption {
-            font-size: 8.5px;
+        .word-image {
+            width: 100%;
+            max-height: 250pt;
+            display: block;
+            margin: 0 auto;
+        }
+        .word-caption {
+            font-size: 9.5pt;
             font-weight: bold;
-            color: #222222;
-            margin-top: 4px;
-            text-transform: uppercase;
-            border-top: 1px solid #cccccc;
-            padding-top: 3px;
+            margin-top: 4pt;
+            text-align: center;
+            color: #000000;
         }
         
         .page-break {
@@ -156,30 +113,25 @@
         }
         
         .footer {
-            margin-top: 15px;
-            border-top: 1px solid #333333;
-            padding-top: 5px;
+            margin-top: 20pt;
             text-align: center;
-            font-size: 8px;
-            color: #555555;
+            font-size: 9pt;
+            color: #000000;
         }
     </style>
 </head>
 <body>
 
-    <!-- ===================================================================== -->
-    <!-- HEADER                                                                -->
-    <!-- ===================================================================== -->
-    <div class="report-header">
-        <h1 class="header-title">PROJECT REPORT</h1>
-        <div class="header-subtitle">Requirements</div>
-    </div>
+    <!-- DOCUMENT TITLE -->
+    <h1 class="doc-title">PROJECT REPORT</h1>
+    <h2 class="doc-subtitle">Requirements</h2>
 
     <p>
         The table below lists each of the specific requirements given by the teacher and confirms how each has been implemented, applied, and verified in the live system.
     </p>
 
-    <table class="data-table">
+    <!-- 1. SUMMARY OF REQUIREMENTS -->
+    <table class="word-table">
         <thead>
             <tr>
                 <th style="width: 4%;">#</th>
@@ -198,13 +150,13 @@
             <tr>
                 <td><strong>2</strong></td>
                 <td><strong>2FA (Two-Factor Authentication)</strong></td>
-                <td>Users must enter a 6-digit TOTP verification code after entering their email and password. Includes secret generation, recovery keys, and universal testing token (<code>123456</code>).</td>
+                <td>Users must enter a 6-digit TOTP verification code after entering their email and password. Includes secret generation, recovery keys, and universal testing token (123456).</td>
                 <td>Implemented</td>
             </tr>
             <tr>
                 <td><strong>3</strong></td>
                 <td><strong>Have logic in code that demonstrate salting and pepper</strong></td>
-                <td>Implemented in <code>PasswordService.php</code>: Every password is HMAC-hashed with a secret pepper from <code>.env</code> (never kept in the database) and combined with a unique cryptographic salt per user.</td>
+                <td>Implemented in PasswordService.php: Every password is HMAC-hashed with a secret pepper from .env (never kept in the database) and combined with a unique cryptographic salt per user.</td>
                 <td>Implemented</td>
             </tr>
             <tr>
@@ -216,7 +168,7 @@
             <tr>
                 <td><strong>5</strong></td>
                 <td><strong>User roles (At least 4 user roles)</strong></td>
-                <td>Exceeds requirement with <strong>6 separate user roles</strong>: Chief Admin, Managing Director (MD), Doctors, Nurses, Pharmacists, and Compliance Auditors.</td>
+                <td>Exceeds requirement with 6 separate user roles: Chief Admin, Managing Director (MD), Doctors, Nurses, Pharmacists, and Compliance Auditors.</td>
                 <td>Implemented</td>
             </tr>
             <tr>
@@ -228,7 +180,7 @@
             <tr>
                 <td><strong>7</strong></td>
                 <td><strong>When a user is deleted the user should not be gone forever it should also has a database for audit when needed</strong></td>
-                <td>Soft deletion (<code>deleted_at</code> timestamp) ensures deleted staff are never erased from the database. They are archived in the Audit Vault and can be restored at any time by the Admin or Managing Director.</td>
+                <td>Soft deletion (deleted_at timestamp) ensures deleted staff are never erased from the database. They are archived in the Audit Vault and can be restored at any time by the Admin or Managing Director.</td>
                 <td>Implemented</td>
             </tr>
             <tr>
@@ -240,7 +192,7 @@
             <tr>
                 <td><strong>9</strong></td>
                 <td><strong>Enter a lot of records and restore point shouldn't affect the data. only the configuration should be change</strong></td>
-                <td>Over <strong>75 patient records</strong> were entered into PostgreSQL. System configuration snapshots (session duration, lockout limits) rollback without touching or deleting clinical patient data.</td>
+                <td>Over 75 patient records were entered into PostgreSQL. System configuration snapshots (session duration, lockout limits) rollback without touching or deleting clinical patient data.</td>
                 <td>Implemented</td>
             </tr>
             <tr>
@@ -252,29 +204,27 @@
             <tr>
                 <td><strong>11</strong></td>
                 <td><strong>Parameterized SQL</strong></td>
-                <td>All database queries use PDO prepared statements with bound parameters (<code>?</code>). User input is treated strictly as data, making SQL injection impossible.</td>
+                <td>All database queries use PDO prepared statements with bound parameters (?). User input is treated strictly as data, making SQL injection impossible.</td>
                 <td>Implemented</td>
             </tr>
         </tbody>
     </table>
 
-    <div class="notice-box">
-        <strong>Verification Confirmation:</strong> All requirements are fully implemented, verified, and active in the live PostgreSQL database and web application.
-    </div>
+    <p>
+        <strong>Verification Result:</strong> All 11 requirements given by the teacher are fully completed, verified, and functioning in the production environment.
+    </p>
 
-    <!-- ===================================================================== -->
-    <!-- 2. DATABASE ARCHITECTURE & LIVE TABLE STRUCTURE (PICTURES)            -->
-    <!-- ===================================================================== -->
+    <!-- 2. DATABASE ARCHITECTURE & LIVE TABLE STRUCTURE -->
     <h2>2. Live Database Architecture & Table Structure (PostgreSQL on AWS)</h2>
     <p>
         The teacher requested to inspect the database table structure showing all users with their credentials, Argon2id password hashes, unique salts, pepper versions, and soft-delete audit records. Below are the actual production database captures from the live PostgreSQL AWS database.
     </p>
 
     @if(!empty($usersTableImgBase64))
-        <div class="figure-box">
-            <img src="data:image/png;base64,{{ $usersTableImgBase64 }}" style="width: 100%; max-height: 250px; display: block; margin: 0 auto;" alt="PostgreSQL users table structure" />
-            <div class="figure-caption">
-                Figure 1: PostgreSQL Production Database (<code style="font-size: 8.5px;">public.users</code>) — Credentials Structure, Argon2id Hashes, Unique Per-User Salts, Pepper Versions, and Soft-Delete Records
+        <div class="word-image-container">
+            <img src="data:image/png;base64,{{ $usersTableImgBase64 }}" class="word-image" alt="PostgreSQL users table structure" />
+            <div class="word-caption">
+                Figure 1: PostgreSQL Production Database (public.users) — Credentials Structure, Argon2id Hashes, Unique Per-User Salts, Pepper Versions, and Soft-Delete Records
             </div>
         </div>
     @endif
@@ -283,19 +233,19 @@
         <strong>Technical Analysis of Figure 1 (Database Columns & Fields):</strong>
     </p>
     <ul>
-        <li><code>id (int8)</code>: Unique sequential primary key for each personnel account.</li>
-        <li><code>name (varchar)</code>: Full legal name and clinical title of the staff member.</li>
-        <li><code>email (varchar)</code>: Unique login identifier (e.g., <code>admin@medivault.cloud</code>, <code>manager@medivault.cloud</code>).</li>
-        <li><code>role (varchar)</code>: Role-based authorization tag (<code>Admin</code>, <code>Manager</code>, <code>Doctor</code>, <code>Nurse</code>, <code>Pharmacist</code>, <code>Auditor</code>).</li>
-        <li><code>password (varchar)</code>: <strong>Argon2id cryptographic hash string</strong> (e.g., <code>$argon2id$v=19$m=65536,t=4,p=2$...</code>). The actual password is never stored.</li>
-        <li><code>salt (varchar)</code>: <strong>Unique 22-character cryptographic salt</strong> generated per user (e.g., <code>TVNQSDFYdkRuSU9UVGU1Mg</code>). Prevents precomputed rainbow table attacks.</li>
-        <li><code>deleted_at (timestamp)</code>: Stores the exact timestamp when a user was deactivated (e.g., <code>2026-10-09 21:56:29</code> for archived staff). This proves users are <strong>never lost forever</strong>.</li>
+        <li><strong>id (int8):</strong> Unique sequential primary key for each personnel account.</li>
+        <li><strong>name (varchar):</strong> Full legal name and clinical title of the staff member.</li>
+        <li><strong>email (varchar):</strong> Unique login identifier (e.g., admin@medivault.cloud, manager@medivault.cloud).</li>
+        <li><strong>role (varchar):</strong> Role-based authorization tag (Admin, Manager, Doctor, Nurse, Pharmacist, Auditor).</li>
+        <li><strong>password (varchar):</strong> Argon2id cryptographic hash string ($argon2id$v=19$m=65536,t=4,p=2$...). The actual plaintext password is never stored.</li>
+        <li><strong>salt (varchar):</strong> Unique 22-character cryptographic salt generated per user (e.g., TVNQSDFYdkRuSU9UVGU1Mg). Prevents rainbow table attacks.</li>
+        <li><strong>deleted_at (timestamp):</strong> Stores the exact timestamp when a user was deactivated (e.g., 2026-10-09 21:56:29 for archived staff). This proves users are never lost forever.</li>
     </ul>
 
     @if(!empty($tablesSidebarImgBase64))
-        <div class="figure-box">
-            <img src="data:image/png;base64,{{ $tablesSidebarImgBase64 }}" style="width: 55%; max-height: 180px; display: block; margin: 0 auto;" alt="PostgreSQL database tables overview" />
-            <div class="figure-caption">
+        <div class="word-image-container">
+            <img src="data:image/png;base64,{{ $tablesSidebarImgBase64 }}" style="width: 50%; max-height: 180pt; display: block; margin: 0 auto;" alt="PostgreSQL database tables overview" />
+            <div class="word-caption">
                 Figure 2: Complete PostgreSQL Database Table Architecture — Schema Tables for Audit Logs, Backup Logs, Patients, Roles, and Sessions
             </div>
         </div>
@@ -303,60 +253,55 @@
 
     <div class="page-break"></div>
 
-    <!-- ===================================================================== -->
-    <!-- 3. REQUIREMENT 3: SALTING AND PEPPER IN CODE                          -->
-    <!-- ===================================================================== -->
+    <!-- 3. REQUIREMENT 3: SALTING AND PEPPER IN CODE -->
     <h2>3. Requirement 3: Salting and Pepper Implementation in Code</h2>
     <p>
         The requirement states: <em>"Have logic in code that demonstrate salting and pepper."</em>
-        This logic is encapsulated in <code>app/Services/PasswordService.php</code>:
+        This logic is located in app/Services/PasswordService.php:
     </p>
     <ul>
-        <li><strong>Pepper:</strong> A high-entropy cryptographic secret stored strictly in the server environment (<code>.env</code> file) and never kept in the database. The plain password is first transformed using HMAC-SHA256 with this pepper.</li>
-        <li><strong>Salt:</strong> A unique random string generated for every single user so that identical passwords produce completely different stored hashes.</li>
+        <li><strong>Pepper:</strong> A secret string stored in the server environment (.env file) and never kept in the database. The plain password is first hashed with this pepper using HMAC-SHA256.</li>
+        <li><strong>Salt:</strong> A unique random string generated for every user so that two users with the same password produce completely different stored hashes.</li>
     </ul>
 
-    <div class="code-box">
+    <pre class="code-text">
 // File: app/Services/PasswordService.php
 
 public static function hash(string $plainPassword, ?string $pepperVersion = null): array
 {
-    // Step 1: Retrieve the server-side secret Pepper from .env (NOT stored in database)
+    // Step 1: Retrieve the server-side secret Pepper from .env (NOT in database)
     $pepper = env('PEPPER_V1', '58ccdb65b61dfa1586e00d6cf4268f24d09d0c4ad69e7cfb555184c3fc02f91e');
 
     // Step 2: Apply HMAC-SHA256 Pepper to the plain password
     $pepperedPassword = hash_hmac('sha256', $plainPassword, $pepper);
 
-    // Step 3: Hash with Argon2id algorithm (which generates unique per-user salt)
+    // Step 3: Hash with Argon2id algorithm (which automatically creates unique per-user salt)
     $hash = password_hash($pepperedPassword, PASSWORD_ARGON2ID, [
-        'memory_cost' => 65536, // 64 MB memory
+        'memory_cost' => 65536, // 64 MB
         'time_cost'   => 4,     // 4 iterations
         'threads'     => 2,     // 2 parallel threads
     ]);
 
     $salt = self::extractSalt($hash);
 
-    // Return the hash, the unique salt, and pepper version for database storage
     return [
         'hash'           => $hash,
         'salt'           => $salt,
         'pepper_version' => 'v1',
     ];
 }
-    </div>
+    </pre>
 
-    <!-- ===================================================================== -->
-    <!-- 4. REQUIREMENT 5 & USER ROSTER (15 ACTIVE USERS)                      -->
-    <!-- ===================================================================== -->
+    <!-- 4. REQUIREMENT 5 & USER ROSTER -->
     <h2>4. Requirement 5: User Roles & Testing Credentials (15 Active Users)</h2>
     <p>
-        The teacher required at least 4 user roles. The system implements <strong>6 distinct user roles</strong> with 15 active staff users: 1 Chief Admin, 1 Managing Director (MD), 3 Doctors, 6 Nurses, 2 Pharmacists, and 2 Auditors.
+        The teacher required at least 4 user roles. The system implements 6 distinct user roles with 15 active staff users: 1 Chief Admin, 1 Managing Director (MD), 3 Doctors, 6 Nurses, 2 Pharmacists, and 2 Auditors.
     </p>
     <p>
-        Below is the credentials table accessible via the <strong>Hospital Staff Directory</strong> tab on the main dashboard:
+        Below is the credentials table accessible via the Hospital Staff Directory tab on the main dashboard:
     </p>
 
-    <table class="data-table">
+    <table class="word-table">
         <thead>
             <tr>
                 <th style="width: 25%;">Staff Member Name</th>
@@ -392,8 +337,8 @@ public static function hash(string $plainPassword, ?string $pepperVersion = null
                     <td><strong>{{ $staff->name }}</strong></td>
                     <td>{{ $staff->role }}</td>
                     <td>{{ $staff->email }}</td>
-                    <td><code>{{ $pass }}</code></td>
-                    <td style="text-align: center;"><code>123456</code></td>
+                    <td>{{ $pass }}</td>
+                    <td style="text-align: center;">123456</td>
                 </tr>
             @endforeach
         </tbody>
@@ -401,25 +346,23 @@ public static function hash(string $plainPassword, ?string $pepperVersion = null
 
     <div class="page-break"></div>
 
-    <!-- ===================================================================== -->
-    <!-- 5. REQUIREMENT 7: DELETED USERS AUDIT VAULT & RESTORE                 -->
-    <!-- ===================================================================== -->
+    <!-- 5. REQUIREMENT 7: DELETED USERS AUDIT VAULT -->
     <h2>5. Requirement 7: Deleted Users Retained for Audit & Restoration</h2>
     <p>
         Requirement #7 states: <em>"When a user is deleted the user should not be gone forever it should also has a database for audit when needed."</em>
     </p>
     <p>
-        When the <strong>Chief Admin</strong> or <strong>Managing Director (MD)</strong> deletes a staff or patient record:
+        When the Chief Admin or Managing Director (MD) deletes a staff or patient record:
     </p>
     <ul>
-        <li>The system executes a <strong>soft delete</strong> by setting the <code>deleted_at</code> timestamp in PostgreSQL.</li>
+        <li>The system executes a soft delete by setting the deleted_at timestamp in PostgreSQL.</li>
         <li>The deactivated user is blocked from logging in and is hidden from active operational views.</li>
-        <li>The record is <strong>never purged from the database</strong>. It is preserved in the Personnel Archive & Audit Vault so historical logs and clinical audits remain complete.</li>
-        <li>The Admin or MD can click <strong>"Restore Staff"</strong> at any time to clear the timestamp and restore full login capabilities.</li>
+        <li>The record is never purged from the database. It is preserved in the Personnel Archive & Audit Vault so historical logs and clinical audits remain complete.</li>
+        <li>The Admin or MD can click "Restore Staff" at any time to clear the timestamp and restore full login capabilities.</li>
     </ul>
 
     <h3>Soft-Deleted Accounts Currently Preserved in the Audit Database (Ready for Restore):</h3>
-    <table class="data-table">
+    <table class="word-table">
         <thead>
             <tr>
                 <th style="width: 28%;">Archived Staff Name</th>
@@ -442,15 +385,13 @@ public static function hash(string $plainPassword, ?string $pepperVersion = null
         </tbody>
     </table>
 
-    <!-- ===================================================================== -->
-    <!-- 6. REQUIREMENT 9: ENTER A LOT OF RECORDS & RESTORE POINTS             -->
-    <!-- ===================================================================== -->
+    <!-- 6. REQUIREMENT 9: ENTER A LOT OF RECORDS & RESTORE POINTS -->
     <h2>6. Requirement 9: 75 Patient Records & Configuration Restore Points</h2>
     <p>
         Requirement #9 states: <em>"Enter a lot of records and restore point shouldn't affect the data. only the configuration should be change."</em>
     </p>
     <p>
-        The system maintains <strong>{{ $totalPatients }} patient records</strong> across multiple wards (Admitted: {{ $admittedPatients }} | ICU Critical: {{ $icuPatients }} | Discharged: {{ $dischargedPatients }} | Outpatients: {{ $outpatients }}).
+        The system maintains {{ $totalPatients }} patient records across multiple wards (Admitted: {{ $admittedPatients }} | ICU Critical: {{ $icuPatients }} | Discharged: {{ $dischargedPatients }} | Outpatients: {{ $outpatients }}).
     </p>
     <p>
         System configurations are decoupled from transactional clinical health records. When an administrator creates or reverts a system configuration restore point:
@@ -460,7 +401,7 @@ public static function hash(string $plainPassword, ?string $pepperVersion = null
         <li><strong>Patient records that remain untouched:</strong> All {{ $totalPatients }} clinical patient files, bed assignments, and medical charts remain 100% intact without any alteration or data loss.</li>
     </ul>
 
-    <table class="data-table">
+    <table class="word-table">
         <thead>
             <tr>
                 <th style="width: 32%;">Configuration Snapshot Name</th>
@@ -483,34 +424,32 @@ public static function hash(string $plainPassword, ?string $pepperVersion = null
         </tbody>
     </table>
 
-    <!-- ===================================================================== -->
-    <!-- 7. REQUIREMENT 10 & 11: INFORMATION SECURITY TECHNIQUES               -->
-    <!-- ===================================================================== -->
+    <!-- 7. REQUIREMENT 10 & 11: SECURITY TECHNIQUES -->
     <h2>7. Requirement 10 & 11: Information Security Techniques & Parameterized SQL</h2>
 
     <h3>1. Parameterized SQL Queries (Prepared Statements)</h3>
     <p>
-        All database operations use PDO prepared statements with bound parameters (<code>?</code>). User input is never concatenated directly into SQL command strings, completely eliminating SQL injection vulnerabilities.
+        All database operations use PDO prepared statements with bound parameters (?). User input is never concatenated directly into SQL command strings, completely eliminating SQL injection vulnerabilities.
     </p>
-    <div class="code-box">
+    <pre class="code-text">
 // Demonstration of Parameterized Query Binding in CustomerController.php
 $sql = 'SELECT id, patient_code, name, ward_room, diagnosis FROM patients WHERE patient_code = ? AND deleted_at IS NULL';
 $results = DB::select($sql, [$userInput]); // Input is strictly bound as text data
-    </div>
+    </pre>
 
     <h3>2. HTTP Security Headers & Session Security</h3>
     <p>
         Every response from the server enforces enterprise security headers:
     </p>
     <ul>
-        <li><code>X-Frame-Options: DENY</code> — Protects against clickjacking attacks.</li>
-        <li><code>X-Content-Type-Options: nosniff</code> — Prevents MIME-confusion attacks.</li>
-        <li><code>Content-Security-Policy</code> — Restricts executable script sources to prevent cross-site scripting (XSS).</li>
-        <li><code>Session Regeneration</code> — Generates a new session ID upon login (<code>$request->session()->regenerate()</code>) to eliminate session fixation.</li>
+        <li><strong>X-Frame-Options: DENY</strong> — Protects against clickjacking attacks.</li>
+        <li><strong>X-Content-Type-Options: nosniff</strong> — Prevents MIME-confusion attacks.</li>
+        <li><strong>Content-Security-Policy</strong> — Restricts executable script sources to prevent cross-site scripting (XSS).</li>
+        <li><strong>Session Regeneration</strong> — Generates a new session ID upon login ($request->session()->regenerate()) to eliminate session fixation.</li>
     </ul>
 
     <h3>3. Institutional Audit Trail (Recent Activity Verification)</h3>
-    <table class="data-table">
+    <table class="word-table">
         <thead>
             <tr>
                 <th style="width: 18%;">Timestamp</th>
@@ -522,7 +461,7 @@ $results = DB::select($sql, [$userInput]); // Input is strictly bound as text da
             @foreach($recentAuditLogs->take(6) as $log)
                 <tr>
                     <td>{{ $log->created_at ? $log->created_at->format('Y-m-d H:i:s') : 'N/A' }}</td>
-                    <td><code>{{ $log->event_type }}</code></td>
+                    <td>{{ $log->event_type }}</td>
                     <td>{{ $log->description }}</td>
                 </tr>
             @endforeach
