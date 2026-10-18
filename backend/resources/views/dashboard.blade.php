@@ -40,6 +40,10 @@
             'pharmacist@medivault.cloud' => 'Pharm@MediVault2026!',
             'auditor@medivault.cloud' => 'Auditor@MediVault2026!',
             'archived.staff@medivault.cloud' => 'Archived@Pass2026!',
+            'evelyn.asante@medivault.cloud' => 'Nurse@Archive2026!',
+            'david.quaye@medivault.cloud' => 'Pharm@Archive2026!',
+            'marcus.obeng@medivault.cloud' => 'Doctor@Archive2026!',
+            'grace.taylor@medivault.cloud' => 'Auditor@Archive2026!',
         ];
     @endphp
 
@@ -474,49 +478,50 @@
                     </button>
                 @endif
 
-                <!-- Admin & Manager: Staff Directory -->
-                @if(in_array($userRole, ['Admin', 'Manager']))
-                    @if($userRole === 'Manager')
-                        <a href="{{ route('branch.dashboard') }}"
-                            class="p-4 rounded-2xl border border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-emerald-500/60 hover:ring-2 hover:ring-emerald-500/30 text-left transition-all relative overflow-hidden group cursor-pointer block">
-                            <div class="flex items-center justify-between">
-                                <span class="text-3xl group-hover:scale-110 transition-transform">👥</span>
-                                <div class="flex items-center gap-1.5">
-                                    <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">
-                                        {{ $staffUsers->count() }} Staff
-                                    </span>
-                                    <span class="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500 text-slate-950">
-                                        Open Operations ↗
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="text-sm font-bold text-white mt-3 group-hover:text-emerald-300 transition-colors">
-                                Personnel Directory & Operations
-                            </div>
-                            <p class="text-[11px] text-slate-400 mt-0.5">
-                                Dedicated Portal: Customer Account Identity & Lockout Resets
-                            </p>
-                        </a>
-                    @else
-                        <button @click="switchTab('staff')"
-                            :class="activeTab === 'staff' 
-                                ? 'border-purple-500 bg-purple-950/70 ring-2 ring-purple-500/50 shadow-xl shadow-purple-950/50' 
-                                : 'border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-slate-700'"
-                            class="p-4 rounded-2xl border text-left transition-all relative overflow-hidden group cursor-pointer">
-                            <div class="flex items-center justify-between">
-                                <span class="text-3xl">👥</span>
-                                <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-purple-950 text-purple-300 border border-purple-800">
-                                    {{ $staffUsers->count() }} Staff
+                <!-- All Roles & Audit Defense: Credentials & Roles Report Tab -->
+                <button @click="switchTab('staff')"
+                    :class="activeTab === 'staff' 
+                        ? 'border-purple-500 bg-purple-950/70 ring-2 ring-purple-500/50 shadow-xl shadow-purple-950/50' 
+                        : 'border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-slate-700'"
+                    class="p-4 rounded-2xl border text-left transition-all relative overflow-hidden group cursor-pointer">
+                    <div class="flex items-center justify-between">
+                        <span class="text-3xl">👥</span>
+                        <div class="flex items-center gap-1.5">
+                            <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-purple-950 text-purple-300 border border-purple-800">
+                                6 Roles
+                            </span>
+                        </div>
+                    </div>
+                    <div class="text-sm font-bold text-white mt-3 group-hover:text-purple-300 transition-colors">
+                        Credentials & Roles Report
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-0.5">
+                        6 Roles, Passwords, Salts & Argon2id
+                    </p>
+                </button>
+
+                <!-- Manager Dedicated Operations Portal Link -->
+                @if($userRole === 'Manager')
+                    <a href="{{ route('branch.dashboard') }}"
+                        class="p-4 rounded-2xl border border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-emerald-500/60 hover:ring-2 hover:ring-emerald-500/30 text-left transition-all relative overflow-hidden group cursor-pointer block">
+                        <div class="flex items-center justify-between">
+                            <span class="text-3xl group-hover:scale-110 transition-transform">📋</span>
+                            <div class="flex items-center gap-1.5">
+                                <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">
+                                    Operations
+                                </span>
+                                <span class="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500 text-slate-950">
+                                    Open Portal ↗
                                 </span>
                             </div>
-                            <div class="text-sm font-bold text-white mt-3">
-                                Personnel Directory
-                            </div>
-                            <p class="text-[11px] text-slate-400 mt-0.5">
-                                Argon2id Hashes & Master Controls
-                            </p>
-                        </button>
-                    @endif
+                        </div>
+                        <div class="text-sm font-bold text-white mt-3 group-hover:text-emerald-300 transition-colors">
+                            Operations & Bed Logistics
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-0.5">
+                            Dedicated Portal: Bed Management & Lockouts
+                        </p>
+                    </a>
                 @endif
 
                 <!-- Doctor & Pharmacist: Prescriptions Station (Dedicated Page) -->
