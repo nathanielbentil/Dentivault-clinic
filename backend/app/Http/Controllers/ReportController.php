@@ -27,6 +27,11 @@ class ReportController extends Controller
         $configRestorePoints = SystemConfiguration::all();
         $recentAuditLogs = AuditLog::with('user')->latest('id')->take(20)->get();
 
+        $usersTableImgPath = public_path('images/reports/database_users_table.png');
+        $tablesSidebarImgPath = public_path('images/reports/database_tables_sidebar.png');
+        $usersTableImgBase64 = file_exists($usersTableImgPath) ? base64_encode(file_get_contents($usersTableImgPath)) : null;
+        $tablesSidebarImgBase64 = file_exists($tablesSidebarImgPath) ? base64_encode(file_get_contents($tablesSidebarImgPath)) : null;
+
         $data = [
             'generationTime' => now()->toFormattedDateString() . ' ' . now()->toTimeString() . ' UTC',
             'activeStaff' => $activeStaff,
@@ -38,6 +43,8 @@ class ReportController extends Controller
             'outpatients' => $outpatients,
             'configRestorePoints' => $configRestorePoints,
             'recentAuditLogs' => $recentAuditLogs,
+            'usersTableImgBase64' => $usersTableImgBase64,
+            'tablesSidebarImgBase64' => $tablesSidebarImgBase64,
         ];
 
         // Audit log the PDF view event
@@ -71,6 +78,11 @@ class ReportController extends Controller
         $configRestorePoints = SystemConfiguration::all();
         $recentAuditLogs = AuditLog::with('user')->latest('id')->take(25)->get();
 
+        $usersTableImgPath = public_path('images/reports/database_users_table.png');
+        $tablesSidebarImgPath = public_path('images/reports/database_tables_sidebar.png');
+        $usersTableImgBase64 = file_exists($usersTableImgPath) ? base64_encode(file_get_contents($usersTableImgPath)) : null;
+        $tablesSidebarImgBase64 = file_exists($tablesSidebarImgPath) ? base64_encode(file_get_contents($tablesSidebarImgPath)) : null;
+
         return view('reports.security_pdf', [
             'generationTime' => now()->toFormattedDateString() . ' ' . now()->toTimeString() . ' UTC',
             'activeStaff' => $activeStaff,
@@ -82,6 +94,8 @@ class ReportController extends Controller
             'outpatients' => $outpatients,
             'configRestorePoints' => $configRestorePoints,
             'recentAuditLogs' => $recentAuditLogs,
+            'usersTableImgBase64' => $usersTableImgBase64,
+            'tablesSidebarImgBase64' => $tablesSidebarImgBase64,
             'isBrowserView' => true,
         ]);
     }
