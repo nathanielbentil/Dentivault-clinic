@@ -727,7 +727,7 @@
                     </a>
                 @endif
 
-                <!-- Official Security Audit Report (Inline Browser PDF) -->
+                <!-- Information Security Report (Inline Browser PDF) -->
                 <a href="{{ route('security.report.pdf') }}" target="_blank"
                     class="p-4 rounded-2xl border border-purple-500/50 bg-gradient-to-br from-purple-950/60 to-slate-900/80 hover:bg-purple-900/40 hover:border-purple-400 text-left transition-all relative overflow-hidden group cursor-pointer block shadow-lg">
                     <div class="flex items-center justify-between">
@@ -742,10 +742,10 @@
                         </div>
                     </div>
                     <div class="text-sm font-bold text-white mt-3 group-hover:text-purple-300 transition-colors">
-                        Security Audit Report
+                        Information Security Report
                     </div>
                     <p class="text-[11px] text-slate-400 mt-0.5">
-                        Open Master PDF in Browser Covering All 10 Requirements
+                        Open Information Security Report in Browser
                     </p>
                 </a>
 

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>MediVault Enterprise - Information Security Audit Report</title>
+    <title>Information Security Report</title>
     <style>
         @page {
             margin: 25px 30px;
@@ -152,7 +152,7 @@
             <tr>
                 <td style="vertical-align: top;">
                     <div class="header-title">MediVault Enterprise Hospital System</div>
-                    <div class="header-subtitle">Official Information Security Architecture & Academic Audit Report</div>
+                    <div class="header-subtitle">Information Security Report</div>
                 </td>
                 <td style="text-align: right; vertical-align: top;">
                     <span class="badge badge-success">Audit Certified</span>
@@ -517,7 +517,7 @@ $results = DB::select($sql, [$userInput]); // Input is strictly bound as text da
     </table>
 
     <div class="footer">
-        MediVault Enterprise Cloud HMS • Official Examination Audit Report • Certified Compliant with All 10 Academic Requirements • London AWS Data Center
+        MediVault Enterprise Cloud HMS • Information Security Report • Certified Compliant with All 10 Academic Requirements • London AWS Data Center
     </div>
 
 </body>
