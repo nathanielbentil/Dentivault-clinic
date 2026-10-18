@@ -367,7 +367,7 @@
                     @csrf
                     <div class="font-bold text-slate-200 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
                         <span>🔑</span>
-                        <span>Change Master Password (Argon2id + HMAC Pepper)</span>
+                        <span>Change Account Password</span>
                     </div>
                     <div>
                         <label class="block font-semibold text-slate-400 mb-1">Current Password</label>

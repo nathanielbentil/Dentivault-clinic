@@ -288,7 +288,7 @@
                         </div>
                     </div>
                     <div class="p-3 rounded-xl bg-cyan-950/40 border border-cyan-800/40 text-[11px] text-cyan-200">
-                        🔒 Digital signature will be sealed with Argon2id session keys and dispatched to the Dispensary.
+                        ✓ Prescription order will be digitally authorized and transmitted to the Pharmacy Dispensary.
                     </div>
                     <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
                         <button type="button" @click="showNewRxModal = false" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300">Cancel</button>

@@ -293,7 +293,7 @@
             <!-- Password Field -->
             <div>
                 <label for="password" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
-                    Password (Argon2id + Salt + Pepper)
+                    Password
                 </label>
                 <div class="relative">
                     <input id="password" type="password" name="password" x-model="password" required
@@ -310,7 +310,7 @@
                     <input type="checkbox" name="remember" checked class="rounded border-slate-700 bg-slate-900 text-cyan-600 focus:ring-cyan-500/20">
                     <span>Remember workstation</span>
                 </label>
-                <span class="text-cyan-400 font-medium">Session: Encrypted Cookie</span>
+                <span class="text-cyan-400 font-medium">Secure Session</span>
             </div>
 
             <!-- Submit Button -->

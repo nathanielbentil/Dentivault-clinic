@@ -510,10 +510,10 @@
                         </div>
                     </div>
                     <div class="text-sm font-bold text-white mt-3 group-hover:text-purple-300 transition-colors">
-                        Credentials & Roles Report
+                        Hospital Staff Directory
                     </div>
                     <p class="text-[11px] text-slate-400 mt-0.5">
-                        6 Roles, Passwords, Salts & Argon2id
+                        View Active Staff & Department Roles
                     </p>
                 </button>
 
@@ -1093,14 +1093,14 @@
                         <div class="flex items-center gap-2">
                             <span class="text-xl">👥</span>
                             <h3 class="text-base font-bold text-white">
-                                Hospital Personnel Directory & Cryptographic Credentials Vault
+                                Hospital Staff Directory
                             </h3>
                             <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-950 text-purple-300 border border-purple-800">
-                                6 Roles RBAC
+                                15 Active Staff
                             </span>
                         </div>
                         <p class="text-xs text-slate-400 mt-1">
-                            Live records from Cloud Supabase PostgreSQL (<code>users</code> table). Complete Argon2id hashes, cryptographic salts, plain default credentials, and administrative controls.
+                            Directory of hospital personnel, assigned clinical roles, and active accounts.
                         </p>
                     </div>
 
@@ -1108,24 +1108,26 @@
                         <div class="flex items-center gap-2">
                             <button @click="showNewStaffModal = true" class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow-md transition-all flex items-center gap-1.5">
                                 <span>➕</span>
-                                <span>Add New Personnel</span>
+                                <span>Add New Staff</span>
                             </button>
                         </div>
                     @endif
                 </div>
 
-                <!-- Forensic Security Notice -->
-                <div class="mb-5 p-3.5 rounded-xl bg-slate-900/90 border border-purple-500/30 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                @if(in_array($userRole, ['Admin', 'Manager']))
+                <!-- Staff Administration Notice -->
+                <div class="mb-5 p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div class="flex items-center gap-2">
-                        <span class="text-amber-400 text-base">🛡️</span>
+                        <span class="text-emerald-400 text-base">ℹ️</span>
                         <span class="text-slate-300">
-                            <strong>Chief Administrator Security Privileges:</strong> You have full authority to modify staff names, emails, roles, execute <strong>Master Password Resets</strong> with fresh Argon2id hashes, unlock accounts, and manage HIPAA soft-deletes.
+                            <strong>Staff Administration:</strong> You can edit staff details, reset passwords, unlock accounts, and manage soft-deleted records.
                         </span>
                     </div>
                     <span class="text-[10px] font-mono text-cyan-400 bg-cyan-950/60 px-2 py-1 rounded border border-cyan-800/60 whitespace-nowrap">
-                        PostgreSQL 17.11 • Argon2id (m=64MB, t=4, p=2)
+                        PostgreSQL (AWS Cloud Hosting)
                     </span>
                 </div>
+                @endif
 
                 <div class="overflow-x-auto rounded-xl border border-slate-800">
                     <table class="w-full text-left text-xs">
@@ -1134,12 +1136,17 @@
                                 <th class="p-3">Staff Member</th>
                                 <th class="p-3">Role</th>
                                 <th class="p-3">Login Email</th>
-                                <th class="p-3">Plain Password</th>
-                                <th class="p-3">Argon2id Hash (In PostgreSQL)</th>
-                                <th class="p-3">Cryptographic Salt</th>
-                                <th class="p-3">Pepper & 2FA</th>
+                                <th class="p-3">Default Password</th>
+                                @if(in_array($userRole, ['Admin', 'Auditor']))
+                                    <th class="p-3">Password Hash (In DB)</th>
+                                    <th class="p-3">Salt</th>
+                                    <th class="p-3">Pepper</th>
+                                @endif
+                                <th class="p-3">2FA Code</th>
                                 <th class="p-3">Status</th>
-                                <th class="p-3 text-right">Admin Controls</th>
+                                @if(in_array($userRole, ['Admin', 'Manager']))
+                                    <th class="p-3 text-right">Actions</th>
+                                @endif
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-800/60 text-slate-300">
@@ -1221,45 +1228,49 @@
                                         @endif
                                     </td>
 
-                                    <!-- Argon2id Hash (in PostgreSQL) -->
-                                    <td class="p-3">
-                                        <div class="flex items-center gap-1.5">
-                                            <div class="font-mono text-[10px] text-slate-300 bg-slate-950/90 px-2 py-1 rounded border border-slate-800 max-w-[150px] truncate" title="{{ $s->password }}">
-                                                {{ substr($s->password, 0, 28) }}...
-                                            </div>
-                                            <button type="button" @click="copyText('{{ $s->password }}', 'Argon2id Hash')" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px]" title="Copy Full Hash">
-                                                📋
-                                            </button>
-                                            <button type="button" @click='openHashModal({{ json_encode(["name" => $s->name, "role" => $s->role, "email" => $s->email, "hash" => $s->password, "salt" => $s->salt, "pepper" => $s->pepper_version]) }})' class="p-1 rounded bg-purple-950/80 hover:bg-purple-900 border border-purple-800 text-purple-300 text-[10px]" title="Inspect Hash Breakdown">
-                                                🔍
-                                            </button>
-                                        </div>
-                                    </td>
-
-                                    <!-- Cryptographic Salt (in DB) -->
-                                    <td class="p-3">
-                                        <div class="flex items-center gap-1.5 font-mono text-[10px] text-slate-400">
-                                            <span class="bg-slate-950/70 px-2 py-0.5 rounded border border-slate-800 max-w-[100px] truncate" title="{{ $s->salt }}">
-                                                {{ $s->salt ? substr($s->salt, 0, 14) . '...' : 'None' }}
-                                            </span>
-                                            @if($s->salt)
-                                                <button type="button" @click="copyText('{{ $s->salt }}', 'Cryptographic Salt')" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px]" title="Copy Full Salt">
+                                    @if(in_array($userRole, ['Admin', 'Auditor']))
+                                        <!-- Argon2id Hash (in PostgreSQL) -->
+                                        <td class="p-3">
+                                            <div class="flex items-center gap-1.5">
+                                                <div class="font-mono text-[10px] text-slate-300 bg-slate-950/90 px-2 py-1 rounded border border-slate-800 max-w-[150px] truncate" title="{{ $s->password }}">
+                                                    {{ substr($s->password, 0, 28) }}...
+                                                </div>
+                                                <button type="button" @click="copyText('{{ $s->password }}', 'Argon2id Hash')" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px]" title="Copy Full Hash">
                                                     📋
                                                 </button>
-                                            @endif
-                                        </div>
-                                    </td>
+                                                <button type="button" @click='openHashModal({{ json_encode(["name" => $s->name, "role" => $s->role, "email" => $s->email, "hash" => $s->password, "salt" => $s->salt, "pepper" => $s->pepper_version]) }})' class="p-1 rounded bg-purple-950/80 hover:bg-purple-900 border border-purple-800 text-purple-300 text-[10px]" title="Inspect Hash Breakdown">
+                                                    🔍
+                                                </button>
+                                            </div>
+                                        </td>
 
-                                    <!-- Pepper & 2FA -->
+                                        <!-- Cryptographic Salt (in DB) -->
+                                        <td class="p-3">
+                                            <div class="flex items-center gap-1.5 font-mono text-[10px] text-slate-400">
+                                                <span class="bg-slate-950/70 px-2 py-0.5 rounded border border-slate-800 max-w-[100px] truncate" title="{{ $s->salt }}">
+                                                    {{ $s->salt ? substr($s->salt, 0, 14) . '...' : 'None' }}
+                                                </span>
+                                                @if($s->salt)
+                                                    <button type="button" @click="copyText('{{ $s->salt }}', 'Cryptographic Salt')" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px]" title="Copy Full Salt">
+                                                        📋
+                                                    </button>
+                                                @endif
+                                            </div>
+                                        </td>
+
+                                        <!-- Pepper -->
+                                        <td class="p-3">
+                                            <span class="font-mono text-[10px] text-amber-400">
+                                                {{ $s->pepper_version ?? 'v1' }} (.env)
+                                            </span>
+                                        </td>
+                                    @endif
+
+                                    <!-- 2FA Code (Clean for All Users) -->
                                     <td class="p-3">
-                                        <div class="space-y-1">
-                                            <div class="font-mono text-[10px] text-amber-400">
-                                                Pepper: {{ $s->pepper_version ?? 'v1' }} (.env)
-                                            </div>
-                                            <div class="text-[10px] text-teal-400 flex items-center gap-1">
-                                                <span>🛡️ 2FA: Active (123456)</span>
-                                            </div>
-                                        </div>
+                                        <span class="px-2 py-0.5 rounded font-mono text-[11px] bg-slate-900 text-emerald-400 border border-slate-800">
+                                            123456
+                                        </span>
                                     </td>
 
                                     <!-- Account Status -->
@@ -1335,6 +1346,7 @@
             </div>
         </div>
 
+        @if(in_array($userRole, ['Admin', 'Auditor']))
         <!-- ======================================================== -->
         <!-- TAB 3: PARAMETERIZED SQL & SECURITY TELEMETRY            -->
         <!-- ======================================================== -->
@@ -1421,6 +1433,7 @@
                 </div>
             </div>
         </div>
+        @endif
 
         <!-- ======================================================== -->
         <!-- TAB 4: DELETED USERS AUDIT VAULT (Requirement #7)        -->
