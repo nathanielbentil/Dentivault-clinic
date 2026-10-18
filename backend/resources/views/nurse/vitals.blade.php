@@ -1,4 +1,4 @@
-<x-app-layout :title="'Nurse Vitals & Telemetry Station'">
+<x-app-layout :title="'Nurse Vitals & Ward Observation Station'">
     <div x-data="{
         search: '',
         wardFilter: 'all',
@@ -25,7 +25,7 @@
                     <span>Return to Main Console</span>
                 </a>
                 <span class="text-slate-600">/</span>
-                <span class="text-xs font-mono text-pink-400 font-bold uppercase tracking-wider">Clinical Station: Nursing Vitals & Ward Telemetry</span>
+                <span class="text-xs font-mono text-pink-400 font-bold uppercase tracking-wider">Clinical Station: Nursing Vitals & Bedside Observations</span>
             </div>
             <div class="flex items-center gap-2 text-xs">
                 <span class="px-2.5 py-1 rounded-full bg-pink-950 text-pink-300 border border-pink-800 font-mono text-[11px] flex items-center gap-1.5">
@@ -49,10 +49,10 @@
                         </span>
                     </div>
                     <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                        In-Patient Bed Roster & Shift Vitals Telemetry
+                        In-Patient Bed Roster & Shift Vitals Charting
                     </h1>
                     <p class="text-sm text-slate-400 mt-1">
-                        Attending Registered Nurse: <strong class="text-pink-300">{{ $user->name }} (RN)</strong> • Real-time Bed Telemetry & Medication Administration Record (MAR)
+                        Attending Registered Nurse: <strong class="text-pink-300">{{ $user->name }} (RN)</strong> • Bedside Vital Signs & Medication Administration Record (MAR)
                     </p>
                 </div>
 
@@ -192,7 +192,7 @@
                 <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                     <h3 class="text-base font-bold text-white flex items-center gap-2">
                         <span>⏱️</span>
-                        <span>Record Shift Vitals Telemetry</span>
+                        <span>Record Shift Vital Signs</span>
                     </h3>
                     <button @click="showLogModal = false" class="text-slate-400 hover:text-white text-lg">&times;</button>
                 </div>
@@ -234,7 +234,7 @@
                     </div>
                     <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
                         <button type="button" @click="showLogModal = false" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300">Cancel</button>
-                        <button type="button" @click="showLogModal = false; alert('Vitals telemetry permanently saved and broadcast to attending physician!')" class="px-5 py-2 rounded-xl bg-pink-600 hover:bg-pink-500 font-bold text-slate-950 transition-all">Submit Vitals Record 💾</button>
+                        <button type="button" @click="showLogModal = false; alert('Vital signs record saved and transmitted to attending physician!')" class="px-5 py-2 rounded-xl bg-pink-600 hover:bg-pink-500 font-bold text-slate-950 transition-all">Submit Vitals Record 💾</button>
                     </div>
                 </div>
             </div>

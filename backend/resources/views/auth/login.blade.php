@@ -118,7 +118,7 @@
             <div class="flex items-center justify-between mb-2.5">
                 <label class="block text-xs font-black text-cyan-400 uppercase tracking-wider flex items-center gap-1.5">
                     <span>⚡</span>
-                    <span>Quick-Fill Personnel Role Tabs:</span>
+                    <span>Select Professional Department / Role:</span>
                 </label>
                 <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-800 font-mono font-bold">
                     <span x-text="staffMembers.length"></span> Active Staff

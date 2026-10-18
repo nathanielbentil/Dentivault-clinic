@@ -140,17 +140,17 @@
                     </h1>
                     <p class="text-sm text-slate-400 mt-1">
                         @if($userRole === 'Admin')
-                            Chief Medical Directorate & Executive Suite • Staff Provisioning, Cryptographic Hashes, Audit Vault & System Snapshots
+                            Executive IT Administration & System Management • Staff Provisioning, Database Operations & System Restore Points
                         @elseif($userRole === 'Manager')
-                            Hospital Operations & Ward Bed Logistics • Patient Inflow, Bed Capacity, Shift Staffing Coordination
+                            Hospital Operations & Ward Logistics • In-Patient Bed Capacity, Admissions & Department Supervision
                         @elseif($userRole === 'Doctor')
                             Attending Medical Physician Station • Clinical Assessments, Diagnostic Charting & Electronic Prescriptions
                         @elseif($userRole === 'Nurse')
-                            Senior Ward Nursing Station • Bed Monitoring, Vital Signs Logging & Medication Administration
+                            Senior Ward Nursing Station • Bed Monitoring, Vital Signs Observations & Medication Administration
                         @elseif($userRole === 'Pharmacist')
-                            Hospital Pharmacy & Dispensary • Prescription Verification, Drug Formulary & Dispensing Queue
+                            Hospital Pharmacy & Dispensary • Prescription Verification, Formulary Inventory & Dispensing Queue
                         @elseif($userRole === 'Auditor')
-                            HIPAA Compliance & Security Audit Station • Cryptographic SHA-256 Log Chains & Read-Only Access
+                            Institutional Compliance & Audit Station • Event Verification Trails & Regulatory Read-Only Access
                         @endif
                     </p>
                 </div>
@@ -205,17 +205,17 @@
                         <div class="flex items-center gap-2">
                             <span class="text-xs font-bold uppercase tracking-wider text-{{ $roleColor }}-400">
                                 @if($userRole === 'Admin')
-                                    Security Clearance: Level 5 • Executive Directorate
+                                    Professional Station: Executive IT Administrator
                                 @elseif($userRole === 'Manager')
-                                    Security Clearance: Level 4 • Clinical Operations
+                                    Professional Station: Managing Director (MD Operations)
                                 @elseif($userRole === 'Doctor')
-                                    Security Clearance: Level 4 • Attending Physician
+                                    Professional Station: Attending Medical Physician
                                 @elseif($userRole === 'Nurse')
-                                    Security Clearance: Level 3 • In-Patient Nursing
+                                    Professional Station: Registered Clinical Nurse
                                 @elseif($userRole === 'Pharmacist')
-                                    Security Clearance: Level 3 • Hospital Dispensary
+                                    Professional Station: Certified Hospital Pharmacist
                                 @elseif($userRole === 'Auditor')
-                                    Security Clearance: Level 4 • Compliance & Forensics
+                                    Professional Station: Regulatory Compliance Auditor
                                 @endif
                             </span>
                             <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-950 text-slate-300 border border-slate-800 font-mono">
@@ -234,36 +234,36 @@
                         <span class="text-[10px] uppercase font-bold text-emerald-400 block mb-0.5">Authorized Scope:</span>
                         <span class="font-mono text-slate-200 text-[11px]">
                             @if($userRole === 'Admin')
-                                All Modules • Full SuperAdmin Access
+                                System-Wide Administration & User Management
                             @elseif($userRole === 'Manager')
-                                Ward Beds • Patient Admissions • Staff Directory
+                                Ward Bed Logistics • Patient Admissions • Staff Directory
                             @elseif($userRole === 'Doctor')
                                 Clinical Diagnoses • Electronic Prescriptions (Rx)
                             @elseif($userRole === 'Nurse')
-                                Bed Vitals Telemetry • Medication Administration
+                                Patient Vital Signs • Bedside Nursing Observations
                             @elseif($userRole === 'Pharmacist')
-                                Prescription Review • Medication Dispensing
+                                Prescription Verification • Medication Dispensation
                             @elseif($userRole === 'Auditor')
-                                Cryptographic Audit Vault • Tamper Verification
+                                Regulatory Compliance Review • Audit Event Trail
                             @endif
                         </span>
                     </div>
 
                     <div class="px-3.5 py-2 rounded-xl bg-slate-950/80 border border-rose-500/30">
-                        <span class="text-[10px] uppercase font-bold text-rose-400 block mb-0.5">Access Restrictions:</span>
+                        <span class="text-[10px] uppercase font-bold text-rose-400 block mb-0.5">Access Boundaries:</span>
                         <span class="font-mono text-slate-400 text-[11px]">
                             @if($userRole === 'Admin')
-                                Immutable Audit Deletion Blocked
+                                Permanent Audit Trail Modification Prohibited
                             @elseif($userRole === 'Manager')
-                                IT Telemetry • Password Resets • Backups
+                                IT Diagnostics • Password Management • Backups Restricted
                             @elseif($userRole === 'Doctor')
-                                User Management • Audit Vault • Restore Points
+                                User Accounts • Audit Vault • System Backups Restricted
                             @elseif($userRole === 'Nurse')
-                                Patient Admitting • Writing Prescriptions • Users
+                                Patient Admitting • Medical Prescribing Restricted
                             @elseif($userRole === 'Pharmacist')
-                                Writing Diagnoses • Patient Admitting • Backups
+                                Medical Diagnoses • Patient Admitting Restricted
                             @elseif($userRole === 'Auditor')
-                                All Write / Update / Delete Mutations Blocked
+                                Clinical & Record Modifications Prohibited (Read-Only)
                             @endif
                         </span>
                     </div>
@@ -380,27 +380,27 @@
                 <!-- Auditor KPIs -->
                 <div class="stat-card rounded-2xl p-5 border border-slate-800 bg-slate-900/70">
                     <div class="flex items-center justify-between">
-                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Immutable Audit Logs</span>
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Compliance Event Logs</span>
                         <span class="p-2 rounded-xl bg-blue-950/60 border border-blue-500/20 text-blue-400">📜</span>
                     </div>
-                    <div class="text-3xl font-black text-blue-400 mt-2">{{ $auditLogs->count() }} Events</div>
-                    <div class="text-xs text-blue-400/80 mt-1">Cryptographic Chain Verified</div>
+                    <div class="text-3xl font-black text-blue-400 mt-2">{{ $auditLogs->count() }} Records</div>
+                    <div class="text-xs text-blue-400/80 mt-1">Audit Trail Verified</div>
                 </div>
                 <div class="stat-card rounded-2xl p-5 border border-slate-800 bg-slate-900/70">
                     <div class="flex items-center justify-between">
-                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Soft-Deleted Accounts</span>
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Inactive Staff Archive</span>
                         <span class="p-2 rounded-xl bg-rose-950/60 border border-rose-500/20 text-rose-400">🗃️</span>
                     </div>
                     <div class="text-3xl font-black text-rose-400 mt-2">{{ $archivedUsers->count() }} Archived</div>
-                    <div class="text-xs text-rose-400/80 mt-1">HIPAA Retention Rule #7</div>
+                    <div class="text-xs text-rose-400/80 mt-1">Personnel Retention Policy</div>
                 </div>
                 <div class="stat-card rounded-2xl p-5 border border-slate-800 bg-slate-900/70">
                     <div class="flex items-center justify-between">
-                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">SHA-256 Tamper Status</span>
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Record Integrity Status</span>
                         <span class="p-2 rounded-xl bg-emerald-950/60 border border-emerald-500/20 text-emerald-400">🛡️</span>
                     </div>
-                    <div class="text-3xl font-black text-emerald-400 mt-2">100% Intact</div>
-                    <div class="text-xs text-emerald-400/80 mt-1">0 Compromised Hashes</div>
+                    <div class="text-3xl font-black text-emerald-400 mt-2">100% Verified</div>
+                    <div class="text-xs text-emerald-400/80 mt-1">0 Discrepancies Recorded</div>
                 </div>
                 <div class="stat-card rounded-2xl p-5 border border-slate-800 bg-slate-900/70">
                     <div class="flex items-center justify-between">
@@ -408,7 +408,7 @@
                         <span class="p-2 rounded-xl bg-purple-950/60 border border-purple-500/20 text-purple-400">🔍</span>
                     </div>
                     <div class="text-3xl font-black text-purple-400 mt-2">Read-Only</div>
-                    <div class="text-xs text-purple-400/80 mt-1">ISO 27001 / HIPAA Audited</div>
+                    <div class="text-xs text-purple-400/80 mt-1">Hospital Quality Assurance</div>
                 </div>
 
             @else
@@ -536,7 +536,7 @@
                             Operations & Bed Logistics
                         </div>
                         <p class="text-[11px] text-slate-400 mt-0.5">
-                            Dedicated Portal: Bed Management & Lockouts
+                            Dedicated Portal: Bed Capacity & Ward Supervision
                         </p>
                     </a>
                 @endif
@@ -560,7 +560,7 @@
                             Electronic Prescriptions
                         </div>
                         <p class="text-[11px] text-slate-400 mt-0.5">
-                            Dedicated Terminal: Orders, Rx Signing & Interaction Lab
+                            Dedicated Terminal: Clinical Drug Orders & Safety Review
                         </p>
                     </a>
                 @endif
@@ -584,7 +584,7 @@
                             Shift Nursing Vitals Station
                         </div>
                         <p class="text-[11px] text-slate-400 mt-0.5">
-                            Dedicated Terminal: Bed Telemetry, BP/HR & SBAR Briefing
+                            Dedicated Terminal: Bedside Observations, BP/HR & Shift Handover
                         </p>
                     </a>
                 @endif
@@ -608,12 +608,12 @@
                             Dispensary Fulfillment Queue
                         </div>
                         <p class="text-[11px] text-slate-400 mt-0.5">
-                            Dedicated Terminal: Batch Dispensing & Barcode Reader
+                            Dedicated Terminal: Prescription Dispensing & Stock Verification
                         </p>
                     </a>
                 @endif
 
-                <!-- Auditor: Cryptographic Audit Vault (Dedicated Page) -->
+                <!-- Auditor: Compliance Audit Trail (Dedicated Page) -->
                 @if($userRole === 'Auditor')
                     <a href="{{ route('audit.dashboard') }}"
                         class="p-4 rounded-2xl border border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-rose-500/60 hover:ring-2 hover:ring-rose-500/30 text-left transition-all relative overflow-hidden group cursor-pointer block">
@@ -621,7 +621,7 @@
                             <span class="text-3xl group-hover:scale-110 transition-transform">🗃️</span>
                             <div class="flex items-center gap-1.5">
                                 <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-rose-950 text-rose-300 border border-rose-800">
-                                    Forensics Hub
+                                    Audit Review
                                 </span>
                                 <span class="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-rose-500 text-slate-950">
                                     Open Hub ↗
@@ -629,15 +629,15 @@
                             </div>
                         </div>
                         <div class="text-sm font-bold text-white mt-3 group-hover:text-rose-300 transition-colors">
-                            Cryptographic Audit Vault & Forensics
+                            Institutional Compliance & Audit Trail
                         </div>
                         <p class="text-[11px] text-slate-400 mt-0.5">
-                            Dedicated Hub: SHA-256 Chained Integrity & Anomaly Detection
+                            Dedicated Hub: Activity History & Regulatory Compliance Review
                         </p>
                     </a>
                 @endif
 
-                <!-- Admin & Auditor: Security Telemetry (Dedicated Page) -->
+                <!-- Admin & Auditor: Database Diagnostics & Query Logs (Dedicated Page) -->
                 @if(in_array($userRole, ['Admin', 'Auditor']))
                     <a href="{{ route('security.telemetry') }}"
                         class="p-4 rounded-2xl border border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-emerald-500/60 hover:ring-2 hover:ring-emerald-500/30 text-left transition-all relative overflow-hidden group cursor-pointer block">
@@ -645,18 +645,18 @@
                             <span class="text-3xl group-hover:scale-110 transition-transform">🛡️</span>
                             <div class="flex items-center gap-1.5">
                                 <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">
-                                    Benchmark
+                                    Diagnostics
                                 </span>
                                 <span class="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500 text-slate-950">
-                                    Open Lab ↗
+                                    Open Hub ↗
                                 </span>
                             </div>
                         </div>
                         <div class="text-sm font-bold text-white mt-3 group-hover:text-emerald-300 transition-colors">
-                            Security Telemetry & SQL Defense
+                            Database Diagnostics & Query Logs
                         </div>
                         <p class="text-[11px] text-slate-400 mt-0.5">
-                            Dedicated Lab: Live SQL Injection Lab & Argon2id Benchmarks
+                            Dedicated Hub: Database Query Testing & Performance Metrics
                         </p>
                     </a>
                 @endif
@@ -683,7 +683,7 @@
                     </button>
                 @endif
 
-                <!-- Admin & Managing Director: Audit Vault -->
+                <!-- Admin & Managing Director: Inactive Staff Archive -->
                 @if(in_array($userRole, ['Admin', 'Manager']))
                     <button @click="switchTab('archive')"
                         :class="activeTab === 'archive' 
@@ -697,21 +697,21 @@
                             </span>
                         </div>
                         <div class="text-sm font-bold text-white mt-3">
-                            Audit Vault & Archive
+                            Personnel Archive & Records
                         </div>
                         <p class="text-[11px] text-slate-400 mt-0.5">
-                            Soft-Deleted Accounts & Restoration
+                            Deactivated Profiles & Account Reactivation
                         </p>
                     </button>
 
-                    <!-- Admin: Backups & Restore Points (Dedicated Page Link) -->
+                    <!-- Admin: System Backups & Recovery (Dedicated Page Link) -->
                     <a href="{{ route('admin.backups') }}"
                         class="p-4 rounded-2xl border border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-amber-500/60 hover:ring-2 hover:ring-amber-500/30 text-left transition-all relative overflow-hidden group cursor-pointer block">
                         <div class="flex items-center justify-between">
                             <span class="text-3xl group-hover:scale-110 transition-transform">💾</span>
                             <div class="flex items-center gap-1.5">
                                 <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-amber-950 text-amber-300 border border-amber-800">
-                                    3-2-1 DR
+                                    Restore Points
                                 </span>
                                 <span class="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-amber-500 text-slate-950">
                                     Open Station ↗
@@ -719,10 +719,10 @@
                             </div>
                         </div>
                         <div class="text-sm font-bold text-white mt-3 group-hover:text-amber-300 transition-colors">
-                            Backups & Restore Points
+                            System Backups & Recovery
                         </div>
                         <p class="text-[11px] text-slate-400 mt-0.5">
-                            Dedicated Terminal: X25519 Encryption & DR Drill Engine
+                            Dedicated Terminal: Automated Database Snapshots & Recovery Testing
                         </p>
                     </a>
                 @endif
@@ -955,7 +955,7 @@
                             </span>
                         </div>
                         <p class="text-xs text-slate-400 mt-1">
-                            Real-time patient hemodynamic telemetry: Blood Pressure, Pulse, Temperature, and SpO2.
+                            Real-time patient clinical observations: Blood Pressure, Pulse, Temperature, and Oxygen Saturation.
                         </p>
                     </div>
                     <div class="text-xs text-pink-400 font-mono bg-pink-950/60 px-3 py-1.5 rounded-xl border border-pink-800/60">
@@ -971,7 +971,7 @@
                                 <th class="p-3">Patient</th>
                                 <th class="p-3">Status</th>
                                 <th class="p-3">Vital Signs Summary</th>
-                                <th class="p-3">Telemetry Status</th>
+                                <th class="p-3">Observation Status</th>
                                 <th class="p-3">Primary Nurse</th>
                                 <th class="p-3 text-right">Nurse Charting</th>
                             </tr>
