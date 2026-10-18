@@ -147,9 +147,10 @@ class RoleAndPermissionSeeder extends Seeder
         ]);
 
         // ------------------------------------------------------------------
-        // 3. Seed Hospital Staff Users (with Salt, Pepper, and Argon2id Hashes)
+        // 3. Seed 15 Active Hospital Staff Users (with Salt, Pepper, and Argon2id Hashes)
         // ------------------------------------------------------------------
         $staffMembers = [
+            // 1. Chief Medical Director (Admin)
             [
                 'name' => 'Dr. Prof. Nathaniel Bentil',
                 'email' => 'admin@medivault.cloud',
@@ -157,6 +158,7 @@ class RoleAndPermissionSeeder extends Seeder
                 'role' => 'Admin',
                 'roleModel' => $adminRole,
             ],
+            // 2. Managing Director (Operations Manager)
             [
                 'name' => 'Dr. Bright Ainoo',
                 'email' => 'manager@medivault.cloud',
@@ -164,6 +166,7 @@ class RoleAndPermissionSeeder extends Seeder
                 'role' => 'Manager',
                 'roleModel' => $managerRole,
             ],
+            // 3-5. Attending Doctors (3 Physicians)
             [
                 'name' => 'Dr. Isaac Donkoh, MD',
                 'email' => 'doctor@medivault.cloud',
@@ -172,12 +175,63 @@ class RoleAndPermissionSeeder extends Seeder
                 'roleModel' => $doctorRole,
             ],
             [
+                'name' => 'Dr. Kofi Mensah, MD',
+                'email' => 'doctor.kofi@medivault.cloud',
+                'password' => 'Doctor@Kofi2026!',
+                'role' => 'Doctor',
+                'roleModel' => $doctorRole,
+            ],
+            [
+                'name' => 'Dr. Akua Boateng, MD',
+                'email' => 'doctor.akua@medivault.cloud',
+                'password' => 'Doctor@Akua2026!',
+                'role' => 'Doctor',
+                'roleModel' => $doctorRole,
+            ],
+            // 6-11. Ward Nurses (6 Registered Nurses >= 5 required)
+            [
                 'name' => 'Nurse Beatrice Mensah, RN',
                 'email' => 'nurse@medivault.cloud',
                 'password' => 'Nurse@MediVault2026!',
                 'role' => 'Nurse',
                 'roleModel' => $nurseRole,
             ],
+            [
+                'name' => 'Nurse Abena Osei, RN',
+                'email' => 'nurse.abena@medivault.cloud',
+                'password' => 'Nurse@Abena2026!',
+                'role' => 'Nurse',
+                'roleModel' => $nurseRole,
+            ],
+            [
+                'name' => 'Nurse Comfort Appiah, RN',
+                'email' => 'nurse.comfort@medivault.cloud',
+                'password' => 'Nurse@Comfort2026!',
+                'role' => 'Nurse',
+                'roleModel' => $nurseRole,
+            ],
+            [
+                'name' => 'Nurse Dorothy Ansah, RN',
+                'email' => 'nurse.dorothy@medivault.cloud',
+                'password' => 'Nurse@Dorothy2026!',
+                'role' => 'Nurse',
+                'roleModel' => $nurseRole,
+            ],
+            [
+                'name' => 'Nurse Emmanuel Tetteh, RN',
+                'email' => 'nurse.emmanuel@medivault.cloud',
+                'password' => 'Nurse@Emmanuel2026!',
+                'role' => 'Nurse',
+                'roleModel' => $nurseRole,
+            ],
+            [
+                'name' => 'Nurse Florence Danquah, RN',
+                'email' => 'nurse.florence@medivault.cloud',
+                'password' => 'Nurse@Florence2026!',
+                'role' => 'Nurse',
+                'roleModel' => $nurseRole,
+            ],
+            // 12-13. Hospital Pharmacists (2 Pharmacists)
             [
                 'name' => 'Pharm. Kwabena Appiah',
                 'email' => 'pharmacist@medivault.cloud',
@@ -186,9 +240,24 @@ class RoleAndPermissionSeeder extends Seeder
                 'roleModel' => $pharmacistRole,
             ],
             [
+                'name' => 'Pharm. Adwoa Kwarteng',
+                'email' => 'pharm.adwoa@medivault.cloud',
+                'password' => 'Pharm@Adwoa2026!',
+                'role' => 'Pharmacist',
+                'roleModel' => $pharmacistRole,
+            ],
+            // 14-15. Compliance & HIPAA Auditors (2 Auditors)
+            [
                 'name' => 'Auditor Samuel Osei',
                 'email' => 'auditor@medivault.cloud',
                 'password' => 'Auditor@MediVault2026!',
+                'role' => 'Auditor',
+                'roleModel' => $auditorRole,
+            ],
+            [
+                'name' => 'Auditor Sarah Addo',
+                'email' => 'auditor.sarah@medivault.cloud',
+                'password' => 'Auditor@Sarah2026!',
                 'role' => 'Auditor',
                 'roleModel' => $auditorRole,
             ],
@@ -212,22 +281,62 @@ class RoleAndPermissionSeeder extends Seeder
             $user->roles()->sync([$s['roleModel']->id => ['created_at' => now()]]);
         }
 
-        // Pre-seed an Archived / Soft-Deleted Staff Member to demonstrate Requirement #7!
-        $archivedHash = PasswordService::hash('Archived@Pass2026!');
-        $archivedUser = User::withTrashed()->updateOrCreate(
-            ['email' => 'archived.staff@medivault.cloud'],
+        // Pre-seed 5 Archived / Soft-Deleted Staff Members to demonstrate Requirement #7!
+        $archivedStaff = [
             [
                 'name' => 'Dr. Francis Cudjoe (Former Physician)',
+                'email' => 'archived.staff@medivault.cloud',
+                'password' => 'Archived@Pass2026!',
                 'role' => 'Doctor',
-                'password' => $archivedHash['hash'],
-                'salt' => $archivedHash['salt'],
-                'pepper_version' => $archivedHash['pepper_version'],
-                'status' => 'suspended',
-                'email_verified_at' => now(),
-                'deleted_at' => now()->subDays(3), // Soft-deleted 3 days ago for audit inspection!
-            ]
-        );
-        $archivedUser->roles()->sync([$doctorRole->id => ['created_at' => now()->subDays(10)]]);
+                'roleModel' => $doctorRole,
+            ],
+            [
+                'name' => 'Nurse Evelyn Asante, RN (Archived)',
+                'email' => 'evelyn.asante@medivault.cloud',
+                'password' => 'Nurse@Archive2026!',
+                'role' => 'Nurse',
+                'roleModel' => $nurseRole,
+            ],
+            [
+                'name' => 'Pharm. David Quaye (Archived)',
+                'email' => 'david.quaye@medivault.cloud',
+                'password' => 'Pharm@Archive2026!',
+                'role' => 'Pharmacist',
+                'roleModel' => $pharmacistRole,
+            ],
+            [
+                'name' => 'Dr. Marcus Obeng, MD (Fellowship Rotation)',
+                'email' => 'marcus.obeng@medivault.cloud',
+                'password' => 'Doctor@Archive2026!',
+                'role' => 'Doctor',
+                'roleModel' => $doctorRole,
+            ],
+            [
+                'name' => 'Auditor Grace Taylor (Annual Cycle Completed)',
+                'email' => 'grace.taylor@medivault.cloud',
+                'password' => 'Auditor@Archive2026!',
+                'role' => 'Auditor',
+                'roleModel' => $auditorRole,
+            ],
+        ];
+
+        foreach ($archivedStaff as $arch) {
+            $archHash = PasswordService::hash($arch['password']);
+            $archUser = User::withTrashed()->updateOrCreate(
+                ['email' => $arch['email']],
+                [
+                    'name' => $arch['name'],
+                    'role' => $arch['role'],
+                    'password' => $archHash['hash'],
+                    'salt' => $archHash['salt'],
+                    'pepper_version' => $archHash['pepper_version'],
+                    'status' => 'suspended',
+                    'email_verified_at' => now(),
+                    'deleted_at' => now()->subDays(rand(2, 10)),
+                ]
+            );
+            $archUser->roles()->sync([$arch['roleModel']->id => ['created_at' => now()->subDays(15)]]);
+        }
 
         // ------------------------------------------------------------------
         // 4. Seed Configuration Restore Points (Requirement #9)
@@ -265,25 +374,53 @@ class RoleAndPermissionSeeder extends Seeder
         );
 
         // ------------------------------------------------------------------
-        // 5. Seed 50+ Realistic Hospital Patients & Medical Records (Requirement #9)
+        // 5. Seed 75 Realistic Hospital Patients & Medical Records (Requirement #9)
         // ------------------------------------------------------------------
-        $firstNames = ['Emily', 'Marcus', 'Sophia', 'David', 'Olivia', 'James', 'Grace', 'Daniel', 'Chloe', 'Alexander',
-                       'Hannah', 'Michael', 'Ava', 'Benjamin', 'Mia', 'William', 'Charlotte', 'Lucas', 'Amelia', 'Ethan',
-                       'Harper', 'Henry', 'Evelyn', 'Sebastian', 'Abigail', 'Jack', 'Ella', 'Matthew', 'Avery', 'Samuel',
-                       'Scarlett', 'Joseph', 'Madison', 'Levi', 'Victoria', 'Mateo', 'Aria', 'David', 'Penelope', 'John',
-                       'Riley', 'Wyatt', 'Layla', 'Carter', 'Lillian', 'Julian', 'Nora', 'Luke', 'Zoey', 'Grayson',
-                       'Stella', 'Leo'];
-        $lastNames  = ['Watson', 'Vance', 'Rodriguez', 'Chen', 'Taylor', 'Smith', 'Johnson', 'Brown', 'Davis', 'Miller',
-                       'Wilson', 'Moore', 'Anderson', 'Thomas', 'Jackson', 'White', 'Harris', 'Martin', 'Thompson', 'Garcia',
-                       'Martinez', 'Robinson', 'Clark', 'Lewis', 'Lee', 'Walker', 'Hall', 'Allen', 'Young', 'Hernandez',
-                       'King', 'Wright', 'Lopez', 'Hill', 'Scott', 'Green', 'Adams', 'Baker', 'Gonzalez', 'Nelson',
-                       'Carter', 'Mitchell', 'Perez', 'Roberts', 'Turner', 'Phillips', 'Campbell', 'Parker', 'Evans', 'Edwards',
-                       'Collins', 'Stewart'];
+        $clinicalDoctors = [
+            'Dr. Isaac Donkoh, MD',
+            'Dr. Kofi Mensah, MD',
+            'Dr. Akua Boateng, MD',
+        ];
+
+        $clinicalNurses = [
+            'Nurse Beatrice Mensah, RN',
+            'Nurse Abena Osei, RN',
+            'Nurse Comfort Appiah, RN',
+            'Nurse Dorothy Ansah, RN',
+            'Nurse Emmanuel Tetteh, RN',
+            'Nurse Florence Danquah, RN',
+        ];
+
+        $firstNames = [
+            'Emily', 'Marcus', 'Sophia', 'David', 'Olivia', 'James', 'Grace', 'Daniel', 'Chloe', 'Alexander',
+            'Hannah', 'Michael', 'Ava', 'Benjamin', 'Mia', 'William', 'Charlotte', 'Lucas', 'Amelia', 'Ethan',
+            'Harper', 'Henry', 'Evelyn', 'Sebastian', 'Abigail', 'Jack', 'Ella', 'Matthew', 'Avery', 'Samuel',
+            'Scarlett', 'Joseph', 'Madison', 'Levi', 'Victoria', 'Mateo', 'Aria', 'Penelope', 'John', 'Kofi',
+            'Riley', 'Wyatt', 'Layla', 'Carter', 'Lillian', 'Julian', 'Nora', 'Luke', 'Zoey', 'Grayson',
+            'Stella', 'Leo', 'Kwame', 'Ama', 'Yaw', 'Akosua', 'Kwadwo', 'Yaa', 'Kojo', 'Afia',
+            'Brian', 'Clara', 'George', 'Rebecca', 'Patrick', 'Theresa', 'Dennis', 'Joy', 'Francis', 'Selina',
+            'Kelvin', 'Priscilla', 'Simon', 'Bernice', 'Felix'
+        ];
+
+        $lastNames = [
+            'Watson', 'Vance', 'Rodriguez', 'Chen', 'Taylor', 'Smith', 'Johnson', 'Brown', 'Davis', 'Miller',
+            'Wilson', 'Moore', 'Anderson', 'Thomas', 'Jackson', 'White', 'Harris', 'Martin', 'Thompson', 'Garcia',
+            'Martinez', 'Robinson', 'Clark', 'Lewis', 'Lee', 'Walker', 'Hall', 'Allen', 'Young', 'Hernandez',
+            'King', 'Wright', 'Lopez', 'Hill', 'Scott', 'Green', 'Adams', 'Baker', 'Gonzalez', 'Nelson',
+            'Carter', 'Mitchell', 'Perez', 'Roberts', 'Turner', 'Phillips', 'Campbell', 'Parker', 'Evans', 'Edwards',
+            'Collins', 'Stewart', 'Mensah', 'Osei', 'Appiah', 'Boateng', 'Ansah', 'Tetteh', 'Danquah', 'Asante',
+            'Quaye', 'Obeng', 'Acheampong', 'Frimpong', 'Darko', 'Antwi', 'Boadu', 'Boakye', 'Sarpong', 'Kusi',
+            'Adjei', 'Agyemang', 'Twumasi', 'Owusu', 'Donkor'
+        ];
+
         $bloodGroups = ['O+', 'A+', 'B+', 'AB+', 'O-', 'A-', 'B-', 'AB-'];
-        $wards       = ['General Ward 1 (Bed 01)', 'General Ward 2 (Bed 04)', 'ICU - Trauma Unit (Bed 02)', 'Surgical Ward A (Bed 08)', 
-                        'Pediatric Wing (Room 102)', 'Cardiology Care Unit (CCU 03)', 'Outpatient Consultation Suite 4', 'Emergency Triage Bed 06'];
-        $statuses    = ['Admitted', 'Outpatient', 'ICU', 'Discharged'];
-        $conditions  = [
+        $wards = [
+            'General Ward 1 (Bed 01)', 'General Ward 2 (Bed 04)', 'ICU - Trauma Unit (Bed 02)', 'Surgical Ward A (Bed 08)', 
+            'Pediatric Wing (Room 102)', 'Cardiology Care Unit (CCU 03)', 'Outpatient Consultation Suite 4', 'Emergency Triage Bed 06',
+            'Female Medical Ward (Bed 12)', 'Male Surgical Unit (Bed 05)', 'Maternity Ward (Bed M-04)', 'Neonatal ICU (Incubator 03)'
+        ];
+        $statuses = ['Admitted', 'Outpatient', 'ICU', 'Discharged'];
+        $conditions = [
             ['Acute Appendicitis', 'Laparoscopic appendectomy performed. Post-op recovery in progress.', 'IV Cefazolin 1g, Tramadol 50mg PRN', 'Penicillin Allergy', 'BP: 124/82 | HR: 74 | Temp: 37.1°C | SpO2: 98%'],
             ['Type 2 Diabetes with Neuropathy', 'Routine glycemic control check. HbA1c at 7.2%. Foot examination normal.', 'Metformin 850mg BID, Glimepiride 2mg', 'None Reported', 'BP: 130/84 | HR: 68 | Temp: 36.6°C | SpO2: 99%'],
             ['Hypertensive Urgency', 'Admitted for blood pressure stabilization. IV Labetalol administered.', 'Lisinopril 20mg, Amlodipine 5mg Daily', 'Sulfa Drugs', 'BP: 168/104 | HR: 88 | Temp: 36.8°C | SpO2: 97%'],
@@ -292,14 +429,20 @@ class RoleAndPermissionSeeder extends Seeder
             ['Gastroesophageal Reflux Disease (GERD)', 'Endoscopy scheduled. Lifestyle dietary counseling provided.', 'Omeprazole 40mg Once Daily Before Breakfast', 'None Reported', 'BP: 120/78 | HR: 70 | Temp: 36.6°C | SpO2: 99%'],
             ['Severe Asthma Exacerbation', 'Nebulized Albuterol/Ipratropium given in emergency triage. Peak flow improved 40%.', 'Prednisone 40mg Oral, Salbutamol Inhaler PRN', 'Aspirin (AERD)', 'BP: 128/82 | HR: 92 | Temp: 37.0°C | SpO2: 95%'],
             ['Coronary Artery Disease (Post-Stent)', 'Routine cardiology follow-up. Echocardiogram shows EF 55%. Stable.', 'Aspirin 81mg, Clopidogrel 75mg, Atorvastatin 40mg', 'None Reported', 'BP: 116/74 | HR: 62 | Temp: 36.5°C | SpO2: 98%'],
+            ['Acute Gastroenteritis with Dehydration', 'IV rehydration with Ringer Lactate completed. Electrolytes normalized.', 'Oral Rehydration Salts, Ondansetron 4mg', 'None Reported', 'BP: 110/70 | HR: 82 | Temp: 37.4°C | SpO2: 99%'],
+            ['Malaria (Plasmodium Falciparum)', 'Thick blood film positive (+++). Artemether-lumefantrine regimen started.', 'Coartem 80/480mg BID x 3 days, Paracetamol 1g', 'None Reported', 'BP: 114/72 | HR: 86 | Temp: 38.9°C | SpO2: 97%'],
         ];
 
-        for ($i = 0; $i < 52; $i++) {
+        for ($i = 0; $i < 75; $i++) {
             $code = 'MED-' . (1001 + $i);
             $fullName = $firstNames[$i % count($firstNames)] . ' ' . $lastNames[$i % count($lastNames)];
             $cond = $conditions[$i % count($conditions)];
             $status = $statuses[$i % count($statuses)];
             $ward = $status === 'Outpatient' ? 'Outpatient Clinic Room ' . (($i % 6) + 1) : $wards[$i % count($wards)];
+
+            // Clinical Attending Staff: ONLY MDs and Ward Nurses (never Admin/MD)
+            $assignedDoctor = $clinicalDoctors[$i % count($clinicalDoctors)];
+            $assignedNurse  = $clinicalNurses[$i % count($clinicalNurses)];
 
             Patient::updateOrCreate(
                 ['patient_code' => $code],
@@ -318,8 +461,8 @@ class RoleAndPermissionSeeder extends Seeder
                     'allergies' => $cond[3],
                     'medical_history' => 'Medical record verified under HIPAA privacy protocols.',
                     'vitals_summary' => $cond[4],
-                    'attending_doctor' => ($i % 2 === 0) ? 'Dr. Isaac Donkoh, MD' : 'Dr. Prof. Nathaniel Bentil',
-                    'assigned_nurse' => 'Nurse Beatrice Mensah, RN',
+                    'attending_doctor' => $assignedDoctor,
+                    'assigned_nurse' => $assignedNurse,
                 ]
             );
         }
@@ -329,16 +472,9 @@ class RoleAndPermissionSeeder extends Seeder
         // ------------------------------------------------------------------
         AuditLog::record(
             eventType: 'system.hospital_seeded',
-            description: 'MediVault initialized with 6 Enterprise RBAC roles, 52 admitted hospital patients, and configuration snapshot.',
+            description: 'MediVault initialized with 6 Enterprise RBAC roles, 15 active clinical staff, 5 archived accounts in vault, and 75 admitted hospital patients.',
             userId: 1,
             severity: 'notice'
-        );
-
-        AuditLog::record(
-            eventType: 'user.soft_deleted',
-            description: 'Staff member Dr. Francis Cudjoe archived with Soft Delete. Record preserved in audit vault.',
-            userId: 1,
-            severity: 'warning'
         );
     }
 }

@@ -112,6 +112,13 @@
                             default => '🩺'
                         };
                     @endphp
+                    <!-- Official Security Defense Report Button -->
+                    <a href="{{ route('security.report.pdf') }}" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-purple-950/80 hover:bg-purple-900 border border-purple-500/50 text-purple-300 shadow-sm transition-all" title="Download Official Academic Defense Security Report">
+                        <span>📄</span>
+                        <span>Defense Report (PDF)</span>
+                    </a>
+
+                    <!-- User Role Badge -->
                     <span class="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold border {{ $badgeColor }}">
                         <span>{{ $roleIcon }}</span>
                         <span>{{ $userRole }}</span>

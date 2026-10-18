@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Models\AuditLog;
+use App\Models\User;
 use App\Services\PasswordService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -19,7 +20,12 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(): View
     {
-        return view('auth.login');
+        $activeStaff = User::whereNull('deleted_at')
+            ->where('status', 'active')
+            ->orderBy('id', 'asc')
+            ->get(['id', 'name', 'email', 'role']);
+
+        return view('auth.login', compact('activeStaff'));
     }
 
     /**

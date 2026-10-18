@@ -217,6 +217,14 @@
                                 </td>
                                 <td class="p-3 text-right">
                                     <div class="flex items-center justify-end gap-1.5">
+                                        @if($p->admission_status !== 'Discharged')
+                                            <form method="POST" action="/patients/{{ $p->id }}/discharge" onsubmit="return confirm('Discharge patient {{ $p->name }} and release ward bed?');" class="inline">
+                                                @csrf
+                                                <button type="submit" class="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-xs transition-all shadow-md" title="Discharge Patient & Free Bed">
+                                                    Discharge 🏥
+                                                </button>
+                                            </form>
+                                        @endif
                                         <button type="button" @click='openEditRx({{ json_encode(["patient_code" => $p->patient_code, "name" => $p->name, "ward_room" => $p->ward_room, "diagnosis" => $p->diagnosis, "treatment_plan" => $p->treatment_plan]) }})'
                                             class="px-2.5 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold text-xs transition-all shadow-md">
                                             Modify Rx 💊

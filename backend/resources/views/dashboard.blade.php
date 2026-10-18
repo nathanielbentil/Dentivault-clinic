@@ -25,7 +25,9 @@
         $admittedPatients = \App\Models\Patient::where('admission_status', 'Admitted')->count();
         $icuPatients = \App\Models\Patient::where('admission_status', 'ICU')->count();
         $outpatients = \App\Models\Patient::where('admission_status', 'Outpatient')->count();
-        $patients = \App\Models\Patient::latest()->take(52)->get();
+        $dischargedPatients = \App\Models\Patient::where('admission_status', 'Discharged')->count();
+        $patients = \App\Models\Patient::latest()->take(100)->get();
+        $archivedPatients = \App\Models\Patient::onlyTrashed()->get();
         $staffUsers = \App\Models\User::withTrashed()->get();
         $archivedUsers = \App\Models\User::onlyTrashed()->get();
         $systemConfigs = \App\Models\SystemConfiguration::all();
@@ -36,9 +38,18 @@
             'admin@medivault.cloud' => 'Admin@MediVault2026!',
             'manager@medivault.cloud' => 'Manager@MediVault2026!',
             'doctor@medivault.cloud' => 'Doctor@MediVault2026!',
+            'doctor.kofi@medivault.cloud' => 'Doctor@Kofi2026!',
+            'doctor.akua@medivault.cloud' => 'Doctor@Akua2026!',
             'nurse@medivault.cloud' => 'Nurse@MediVault2026!',
+            'nurse.abena@medivault.cloud' => 'Nurse@Abena2026!',
+            'nurse.comfort@medivault.cloud' => 'Nurse@Comfort2026!',
+            'nurse.dorothy@medivault.cloud' => 'Nurse@Dorothy2026!',
+            'nurse.emmanuel@medivault.cloud' => 'Nurse@Emmanuel2026!',
+            'nurse.florence@medivault.cloud' => 'Nurse@Florence2026!',
             'pharmacist@medivault.cloud' => 'Pharm@MediVault2026!',
+            'pharm.adwoa@medivault.cloud' => 'Pharm@Adwoa2026!',
             'auditor@medivault.cloud' => 'Auditor@MediVault2026!',
+            'auditor.sarah@medivault.cloud' => 'Auditor@Sarah2026!',
             'archived.staff@medivault.cloud' => 'Archived@Pass2026!',
             'evelyn.asante@medivault.cloud' => 'Nurse@Archive2026!',
             'david.quaye@medivault.cloud' => 'Pharm@Archive2026!',
@@ -68,8 +79,10 @@
         showDoctorModal: false,
         showNurseModal: false,
         showPharmModal: false,
+        showDischargeModal: false,
         selectedStaff: { id: null, name: '', email: '', role: '', hash: '', salt: '', pepper: '', failed_attempts: 0, status: '' },
         selectedPatient: { id: null, patient_code: '', name: '', ward_room: '', diagnosis: '', vitals_summary: '', treatment_plan: '', attending_doctor: '', assigned_nurse: '' },
+        selectedPatientToDischarge: { id: null, patient_code: '', name: '', ward_room: '' },
         openEditStaff(user) {
             this.selectedStaff = { ...user };
             this.showEditStaffModal = true;
@@ -93,6 +106,10 @@
         openPharmAction(p) {
             this.selectedPatient = { ...p };
             this.showPharmModal = true;
+        },
+        openDischargeAction(p) {
+            this.selectedPatientToDischarge = { ...p };
+            this.showDischargeModal = true;
         },
         copyText(text, label) {
             if (navigator.clipboard) {
@@ -666,8 +683,8 @@
                     </button>
                 @endif
 
-                <!-- Admin: Audit Vault -->
-                @if($userRole === 'Admin')
+                <!-- Admin & Managing Director: Audit Vault -->
+                @if(in_array($userRole, ['Admin', 'Manager']))
                     <button @click="switchTab('archive')"
                         :class="activeTab === 'archive' 
                             ? 'border-rose-500 bg-rose-950/70 ring-2 ring-rose-500/50 shadow-xl shadow-rose-950/50' 
@@ -709,6 +726,28 @@
                         </p>
                     </a>
                 @endif
+
+                <!-- Official Security Defense Report (Downloadable PDF) -->
+                <a href="{{ route('security.report.pdf') }}"
+                    class="p-4 rounded-2xl border border-purple-500/50 bg-gradient-to-br from-purple-950/60 to-slate-900/80 hover:bg-purple-900/40 hover:border-purple-400 text-left transition-all relative overflow-hidden group cursor-pointer block shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <span class="text-3xl group-hover:scale-110 transition-transform">📄</span>
+                        <div class="flex items-center gap-1.5">
+                            <span class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-purple-950 text-purple-300 border border-purple-800">
+                                10 Passed
+                            </span>
+                            <span class="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-purple-500 text-slate-950">
+                                PDF 📥
+                            </span>
+                        </div>
+                    </div>
+                    <div class="text-sm font-bold text-white mt-3 group-hover:text-purple-300 transition-colors">
+                        Defense Security Report
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-0.5">
+                        Download Master PDF Covering All 10 Requirements
+                    </p>
+                </a>
 
             </div>
         </div>
@@ -794,30 +833,45 @@
                                         <div class="text-[10px] text-pink-400">{{ $p->assigned_nurse }}</div>
                                     </td>
                                     <td class="p-3 text-right">
-                                        @if($userRole === 'Doctor')
-                                            <button type="button" @click='openDoctorAction({{ json_encode(["patient_code" => $p->patient_code, "name" => $p->name, "ward_room" => $p->ward_room, "diagnosis" => $p->diagnosis, "treatment_plan" => $p->treatment_plan]) }})' 
-                                                class="px-2.5 py-1 rounded-lg bg-cyan-950 hover:bg-cyan-900 border border-cyan-700/60 text-cyan-300 text-[10px] font-bold transition-all whitespace-nowrap shadow-sm">
-                                                🩺 Prescribe / Rx
-                                            </button>
-                                        @elseif($userRole === 'Nurse')
-                                            <button type="button" @click='openNurseAction({{ json_encode(["patient_code" => $p->patient_code, "name" => $p->name, "ward_room" => $p->ward_room, "vitals_summary" => $p->vitals_summary ?? "BP: 120/80 | HR: 72", "diagnosis" => $p->diagnosis]) }})' 
-                                                class="px-2.5 py-1 rounded-lg bg-pink-950 hover:bg-pink-900 border border-pink-700/60 text-pink-300 text-[10px] font-bold transition-all whitespace-nowrap shadow-sm">
-                                                💉 Log Vitals
-                                            </button>
-                                        @elseif($userRole === 'Pharmacist')
-                                            <button type="button" @click='openPharmAction({{ json_encode(["patient_code" => $p->patient_code, "name" => $p->name, "diagnosis" => $p->diagnosis, "treatment_plan" => $p->treatment_plan]) }})' 
-                                                class="px-2.5 py-1 rounded-lg bg-amber-950 hover:bg-amber-900 border border-amber-700/60 text-amber-300 text-[10px] font-bold transition-all whitespace-nowrap shadow-sm">
-                                                💊 Dispense
-                                            </button>
-                                        @elseif($userRole === 'Auditor')
-                                            <span class="px-2 py-0.5 rounded bg-blue-950/80 text-blue-300 border border-blue-800 text-[10px] font-mono">
-                                                👁️ Read-Only
-                                            </span>
-                                        @else
-                                            <span class="px-2 py-0.5 rounded bg-purple-950/80 text-purple-300 border border-purple-800 text-[10px] font-mono">
-                                                👑 Full Access
-                                            </span>
-                                        @endif
+                                        <div class="flex items-center justify-end gap-1.5 flex-wrap">
+                                            <!-- Discharge Action (Doctor, Nurse, Manager, Admin) -->
+                                            @if(in_array($userRole, ['Doctor', 'Nurse', 'Manager', 'Admin']))
+                                                @if($p->admission_status !== 'Discharged')
+                                                    <button type="button" @click='openDischargeAction({{ json_encode(["id" => $p->id, "patient_code" => $p->patient_code, "name" => $p->name, "ward_room" => $p->ward_room]) }})' 
+                                                        class="px-2 py-1 rounded-lg bg-emerald-950 hover:bg-emerald-900 border border-emerald-700/60 text-emerald-300 text-[10px] font-bold transition-all whitespace-nowrap shadow-sm" title="Discharge Patient & Free Bed">
+                                                        Discharge 🏥
+                                                    </button>
+                                                @endif
+                                            @endif
+
+                                            @if($userRole === 'Doctor')
+                                                <button type="button" @click='openDoctorAction({{ json_encode(["patient_code" => $p->patient_code, "name" => $p->name, "ward_room" => $p->ward_room, "diagnosis" => $p->diagnosis, "treatment_plan" => $p->treatment_plan]) }})' 
+                                                    class="px-2 py-1 rounded-lg bg-cyan-950 hover:bg-cyan-900 border border-cyan-700/60 text-cyan-300 text-[10px] font-bold transition-all whitespace-nowrap shadow-sm">
+                                                    🩺 Prescribe
+                                                </button>
+                                            @elseif($userRole === 'Nurse')
+                                                <button type="button" @click='openNurseAction({{ json_encode(["patient_code" => $p->patient_code, "name" => $p->name, "ward_room" => $p->ward_room, "vitals_summary" => $p->vitals_summary ?? "BP: 120/80 | HR: 72", "diagnosis" => $p->diagnosis]) }})' 
+                                                    class="px-2 py-1 rounded-lg bg-pink-950 hover:bg-pink-900 border border-pink-700/60 text-pink-300 text-[10px] font-bold transition-all whitespace-nowrap shadow-sm">
+                                                    💉 Vitals
+                                                </button>
+                                            @elseif($userRole === 'Pharmacist')
+                                                <button type="button" @click='openPharmAction({{ json_encode(["patient_code" => $p->patient_code, "name" => $p->name, "diagnosis" => $p->diagnosis, "treatment_plan" => $p->treatment_plan]) }})' 
+                                                    class="px-2 py-1 rounded-lg bg-amber-950 hover:bg-amber-900 border border-amber-700/60 text-amber-300 text-[10px] font-bold transition-all whitespace-nowrap shadow-sm">
+                                                    💊 Dispense
+                                                </button>
+                                            @endif
+
+                                            <!-- Managing Director & Admin Soft-Delete Record Authority (Requirement #7) -->
+                                            @if(in_array($userRole, ['Admin', 'Manager']))
+                                                <form method="POST" action="/patients/{{ $p->id }}" onsubmit="return confirm('Soft-delete patient chart [{{ $p->name }}]? Record will be preserved in HIPAA archive.');" class="inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="px-2 py-1 rounded-lg bg-rose-950/80 hover:bg-rose-900 border border-rose-800 text-rose-300 text-[10px] font-bold transition-all shadow-sm" title="Soft Delete / Archive Record">
+                                                        🗑️
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
@@ -1414,7 +1468,7 @@
                                         <td class="p-3 font-mono text-rose-400">{{ $au->deleted_at }}</td>
                                         <td class="p-3 font-mono text-slate-500 text-[10px]">{{ $au->salt }}</td>
                                         <td class="p-3 text-right">
-                                            @if($userRole === 'Admin')
+                                            @if(in_array($userRole, ['Admin', 'Manager']))
                                                 <form method="POST" action="{{ route('admin.users.restore', $au->id) }}" class="inline">
                                                     @csrf
                                                     <button type="submit" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-xs transition-all shadow-md">
@@ -1422,13 +1476,64 @@
                                                     </button>
                                                 </form>
                                             @else
-                                                <span class="text-slate-500 italic text-[11px]">Admin Required</span>
+                                                <span class="text-slate-500 italic text-[11px]">Admin / MD Required</span>
                                             @endif
                                         </td>
                                     </tr>
                                 @endforeach
                             </tbody>
                         </table>
+                    </div>
+                @endif
+
+                <!-- Soft-Deleted Patient Records in Audit Vault (Requirement #7) -->
+                @if($archivedPatients->count() > 0)
+                    <div class="mt-8 pt-6 border-t border-slate-800">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                                <span>🏥</span>
+                                <span>Archived Patient Clinical Charts (Preserved under HIPAA)</span>
+                            </h4>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-950 text-rose-300 border border-rose-800">
+                                {{ $archivedPatients->count() }} Preserved Charts
+                            </span>
+                        </div>
+
+                        <div class="overflow-x-auto rounded-xl border border-slate-800">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-slate-900 text-slate-400 uppercase text-[10px] font-bold border-b border-slate-800">
+                                    <tr>
+                                        <th class="p-3">Patient Code</th>
+                                        <th class="p-3">Patient Name</th>
+                                        <th class="p-3">Last Ward / Room</th>
+                                        <th class="p-3">Diagnosis</th>
+                                        <th class="p-3">Soft-Deleted Timestamp</th>
+                                        <th class="p-3 text-right">Audit Recovery</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-800/60 text-slate-300">
+                                    @foreach($archivedPatients as $ap)
+                                        <tr class="hover:bg-slate-900/40">
+                                            <td class="p-3 font-mono font-bold text-cyan-400">{{ $ap->patient_code }}</td>
+                                            <td class="p-3 font-bold text-white">{{ $ap->name }}</td>
+                                            <td class="p-3 text-slate-400">{{ $ap->ward_room }}</td>
+                                            <td class="p-3 text-slate-300">{{ $ap->diagnosis }}</td>
+                                            <td class="p-3 font-mono text-rose-400">{{ $ap->deleted_at }}</td>
+                                            <td class="p-3 text-right">
+                                                @if(in_array($userRole, ['Admin', 'Manager']))
+                                                    <form method="POST" action="/patients/{{ $ap->id }}/restore" class="inline">
+                                                        @csrf
+                                                        <button type="submit" class="px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold text-xs transition-all shadow-md">
+                                                            Restore Patient ↺
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 @endif
             </div>
@@ -2033,6 +2138,63 @@
                         <button type="button" @click="showPharmModal = false; alert('Medication verified and marked DISPENSED in Pharmacy records!')" class="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 font-bold text-slate-950 transition-all">Verify & Dispense Medication 💊</button>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Modal: Discharge Patient -->
+        <div x-show="showDischargeModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+            <div @click.away="showDischargeModal = false" class="glass-card rounded-2xl p-6 border border-emerald-500/40 w-full max-w-lg space-y-4 shadow-2xl">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <div>
+                        <h3 class="text-base font-bold text-white flex items-center gap-2">
+                            <span>🏥</span>
+                            <span>Clinical Patient Discharge & Bed Release</span>
+                        </h3>
+                        <p class="text-[11px] text-slate-400 mt-0.5">
+                            Processing formal clinical discharge and releasing hospital ward bed.
+                        </p>
+                    </div>
+                    <button @click="showDischargeModal = false" class="text-slate-400 hover:text-white text-lg">&times;</button>
+                </div>
+
+                <form method="POST" :action="'/patients/' + selectedPatientToDischarge.id + '/discharge'" class="space-y-4 text-xs">
+                    @csrf
+                    <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-1.5">
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Patient Name:</span>
+                            <span class="font-bold text-white" x-text="selectedPatientToDischarge.name"></span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Patient Code:</span>
+                            <span class="font-mono text-cyan-300" x-text="selectedPatientToDischarge.patient_code"></span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Occupied Ward/Bed:</span>
+                            <span class="font-semibold text-emerald-400" x-text="selectedPatientToDischarge.ward_room"></span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-300 font-semibold mb-1">
+                            Discharge Summary & Care Plan:
+                        </label>
+                        <textarea name="discharge_notes" rows="3" required
+                            placeholder="e.g., Clinical symptoms fully resolved. Vitals stabilized. Discharged home with 14-day follow-up."
+                            class="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-white text-xs focus:border-emerald-500 focus:outline-none"></textarea>
+                    </div>
+
+                    <div class="p-3 rounded-xl bg-emerald-950/40 border border-emerald-800/40 text-[11px] text-emerald-300 flex items-center gap-2">
+                        <span>🛡️</span>
+                        <span>This action will update the patient status to <strong>Discharged</strong>, release the ward bed, and record a HIPAA audit trail.</span>
+                    </div>
+
+                    <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
+                        <button type="button" @click="showDischargeModal = false" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+                        <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 font-bold text-slate-950 transition-all shadow-md">
+                            Confirm Discharge & Release Bed 🏥
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
 

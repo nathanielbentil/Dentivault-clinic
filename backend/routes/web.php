@@ -10,6 +10,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// Official Security Defense Report (PDF & Print View - accessible for evaluation)
+Route::get('/security/report/pdf', [\App\Http\Controllers\ReportController::class, 'downloadSecurityPdf'])->name('security.report.pdf');
+Route::get('/security/report/print', [\App\Http\Controllers\ReportController::class, 'viewSecurityReport'])->name('security.report.print');
+
 Route::middleware(['auth'])->group(function () {
     // 1. Customer / Clinical Staff Dashboard
     Route::get('/dashboard', [CustomerController::class, 'dashboard'])->name('dashboard');
@@ -29,9 +33,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/pharmacy/dispensary', [\App\Http\Controllers\ClinicalStationController::class, 'dispensary'])->name('pharmacy.dispensary');
     Route::get('/security/telemetry', [\App\Http\Controllers\ClinicalStationController::class, 'telemetry'])->name('security.telemetry');
     Route::post('/patients/admit', [\App\Http\Controllers\ClinicalStationController::class, 'admitPatient'])->name('patients.admit');
+    Route::post('/patients/{id}/discharge', [\App\Http\Controllers\ClinicalStationController::class, 'dischargePatient'])->name('patients.discharge');
+    Route::delete('/patients/{id}', [\App\Http\Controllers\ClinicalStationController::class, 'softDeletePatient'])->name('patients.destroy');
+    Route::post('/patients/{id}/restore', [\App\Http\Controllers\ClinicalStationController::class, 'restorePatient'])->name('patients.restore');
 
-    // 2. Chief Admin Suite
-    Route::prefix('admin')->name('admin.')->middleware(['role:Admin,SuperAdmin'])->group(function () {
+    // 2. Chief Admin & Managing Director Operations Suite
+    Route::prefix('admin')->name('admin.')->middleware(['role:Admin,SuperAdmin,Manager'])->group(function () {
         Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
         Route::post('/users', [AdminController::class, 'storeUser'])->name('users.store');
         Route::post('/users/{user}/assign-role', [AdminController::class, 'assignRole'])->name('users.assign-role');

@@ -6,249 +6,342 @@
         Enterprise Role-Based Access Control & HIPAA Encrypted Authentication
     </x-slot>
 
+    @php
+        // Default passwords dictionary for quick testing
+        $passwords = [
+            'admin@medivault.cloud' => 'Admin@MediVault2026!',
+            'manager@medivault.cloud' => 'Manager@MediVault2026!',
+            'doctor@medivault.cloud' => 'Doctor@MediVault2026!',
+            'doctor.kofi@medivault.cloud' => 'Doctor@Kofi2026!',
+            'doctor.akua@medivault.cloud' => 'Doctor@Akua2026!',
+            'nurse@medivault.cloud' => 'Nurse@MediVault2026!',
+            'nurse.abena@medivault.cloud' => 'Nurse@Abena2026!',
+            'nurse.comfort@medivault.cloud' => 'Nurse@Comfort2026!',
+            'nurse.dorothy@medivault.cloud' => 'Nurse@Dorothy2026!',
+            'nurse.emmanuel@medivault.cloud' => 'Nurse@Emmanuel2026!',
+            'nurse.florence@medivault.cloud' => 'Nurse@Florence2026!',
+            'pharmacist@medivault.cloud' => 'Pharm@MediVault2026!',
+            'pharm.adwoa@medivault.cloud' => 'Pharm@Adwoa2026!',
+            'auditor@medivault.cloud' => 'Auditor@MediVault2026!',
+            'auditor.sarah@medivault.cloud' => 'Auditor@Sarah2026!',
+            'archived.staff@medivault.cloud' => 'Archived@Pass2026!',
+            'evelyn.asante@medivault.cloud' => 'Nurse@Archive2026!',
+            'david.quaye@medivault.cloud' => 'Pharm@Archive2026!',
+            'marcus.obeng@medivault.cloud' => 'Doctor@Archive2026!',
+            'grace.taylor@medivault.cloud' => 'Auditor@Archive2026!',
+        ];
+
+        // Ensure activeStaff collection exists
+        $staffList = isset($activeStaff) ? $activeStaff : \App\Models\User::whereNull('deleted_at')->where('status', 'active')->get();
+        
+        $staffData = $staffList->map(function($s) use ($passwords) {
+            $roleIcon = match($s->role) {
+                'Admin' => '👑',
+                'Manager' => '📋',
+                'Doctor' => '🩺',
+                'Nurse' => '💉',
+                'Pharmacist' => '💊',
+                'Auditor' => '🔍',
+                default => '👤'
+            };
+            return [
+                'id' => $s->id,
+                'name' => $s->name,
+                'email' => $s->email,
+                'role' => $s->role,
+                'icon' => $roleIcon,
+                'password' => $passwords[$s->email] ?? 'Hospital@Pass2026!',
+            ];
+        })->values();
+    @endphp
+
     <div class="space-y-6" x-data="{
-        userType: 'admin',
+        staffMembers: {{ Js::from($staffData) }},
+        selectedCategory: 'all',
+        showDropdown: false,
+        searchTerm: '',
+        userType: 'Admin',
+        selectedName: 'Dr. Prof. Nathaniel Bentil',
         email: 'admin@medivault.cloud',
         password: 'Admin@MediVault2026!',
         showReport: false,
-        selectRole(role, mail, pass) {
-            this.userType = role;
-            this.email = mail;
-            this.password = pass;
+
+        selectStaff(member) {
+            this.email = member.email;
+            this.password = member.password;
+            this.userType = member.role;
+            this.selectedName = member.name;
+            this.showDropdown = false;
+        },
+
+        filteredStaff() {
+            return this.staffMembers.filter(m => {
+                const matchesCategory = 
+                    this.selectedCategory === 'all' || 
+                    (this.selectedCategory === 'nurse' && m.role === 'Nurse') ||
+                    (this.selectedCategory === 'doctor' && m.role === 'Doctor') ||
+                    (this.selectedCategory === 'leadership' && (m.role === 'Admin' || m.role === 'Manager')) ||
+                    (this.selectedCategory === 'other' && (m.role === 'Pharmacist' || m.role === 'Auditor'));
+                
+                const matchesSearch = 
+                    this.searchTerm === '' ||
+                    m.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+                    m.email.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+                    m.role.toLowerCase().includes(this.searchTerm.toLowerCase());
+
+                return matchesCategory && matchesSearch;
+            });
         }
     }">
-        <!-- Quick 1-Click Role Switcher -->
+
+        <!-- Quick Filter Role Tabs -->
         <div>
             <div class="flex items-center justify-between mb-2">
                 <label class="block text-xs font-bold text-cyan-400 uppercase tracking-wider">
-                    Select Personnel Role (Quick Sign-In):
+                    Quick-Fill Personnel Selection:
                 </label>
-                <span class="text-[10px] px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-800">
-                    6 Enterprise Roles
+                <span class="text-[10px] px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-800 font-mono">
+                    <span x-text="staffMembers.length"></span> Active Staff (PostgreSQL)
                 </span>
             </div>
-            
-            <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
-                <!-- Role 1: Chief Admin -->
-                <button type="button" @click="selectRole('admin', 'admin@medivault.cloud', 'Admin@MediVault2026!')"
-                    :class="userType === 'admin' ? 'bg-purple-950/90 border-purple-500 text-purple-300 ring-2 ring-purple-500/30' : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:border-slate-700'"
-                    class="p-2 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1">
-                    <span class="text-base">👑</span>
-                    <span class="text-[11px] font-bold">Director</span>
-                    <span class="text-[9px] text-purple-400">Admin</span>
-                </button>
 
-                <!-- Role 2: Manager -->
-                <button type="button" @click="selectRole('manager', 'manager@medivault.cloud', 'Manager@MediVault2026!')"
-                    :class="userType === 'manager' ? 'bg-emerald-950/90 border-emerald-500 text-emerald-300 ring-2 ring-emerald-500/30' : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:border-slate-700'"
-                    class="p-2 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1">
-                    <span class="text-base">📋</span>
-                    <span class="text-[11px] font-bold">Manager</span>
-                    <span class="text-[9px] text-emerald-400">Operations</span>
+            <!-- Category Pills -->
+            <div class="flex flex-wrap gap-1.5 mb-3">
+                <button type="button" @click="selectedCategory = 'all'"
+                    :class="selectedCategory === 'all' ? 'bg-cyan-500 text-slate-950 font-bold' : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'"
+                    class="px-2.5 py-1 rounded-lg text-xs transition-all">
+                    All Staff (<span x-text="staffMembers.length"></span>)
                 </button>
-
-                <!-- Role 3: Doctor -->
-                <button type="button" @click="selectRole('doctor', 'doctor@medivault.cloud', 'Doctor@MediVault2026!')"
-                    :class="userType === 'doctor' ? 'bg-cyan-950/90 border-cyan-500 text-cyan-300 ring-2 ring-cyan-500/30' : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:border-slate-700'"
-                    class="p-2 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1">
-                    <span class="text-base">🩺</span>
-                    <span class="text-[11px] font-bold">Doctor</span>
-                    <span class="text-[9px] text-cyan-400">Physician</span>
+                <button type="button" @click="selectedCategory = 'nurse'"
+                    :class="selectedCategory === 'nurse' ? 'bg-pink-500 text-slate-950 font-bold' : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'"
+                    class="px-2.5 py-1 rounded-lg text-xs transition-all flex items-center gap-1">
+                    <span>💉</span>
+                    <span>Nurses (<span x-text="staffMembers.filter(m => m.role === 'Nurse').length"></span>)</span>
                 </button>
-
-                <!-- Role 4: Nurse -->
-                <button type="button" @click="selectRole('nurse', 'nurse@medivault.cloud', 'Nurse@MediVault2026!')"
-                    :class="userType === 'nurse' ? 'bg-pink-950/90 border-pink-500 text-pink-300 ring-2 ring-pink-500/30' : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:border-slate-700'"
-                    class="p-2 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1">
-                    <span class="text-base">💉</span>
-                    <span class="text-[11px] font-bold">Nurse</span>
-                    <span class="text-[9px] text-pink-400">Vitals/Ward</span>
+                <button type="button" @click="selectedCategory = 'doctor'"
+                    :class="selectedCategory === 'doctor' ? 'bg-cyan-500 text-slate-950 font-bold' : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'"
+                    class="px-2.5 py-1 rounded-lg text-xs transition-all flex items-center gap-1">
+                    <span>🩺</span>
+                    <span>Doctors (<span x-text="staffMembers.filter(m => m.role === 'Doctor').length"></span>)</span>
                 </button>
-
-                <!-- Role 5: Pharmacist -->
-                <button type="button" @click="selectRole('pharmacist', 'pharmacist@medivault.cloud', 'Pharm@MediVault2026!')"
-                    :class="userType === 'pharmacist' ? 'bg-amber-950/90 border-amber-500 text-amber-300 ring-2 ring-amber-500/30' : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:border-slate-700'"
-                    class="p-2 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1">
-                    <span class="text-base">💊</span>
-                    <span class="text-[11px] font-bold">Pharmacy</span>
-                    <span class="text-[9px] text-amber-400">Dispense</span>
+                <button type="button" @click="selectedCategory = 'leadership'"
+                    :class="selectedCategory === 'leadership' ? 'bg-purple-500 text-slate-950 font-bold' : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'"
+                    class="px-2.5 py-1 rounded-lg text-xs transition-all flex items-center gap-1">
+                    <span>👑</span>
+                    <span>Admin & MD (2)</span>
                 </button>
-
-                <!-- Role 6: Auditor -->
-                <button type="button" @click="selectRole('auditor', 'auditor@medivault.cloud', 'Auditor@MediVault2026!')"
-                    :class="userType === 'auditor' ? 'bg-blue-950/90 border-blue-500 text-blue-300 ring-2 ring-blue-500/30' : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:border-slate-700'"
-                    class="p-2 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1">
-                    <span class="text-base">🔍</span>
-                    <span class="text-[11px] font-bold">Auditor</span>
-                    <span class="text-[9px] text-blue-400">HIPAA Logs</span>
+                <button type="button" @click="selectedCategory = 'other'"
+                    :class="selectedCategory === 'other' ? 'bg-amber-500 text-slate-950 font-bold' : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'"
+                    class="px-2.5 py-1 rounded-lg text-xs transition-all flex items-center gap-1">
+                    <span>💊</span>
+                    <span>Pharmacy & Audit (4)</span>
                 </button>
             </div>
         </div>
 
-        <!-- Role Context Banner -->
-        <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between text-xs">
-            <div class="flex items-center gap-2">
-                <span class="text-lg" x-text="userType === 'admin' ? '👑' : (userType === 'manager' ? '📋' : (userType === 'doctor' ? '🩺' : (userType === 'nurse' ? '💉' : (userType === 'pharmacist' ? '💊' : '🔍'))))"></span>
+        <!-- Selected Personnel Summary Card -->
+        <div class="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+            <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border border-cyan-500/40 flex items-center justify-center text-lg">
+                    <span x-text="userType === 'Admin' ? '👑' : (userType === 'Manager' ? '📋' : (userType === 'Doctor' ? '🩺' : (userType === 'Nurse' ? '💉' : (userType === 'Pharmacist' ? '💊' : '🔍'))))"></span>
+                </div>
                 <div>
-                    <span class="font-bold text-white uppercase" x-text="userType + ' credentials ready'"></span>
-                    <span class="text-slate-400 block font-mono text-[11px]" x-text="email"></span>
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold text-white text-xs" x-text="selectedName"></span>
+                        <span class="text-[9px] font-bold px-1.5 py-0.2 rounded uppercase"
+                            :class="userType === 'Admin' ? 'bg-purple-950 text-purple-300 border border-purple-800' :
+                                    (userType === 'Manager' ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' :
+                                    (userType === 'Doctor' ? 'bg-cyan-950 text-cyan-300 border border-cyan-800' :
+                                    (userType === 'Nurse' ? 'bg-pink-950 text-pink-300 border border-pink-800' :
+                                    (userType === 'Pharmacist' ? 'bg-amber-950 text-amber-300 border border-amber-800' : 'bg-blue-950 text-blue-300 border border-blue-800'))))"
+                            x-text="userType">
+                        </span>
+                    </div>
+                    <span class="text-slate-400 font-mono text-[11px]" x-text="email"></span>
                 </div>
             </div>
-            <span class="px-2.5 py-1 rounded-md bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 font-mono text-[11px]">
-                2FA Code: 123456
-            </span>
+            <div class="flex items-center gap-2 text-right">
+                <span class="px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 font-mono text-[11px]">
+                    2FA Code: 123456
+                </span>
+            </div>
         </div>
 
         <!-- Login Form -->
-        <form method="POST" action="/login" class="space-y-4">
+        <form method="POST" action="/login" class="space-y-4 relative" @click.away="showDropdown = false">
             @csrf
 
-            <!-- Email Address -->
-            <div>
-                <label for="email" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
-                    Hospital Staff Email
-                </label>
-                <input id="email" type="email" name="email" x-model="email" required autofocus
-                    class="w-full rounded-xl border border-slate-700 bg-slate-900/90 px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all">
+            <!-- Email Address with Interactive Staff Dropdown -->
+            <div class="relative">
+                <div class="flex items-center justify-between mb-1">
+                    <label for="email" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                        Hospital Staff Username / Email (Click to Select):
+                    </label>
+                    <button type="button" @click="showDropdown = !showDropdown" class="text-xs text-cyan-400 hover:text-cyan-300 flex items-center gap-1 font-semibold">
+                        <span>Choose Staff</span>
+                        <span x-text="showDropdown ? '▲' : '▼'"></span>
+                    </button>
+                </div>
+
+                <!-- Input with Click to Open Dropdown -->
+                <div class="relative">
+                    <input id="email" type="email" name="email" x-model="email" required autofocus
+                        @focus="showDropdown = true"
+                        placeholder="Click here to select a staff member or enter email..."
+                        class="w-full rounded-xl border border-slate-700 bg-slate-900/90 pl-10 pr-10 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all font-mono">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                        <span>👤</span>
+                    </div>
+                    <button type="button" @click="showDropdown = !showDropdown" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-cyan-300">
+                        <span class="text-xs">▼</span>
+                    </button>
+                </div>
+
+                <!-- Interactive Staff Dropdown Menu -->
+                <div x-show="showDropdown" x-transition 
+                    class="absolute z-50 left-0 right-0 mt-1 rounded-2xl border border-slate-700 bg-slate-950/95 shadow-2xl backdrop-blur-xl p-2.5 space-y-2 max-h-72 overflow-y-auto">
+                    
+                    <!-- Search input inside dropdown -->
+                    <div class="relative mb-2">
+                        <input type="text" x-model="searchTerm" placeholder="Filter staff by name or role..."
+                            class="w-full rounded-lg border border-slate-800 bg-slate-900 px-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:border-cyan-500 focus:outline-none">
+                    </div>
+
+                    <!-- Staff items list -->
+                    <div class="divide-y divide-slate-800/60">
+                        <template x-for="m in filteredStaff()" :key="m.id">
+                            <div @click="selectStaff(m)"
+                                class="p-2 rounded-xl hover:bg-slate-900/90 cursor-pointer transition-all flex items-center justify-between group">
+                                <div class="flex items-center gap-2.5">
+                                    <span class="text-base" x-text="m.icon"></span>
+                                    <div>
+                                        <div class="font-bold text-white text-xs group-hover:text-cyan-300 flex items-center gap-2">
+                                            <span x-text="m.name"></span>
+                                            <span class="text-[9px] px-1.5 py-0.2 rounded font-mono"
+                                                :class="m.role === 'Nurse' ? 'bg-pink-950 text-pink-300 border border-pink-800' :
+                                                        (m.role === 'Doctor' ? 'bg-cyan-950 text-cyan-300 border border-cyan-800' :
+                                                        (m.role === 'Admin' ? 'bg-purple-950 text-purple-300 border border-purple-800' :
+                                                        (m.role === 'Manager' ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' :
+                                                        (m.role === 'Pharmacist' ? 'bg-amber-950 text-amber-300 border border-amber-800' : 'bg-blue-950 text-blue-300 border border-blue-800'))))"
+                                                x-text="m.role">
+                                            </span>
+                                        </div>
+                                        <div class="text-[11px] text-slate-400 font-mono" x-text="m.email"></div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-[10px] font-mono text-emerald-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
+                                        Auto-Fill ↵
+                                    </span>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <div x-show="filteredStaff().length === 0" class="text-center py-4 text-xs text-slate-500">
+                        No active staff found matching your search.
+                    </div>
+                </div>
             </div>
 
-            <!-- Password -->
+            <!-- Password Field -->
             <div>
                 <label for="password" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
                     Password (Argon2id + Salt + Pepper)
                 </label>
-                <input id="password" type="password" name="password" x-model="password" required
-                    class="w-full rounded-xl border border-slate-700 bg-slate-900/90 px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all font-mono">
+                <div class="relative">
+                    <input id="password" type="password" name="password" x-model="password" required
+                        class="w-full rounded-xl border border-slate-700 bg-slate-900/90 pl-10 pr-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all font-mono">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                        <span>🔒</span>
+                    </div>
+                </div>
             </div>
 
             <!-- Remember Me -->
             <div class="flex items-center justify-between text-xs">
                 <label class="flex items-center gap-2 cursor-pointer text-slate-400 hover:text-slate-200">
                     <input type="checkbox" name="remember" checked class="rounded border-slate-700 bg-slate-900 text-cyan-600 focus:ring-cyan-500/20">
-                    <span>Remember this workstation</span>
+                    <span>Remember workstation</span>
                 </label>
                 <span class="text-cyan-400 font-medium">Session: Encrypted Cookie</span>
             </div>
 
             <!-- Submit Button -->
             <button type="submit"
-                class="w-full rounded-xl bg-gradient-to-r from-cyan-600 to-teal-500 py-3 text-sm font-bold text-slate-950 shadow-lg shadow-cyan-500/20 hover:from-cyan-500 hover:to-teal-400 transition-all">
-                Sign In to MediVault Portal &rarr;
+                class="w-full rounded-xl bg-gradient-to-r from-cyan-600 to-teal-500 py-3 text-sm font-bold text-slate-950 shadow-lg shadow-cyan-500/20 hover:from-cyan-500 hover:to-teal-400 transition-all flex items-center justify-center gap-2 cursor-pointer">
+                <span>Sign In to MediVault Portal</span>
+                <span>&rarr;</span>
             </button>
         </form>
 
-        <!-- System Credentials & Personnel Reference -->
-        <div class="mt-8 pt-6 border-t border-slate-800">
-            <div class="flex items-center justify-between cursor-pointer mb-3" @click="showReport = !showReport">
+        <!-- Academic Audit Report Download & Printable Link -->
+        <div class="p-3.5 rounded-xl bg-gradient-to-r from-purple-950/40 to-slate-900/80 border border-purple-500/30 flex items-center justify-between text-xs">
+            <div class="flex items-center gap-2">
+                <span class="text-xl">📄</span>
+                <div>
+                    <div class="font-bold text-white">Official Information Security Defense Report</div>
+                    <div class="text-[10px] text-purple-300">Complete architectural proof covering all 10 Teacher Requirements</div>
+                </div>
+            </div>
+            <a href="{{ route('security.report.pdf') }}" 
+                class="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs transition-all shadow-md flex items-center gap-1">
+                <span>Download PDF</span>
+                <span>📥</span>
+            </a>
+        </div>
+
+        <!-- System Credentials & Personnel Reference Accordion -->
+        <div class="mt-6 pt-4 border-t border-slate-800">
+            <div class="flex items-center justify-between cursor-pointer" @click="showReport = !showReport">
                 <div class="flex items-center gap-2">
                     <span class="text-sm">📋</span>
                     <span class="text-xs font-bold text-slate-300 uppercase tracking-wider">
-                        Demo Personnel Accounts & Default Credentials
+                        Full Active Staff Credentials Table (15 Users)
                     </span>
                 </div>
-                <span class="text-xs text-cyan-400 font-semibold" x-text="showReport ? 'Hide ▲' : 'Show Credentials ▼'"></span>
+                <span class="text-xs text-cyan-400 font-semibold" x-text="showReport ? 'Hide ▲' : 'Show All Credentials ▼'"></span>
             </div>
 
-            <div x-show="showReport" class="space-y-3">
-                <div class="rounded-xl border border-slate-800 bg-slate-950/60 p-3 overflow-x-auto">
+            <div x-show="showReport" class="mt-3 space-y-3">
+                <div class="rounded-xl border border-slate-800 bg-slate-950/60 p-3 overflow-x-auto max-h-72 overflow-y-auto">
                     <table class="w-full text-left text-[11px] text-slate-300">
-                        <thead class="text-[10px] text-slate-400 uppercase bg-slate-900/80 border-b border-slate-800 font-bold">
+                        <thead class="text-[10px] text-slate-400 uppercase bg-slate-900/80 border-b border-slate-800 font-bold sticky top-0">
                             <tr>
                                 <th class="p-2">Role</th>
-                                <th class="p-2">Staff Name</th>
+                                <th class="p-2">Staff Member</th>
                                 <th class="p-2">Login Email</th>
                                 <th class="p-2">Plain Password</th>
-                                <th class="p-2">Salt (In DB)</th>
-                                <th class="p-2">Pepper</th>
-                                <th class="p-2">Quick Action</th>
+                                <th class="p-2">Action</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-800/60 font-mono">
-                            <tr class="hover:bg-slate-900/40">
-                                <td class="p-2 font-bold text-purple-400">Admin</td>
-                                <td class="p-2 text-white font-sans">Dr. Prof. Nathaniel Bentil</td>
-                                <td class="p-2 text-cyan-300">admin@medivault.cloud</td>
-                                <td class="p-2 text-emerald-400">Admin@MediVault2026!</td>
-                                <td class="p-2 text-slate-400 text-[10px]">ay5TT1oyZ...</td>
-                                <td class="p-2 text-amber-400">v1 (.env)</td>
-                                <td class="p-2">
-                                    <button type="button" @click="selectRole('admin', 'admin@medivault.cloud', 'Admin@MediVault2026!')" class="px-2 py-0.5 rounded bg-cyan-900 text-cyan-200 hover:bg-cyan-700 text-[10px]">Fill</button>
-                                </td>
-                            </tr>
-                            <tr class="hover:bg-slate-900/40">
-                                <td class="p-2 font-bold text-emerald-400">Manager</td>
-                                <td class="p-2 text-white font-sans">Dr. Bright Ainoo</td>
-                                <td class="p-2 text-cyan-300">manager@medivault.cloud</td>
-                                <td class="p-2 text-emerald-400">Manager@MediVault2026!</td>
-                                <td class="p-2 text-slate-400 text-[10px]">bWZ5Wk1xS...</td>
-                                <td class="p-2 text-amber-400">v1 (.env)</td>
-                                <td class="p-2">
-                                    <button type="button" @click="selectRole('manager', 'manager@medivault.cloud', 'Manager@MediVault2026!')" class="px-2 py-0.5 rounded bg-cyan-900 text-cyan-200 hover:bg-cyan-700 text-[10px]">Fill</button>
-                                </td>
-                            </tr>
-                            <tr class="hover:bg-slate-900/40">
-                                <td class="p-2 font-bold text-cyan-400">Doctor</td>
-                                <td class="p-2 text-white font-sans">Dr. Isaac Donkoh, MD</td>
-                                <td class="p-2 text-cyan-300">doctor@medivault.cloud</td>
-                                <td class="p-2 text-emerald-400">Doctor@MediVault2026!</td>
-                                <td class="p-2 text-slate-400 text-[10px]">dXhtUGU3Y...</td>
-                                <td class="p-2 text-amber-400">v1 (.env)</td>
-                                <td class="p-2">
-                                    <button type="button" @click="selectRole('doctor', 'doctor@medivault.cloud', 'Doctor@MediVault2026!')" class="px-2 py-0.5 rounded bg-cyan-900 text-cyan-200 hover:bg-cyan-700 text-[10px]">Fill</button>
-                                </td>
-                            </tr>
-                            <tr class="hover:bg-slate-900/40">
-                                <td class="p-2 font-bold text-pink-400">Nurse</td>
-                                <td class="p-2 text-white font-sans">Nurse Beatrice Mensah, RN</td>
-                                <td class="p-2 text-cyan-300">nurse@medivault.cloud</td>
-                                <td class="p-2 text-emerald-400">Nurse@MediVault2026!</td>
-                                <td class="p-2 text-slate-400 text-[10px]">Ri9MQnFZL...</td>
-                                <td class="p-2 text-amber-400">v1 (.env)</td>
-                                <td class="p-2">
-                                    <button type="button" @click="selectRole('nurse', 'nurse@medivault.cloud', 'Nurse@MediVault2026!')" class="px-2 py-0.5 rounded bg-cyan-900 text-cyan-200 hover:bg-cyan-700 text-[10px]">Fill</button>
-                                </td>
-                            </tr>
-                            <tr class="hover:bg-slate-900/40">
-                                <td class="p-2 font-bold text-amber-400">Pharmacist</td>
-                                <td class="p-2 text-white font-sans">Pharm. Kwabena Appiah</td>
-                                <td class="p-2 text-cyan-300">pharmacist@medivault.cloud</td>
-                                <td class="p-2 text-emerald-400">Pharm@MediVault2026!</td>
-                                <td class="p-2 text-slate-400 text-[10px]">MEVmZTI3Y...</td>
-                                <td class="p-2 text-amber-400">v1 (.env)</td>
-                                <td class="p-2">
-                                    <button type="button" @click="selectRole('pharmacist', 'pharmacist@medivault.cloud', 'Pharm@MediVault2026!')" class="px-2 py-0.5 rounded bg-cyan-900 text-cyan-200 hover:bg-cyan-700 text-[10px]">Fill</button>
-                                </td>
-                            </tr>
-                            <tr class="hover:bg-slate-900/40">
-                                <td class="p-2 font-bold text-blue-400">Auditor</td>
-                                <td class="p-2 text-white font-sans">Auditor Samuel Osei</td>
-                                <td class="p-2 text-cyan-300">auditor@medivault.cloud</td>
-                                <td class="p-2 text-emerald-400">Auditor@MediVault2026!</td>
-                                <td class="p-2 text-slate-400 text-[10px]">RG9hWk5TM...</td>
-                                <td class="p-2 text-amber-400">v1 (.env)</td>
-                                <td class="p-2">
-                                    <button type="button" @click="selectRole('auditor', 'auditor@medivault.cloud', 'Auditor@MediVault2026!')" class="px-2 py-0.5 rounded bg-cyan-900 text-cyan-200 hover:bg-cyan-700 text-[10px]">Fill</button>
-                                </td>
-                            </tr>
-                            <!-- Soft-Deleted User Row for Requirement #7 -->
-                            <tr class="bg-rose-950/20 text-rose-300/80">
-                                <td class="p-2 font-bold text-rose-400">Archived</td>
-                                <td class="p-2 font-sans">Dr. Francis Cudjoe <span class="text-[9px] px-1 py-0.5 rounded bg-rose-900/80 text-rose-200">Soft-Deleted</span></td>
-                                <td class="p-2 text-slate-400">archived.staff@medivault.cloud</td>
-                                <td class="p-2 text-slate-500 italic">Blocked from login</td>
-                                <td class="p-2 text-[10px]">a3pmZ2kzT...</td>
-                                <td class="p-2 text-amber-400">v1 (.env)</td>
-                                <td class="p-2 text-[10px] text-rose-300 font-sans">In Audit Vault</td>
-                            </tr>
+                            <template x-for="m in staffMembers" :key="m.id">
+                                <tr class="hover:bg-slate-900/40">
+                                    <td class="p-2 font-bold"
+                                        :class="m.role === 'Admin' ? 'text-purple-400' :
+                                                (m.role === 'Manager' ? 'text-emerald-400' :
+                                                (m.role === 'Doctor' ? 'text-cyan-400' :
+                                                (m.role === 'Nurse' ? 'text-pink-400' :
+                                                (m.role === 'Pharmacist' ? 'text-amber-400' : 'text-blue-400'))))"
+                                        x-text="m.role">
+                                    </td>
+                                    <td class="p-2 text-white font-sans font-medium" x-text="m.name"></td>
+                                    <td class="p-2 text-cyan-300" x-text="m.email"></td>
+                                    <td class="p-2 text-emerald-400" x-text="m.password"></td>
+                                    <td class="p-2">
+                                        <button type="button" @click="selectStaff(m)"
+                                            class="px-2 py-0.5 rounded bg-cyan-900 text-cyan-200 hover:bg-cyan-700 text-[10px]">
+                                            Select
+                                        </button>
+                                    </td>
+                                </tr>
+                            </template>
                         </tbody>
                     </table>
                 </div>
-
-                <div class="p-3 rounded-xl bg-cyan-950/40 border border-cyan-800/40 text-[11px] text-cyan-200 leading-relaxed">
-                    💡 <strong>Academic Defense Note for Teacher:</strong>
-                    Each user has a unique 16-byte random salt stored in the database, preventing Rainbow Table attacks. The 256-bit pepper is stored strictly in server environment memory (`.env`), not in the database. When users are deleted, their rows remain safely preserved in PostgreSQL under <code>deleted_at</code> for audit compliance.
-                </div>
             </div>
         </div>
+
     </div>
 </x-guest-layout>

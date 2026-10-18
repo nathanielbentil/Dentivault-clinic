@@ -16,7 +16,7 @@ class ClinicalStationController extends Controller
     public function prescriptions(Request $request): View
     {
         $user = $request->user();
-        $patients = Patient::latest()->take(52)->get();
+        $patients = Patient::latest()->take(100)->get();
         $totalOrders = 38;
         $pendingFulfillment = 19;
         $dispensedToday = 34;
@@ -148,5 +148,95 @@ class ClinicalStationController extends Controller
         );
 
         return redirect()->back()->with('status', "Patient {$patient->name} ({$patient->patient_code}) successfully admitted to {$patient->ward_room}!");
+    }
+
+    /**
+     * Process clinical patient discharge (Doctor, Nurse, Manager, Admin)
+     */
+    public function dischargePatient(Request $request, int $id)
+    {
+        $user = $request->user();
+        if (!$user->hasAnyRole(['Admin', 'SuperAdmin', 'Manager', 'Doctor', 'Nurse']) && !in_array($user->role, ['Admin', 'Manager', 'Doctor', 'Nurse', 'SuperAdmin'])) {
+            abort(403, 'Unauthorized. Only attending clinicians and operations managers can discharge patients.');
+        }
+
+        $patient = Patient::findOrFail($id);
+        $notes = $request->input('discharge_notes', 'Discharged in stable clinical condition. Routine follow-up scheduled.');
+
+        $patient->update([
+            'admission_status' => 'Discharged',
+            'ward_room' => 'Discharged (Bed Released)',
+            'treatment_plan' => "Discharged by {$user->name} ({$user->role}): {$notes}",
+        ]);
+
+        AuditLog::record(
+            eventType: 'hipaa.patient_discharged',
+            description: "Patient [{$patient->name}] ({$patient->patient_code}) discharged by {$user->name} ({$user->role}). Bed released from {$patient->ward_room}.",
+            userId: $user->id,
+            severity: 'notice',
+            payload: [
+                'patient_code' => $patient->patient_code,
+                'discharge_notes' => $notes,
+                'discharged_by' => $user->email,
+            ]
+        );
+
+        return redirect()->back()->with('status', "Patient {$patient->name} ({$patient->patient_code}) has been successfully discharged! Hospital bed released.");
+    }
+
+    /**
+     * Soft-delete a patient record (Managing Director / Admin Authority)
+     * Requirement #7: NEVER permanently destroyed; safely preserved with audit trail!
+     */
+    public function softDeletePatient(Request $request, int $id)
+    {
+        $user = $request->user();
+        if (!$user->hasAnyRole(['Admin', 'SuperAdmin', 'Manager']) && !in_array($user->role, ['Admin', 'Manager', 'SuperAdmin'])) {
+            abort(403, 'Unauthorized. Only the Chief Administrator and Managing Director are authorized to archive patient records.');
+        }
+
+        $patient = Patient::findOrFail($id);
+        $code = $patient->patient_code;
+        $name = $patient->name;
+
+        // Soft delete (sets deleted_at = now())
+        $patient->delete();
+
+        AuditLog::record(
+            eventType: 'patient.soft_deleted',
+            description: "Managing Director/Admin [{$user->name}] soft-deleted patient chart [{$name}] ({$code}). Record preserved in HIPAA audit archive.",
+            userId: $user->id,
+            severity: 'warning',
+            payload: [
+                'patient_code' => $code,
+                'name' => $name,
+                'deleted_by' => $user->email,
+            ]
+        );
+
+        return redirect()->back()->with('status', "Patient record [{$name}] ({$code}) soft-deleted. File preserved in Audit Archive per HIPAA policy.");
+    }
+
+    /**
+     * Restore a soft-deleted patient record
+     */
+    public function restorePatient(Request $request, int $id)
+    {
+        $user = $request->user();
+        if (!$user->hasAnyRole(['Admin', 'SuperAdmin', 'Manager']) && !in_array($user->role, ['Admin', 'Manager', 'SuperAdmin'])) {
+            abort(403, 'Unauthorized.');
+        }
+
+        $patient = Patient::onlyTrashed()->findOrFail($id);
+        $patient->restore();
+
+        AuditLog::record(
+            eventType: 'patient.restored',
+            description: "Managing Director/Admin [{$user->name}] restored patient chart [{$patient->name}] ({$patient->patient_code}) from archive.",
+            userId: $user->id,
+            severity: 'notice'
+        );
+
+        return redirect()->back()->with('status', "Patient [{$patient->name}] successfully restored from archive!");
     }
 }
