@@ -1123,9 +1123,17 @@
                             <strong>Staff Administration:</strong> You can edit staff details, reset passwords, unlock accounts, and manage soft-deleted records.
                         </span>
                     </div>
-                    <span class="text-[10px] font-mono text-cyan-400 bg-cyan-950/60 px-2 py-1 rounded border border-cyan-800/60 whitespace-nowrap">
-                        PostgreSQL (AWS Cloud Hosting)
-                    </span>
+                    <div class="flex items-center gap-2">
+                        @if(in_array($userRole, ['Admin', 'Manager', 'Auditor']))
+                            <a href="{{ route('admin.database-view') }}" target="_blank" class="px-3 py-1 rounded-lg bg-cyan-950 hover:bg-cyan-900 border border-cyan-700 text-cyan-300 font-mono text-[11px] font-bold flex items-center gap-1.5 transition-colors">
+                                <span>🐘</span>
+                                <span>Inspect Database Table & Schema ↗</span>
+                            </a>
+                        @endif
+                        <span class="text-[10px] font-mono text-cyan-400 bg-cyan-950/60 px-2 py-1 rounded border border-cyan-800/60 whitespace-nowrap">
+                            PostgreSQL (AWS Cloud Hosting)
+                        </span>
+                    </div>
                 </div>
                 @endif
 

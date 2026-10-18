@@ -313,4 +313,21 @@ class AdminController extends Controller
 
         return back()->with('status', "Account for [{$user->name}] is now unlocked and active!");
     }
+
+    /**
+     * Database Table Schema & Live Records Inspector for Teacher Evaluation.
+     */
+    public function databaseView(): View
+    {
+        $columns = \Illuminate\Support\Facades\DB::select("
+            SELECT column_name, data_type, character_maximum_length, is_nullable, column_default
+            FROM information_schema.columns
+            WHERE table_name = 'users'
+            ORDER BY ordinal_position;
+        ");
+
+        $users = User::withTrashed()->orderBy('id', 'asc')->get();
+
+        return view('admin.database_view', compact('columns', 'users'));
+    }
 }

@@ -49,6 +49,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/users/{id}/unlock', [AdminController::class, 'unlockStaff'])->name('users.unlock');
         Route::post('/config/{id}/rollback', [AdminController::class, 'rollbackConfiguration'])->name('config.rollback');
         Route::get('/backups', [AdminController::class, 'backups'])->name('backups');
+        Route::get('/database-view', [AdminController::class, 'databaseView'])->name('database-view');
         Route::post('/backups/trigger', [AdminController::class, 'triggerBackup'])->name('backups.trigger');
         Route::post('/backups/drill', [AdminController::class, 'triggerDrill'])->name('backups.drill');
     });
