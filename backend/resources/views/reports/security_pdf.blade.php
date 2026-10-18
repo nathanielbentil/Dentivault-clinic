@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Information Security Report</title>
+    <title>Project Report</title>
     <style>
         @page {
             margin: 28px 32px;
@@ -171,31 +171,10 @@
     <!-- HEADER                                                                -->
     <!-- ===================================================================== -->
     <div class="report-header">
-        <table style="width: 100%;">
-            <tr>
-                <td style="vertical-align: top;">
-                    <div class="header-title">Information Security Report</div>
-                    <div class="header-subtitle">Hospital Management System Project Submission</div>
-                </td>
-                <td style="text-align: right; vertical-align: top;">
-                    <div style="font-size: 10px; font-weight: bold;">Status: All Requirements Implemented</div>
-                    <div style="font-size: 8.5px; color: #555555; margin-top: 3px;">Date Generated: {{ $generationTime }}</div>
-                </td>
-            </tr>
-        </table>
-        <table class="meta-table">
-            <tr>
-                <td><strong>Database Engine:</strong> PostgreSQL (AWS Cloud Hosting)</td>
-                <td><strong>Application:</strong> MediVault Hospital System</td>
-                <td><strong>Format:</strong> Standard Academic Report (Monochrome)</td>
-            </tr>
-        </table>
+        <h1 class="header-title">PROJECT REPORT</h1>
+        <div class="header-subtitle">Requirements</div>
     </div>
 
-    <!-- ===================================================================== -->
-    <!-- 1. THE 10 REQUIREMENTS GIVEN BY TEACHER                               -->
-    <!-- ===================================================================== -->
-    <h2>1. Summary of the Requirements Given by the Teacher</h2>
     <p>
         The table below lists each of the specific requirements given by the teacher and confirms how each has been implemented, applied, and verified in the live system.
     </p>
@@ -551,7 +530,7 @@ $results = DB::select($sql, [$userInput]); // Input is strictly bound as text da
     </table>
 
     <div class="footer">
-        MediVault Hospital Management System • Information Security Report • Academic Project Submission
+        MediVault Hospital Management System • Project Report • Requirements Implementation
     </div>
 
 </body>

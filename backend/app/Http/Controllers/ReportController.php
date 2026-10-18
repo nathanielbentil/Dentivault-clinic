@@ -60,7 +60,7 @@ class ReportController extends Controller
         $pdf = Pdf::loadView('reports.security_pdf', $data);
         $pdf->setPaper('a4', 'portrait');
 
-        return $pdf->stream('Information_Security_Report.pdf', ['Attachment' => false]);
+        return $pdf->stream('Project_Report.pdf', ['Attachment' => false]);
     }
 
     /**
