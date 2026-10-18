@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>MediVault Enterprise - Information Security Defense Report</title>
+    <title>MediVault Enterprise - Information Security Audit Report</title>
     <style>
         @page {
             margin: 25px 30px;
@@ -152,7 +152,7 @@
             <tr>
                 <td style="vertical-align: top;">
                     <div class="header-title">MediVault Enterprise Hospital System</div>
-                    <div class="header-subtitle">Official Information Security Architecture & Academic Defense Report</div>
+                    <div class="header-subtitle">Official Information Security Architecture & Academic Audit Report</div>
                 </td>
                 <td style="text-align: right; vertical-align: top;">
                     <span class="badge badge-success">Audit Certified</span>
@@ -273,7 +273,7 @@
     <!-- ===================================================================== -->
     <h2>2. Cryptographic Architecture: Salt, Pepper & Argon2id</h2>
     <p>
-        MediVault employs a defense-in-depth cryptographic pipeline that protects user credentials even in the catastrophic event of a total database leak.
+        MediVault employs a multi-layered cryptographic pipeline that protects user credentials even in the catastrophic event of a total database leak.
     </p>
 
     <h3>The 3-Layer Authentication Pipeline</h3>
@@ -466,7 +466,7 @@ public static function hash(string $plainPassword, ?string $pepperVersion = null
     </div>
 
     <!-- ===================================================================== -->
-    <!-- REQUIREMENT 10: INFORMATION SECURITY DEFENSE TECHNIQUES               -->
+    <!-- REQUIREMENT 10: INFORMATION SECURITY TECHNIQUES                       -->
     <!-- ===================================================================== -->
     <h2>6. Information Security Techniques & Prepared Statements</h2>
 
@@ -480,7 +480,7 @@ $sql = 'SELECT id, patient_code, name, ward_room FROM patients WHERE patient_cod
 $results = DB::select($sql, [$userInput]); // Input is strictly bound as text data
     </div>
 
-    <h3>2. Session Fixation Defense & HTTP Security Headers</h3>
+    <h3>2. Session Fixation Protection & HTTP Security Headers</h3>
     <p>
         Upon successful authentication, the server executes <code>$request-&gt;session()-&gt;regenerate()</code> to invalidate the pre-authentication session ID. All responses enforce:
     </p>
@@ -517,7 +517,7 @@ $results = DB::select($sql, [$userInput]); // Input is strictly bound as text da
     </table>
 
     <div class="footer">
-        MediVault Enterprise Cloud HMS • Official Examination Defense Report • Certified Compliant with All 10 Academic Requirements • London AWS Data Center
+        MediVault Enterprise Cloud HMS • Official Examination Audit Report • Certified Compliant with All 10 Academic Requirements • London AWS Data Center
     </div>
 
 </body>

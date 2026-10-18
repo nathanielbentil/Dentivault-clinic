@@ -112,10 +112,10 @@
                             default => '🩺'
                         };
                     @endphp
-                    <!-- Official Security Defense Report Button -->
-                    <a href="{{ route('security.report.pdf') }}" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-purple-950/80 hover:bg-purple-900 border border-purple-500/50 text-purple-300 shadow-sm transition-all" title="Download Official Academic Defense Security Report">
+                    <!-- Official Security Audit Report Button -->
+                    <a href="{{ route('security.report.pdf') }}" target="_blank" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-purple-950/80 hover:bg-purple-900 border border-purple-500/50 text-purple-300 shadow-sm transition-all" title="View Official Academic Security Report in Browser">
                         <span>📄</span>
-                        <span>Defense Report (PDF)</span>
+                        <span>Security Report (PDF)</span>
                     </a>
 
                     <!-- User Role Badge -->

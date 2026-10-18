@@ -10,7 +10,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// Official Security Defense Report (PDF & Print View - accessible for evaluation)
+// Official Security Audit Report (PDF & Print View - accessible for evaluation)
 Route::get('/security/report/pdf', [\App\Http\Controllers\ReportController::class, 'downloadSecurityPdf'])->name('security.report.pdf');
 Route::get('/security/report/print', [\App\Http\Controllers\ReportController::class, 'viewSecurityReport'])->name('security.report.print');
 

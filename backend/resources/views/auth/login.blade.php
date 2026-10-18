@@ -321,19 +321,19 @@
             </button>
         </form>
 
-        <!-- Academic Audit Report Download & Printable Link -->
+        <!-- Academic Audit Report Inline Browser Link -->
         <div class="p-3.5 rounded-xl bg-gradient-to-r from-purple-950/40 to-slate-900/80 border border-purple-500/30 flex items-center justify-between text-xs">
             <div class="flex items-center gap-2">
                 <span class="text-xl">📄</span>
                 <div>
-                    <div class="font-bold text-white">Official Information Security Defense Report</div>
+                    <div class="font-bold text-white">Official Information Security Audit Report</div>
                     <div class="text-[10px] text-purple-300">Complete architectural proof covering all 10 Teacher Requirements</div>
                 </div>
             </div>
-            <a href="{{ route('security.report.pdf') }}" 
-                class="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs transition-all shadow-md flex items-center gap-1">
-                <span>Download PDF</span>
-                <span>📥</span>
+            <a href="{{ route('security.report.pdf') }}" target="_blank"
+                class="px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs transition-all shadow-md flex items-center gap-1.5 cursor-pointer">
+                <span>Open PDF Report</span>
+                <span>↗</span>
             </a>
         </div>
 

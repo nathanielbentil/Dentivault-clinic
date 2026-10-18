@@ -40,11 +40,11 @@ class ReportController extends Controller
             'recentAuditLogs' => $recentAuditLogs,
         ];
 
-        // Audit log the PDF download event
+        // Audit log the PDF view event
         if ($request->user()) {
             AuditLog::record(
-                eventType: 'report.pdf_downloaded',
-                description: "Staff [{$request->user()->name}] downloaded the Official Information Security Defense Report (PDF).",
+                eventType: 'report.pdf_viewed',
+                description: "Staff [{$request->user()->name}] viewed the Official Information Security Audit Report (PDF).",
                 userId: $request->user()->id,
                 severity: 'info'
             );
@@ -53,7 +53,7 @@ class ReportController extends Controller
         $pdf = Pdf::loadView('reports.security_pdf', $data);
         $pdf->setPaper('a4', 'portrait');
 
-        return $pdf->download('MediVault_Enterprise_Security_Report_2026.pdf');
+        return $pdf->stream('MediVault_Enterprise_Security_Report_2026.pdf', ['Attachment' => false]);
     }
 
     /**
