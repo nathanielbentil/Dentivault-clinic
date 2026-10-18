@@ -167,7 +167,7 @@
                                 </td>
                                 <td class="p-3">
                                     <div class="text-slate-200">{{ $p->attending_doctor }}</div>
-                                    <span class="text-[9px] text-emerald-400 font-mono">MD Signature Verified</span>
+                                    <span class="text-[9px] text-emerald-400 font-mono">Doctor Signature Verified</span>
                                 </td>
                                 <td class="p-3">
                                     <span class="px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-700 text-[10px] font-bold">

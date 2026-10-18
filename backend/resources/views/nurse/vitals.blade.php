@@ -167,7 +167,7 @@
                     </div>
 
                     <div class="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/60 flex items-center justify-between text-xs">
-                        <span class="text-slate-400 text-[11px]">Attending MD: <strong class="text-white">{{ $p->attending_doctor }}</strong></span>
+                        <span class="text-slate-400 text-[11px]">Attending Doctor: <strong class="text-white">{{ $p->attending_doctor }}</strong></span>
                         <span class="text-pink-400 text-[11px] font-mono">Assigned RN: Beatrice</span>
                     </div>
 

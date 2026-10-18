@@ -128,7 +128,7 @@
                     :class="selectedCategory === 'leadership' ? 'bg-purple-500 text-slate-950 font-bold' : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'"
                     class="px-2.5 py-1 rounded-lg text-xs transition-all flex items-center gap-1">
                     <span>👑</span>
-                    <span>Admin & MD (2)</span>
+                    <span>Admin & MD (Managing Director)</span>
                 </button>
                 <button type="button" @click="selectedCategory = 'other'"
                     :class="selectedCategory === 'other' ? 'bg-amber-500 text-slate-950 font-bold' : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'"

@@ -128,7 +128,7 @@ class ClinicalStationController extends Controller
             'treatment_plan' => $validated['treatment_plan'] ?? 'Initial clinical observation & vital monitoring protocol initiated.',
             'prescription' => 'Pending attending physician formulation.',
             'vitals_summary' => 'BP 120/80 mmHg, HR 72 bpm, SpO2 99%, Temp 36.8°C',
-            'attending_doctor' => ($user->role === 'Doctor' || $user->hasRole('Doctor')) ? $user->name : 'Dr. Attending Physician, MD',
+            'attending_doctor' => ($user->role === 'Doctor' || $user->hasRole('Doctor')) ? $user->name : 'Dr. Attending Physician',
             'assigned_nurse' => 'Nurse Shift Station',
         ]);
 

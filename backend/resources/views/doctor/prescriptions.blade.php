@@ -72,7 +72,7 @@
                         Physician Electronic Prescriptions & Clinical Orders
                     </h1>
                     <p class="text-sm text-slate-400 mt-1">
-                        Attending Medical Officer: <strong class="text-cyan-300">{{ $user->name }} (MD)</strong> • Digital Signature Token Active • Direct Hospital Dispensary Bridge
+                        Attending Medical Officer: <strong class="text-cyan-300">{{ $user->name }}</strong> • Digital Signature Token Active • Direct Hospital Dispensary Bridge
                     </p>
                 </div>
 
@@ -163,7 +163,7 @@
                     </span>
                 </div>
                 <div class="text-xs text-slate-400 font-mono">
-                    Signed by: Dr. Isaac Donkoh, MD
+                    Signed by: Dr. Isaac Donkoh
                 </div>
             </div>
 
@@ -389,7 +389,7 @@
                 <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                     <h3 class="text-base font-bold text-white flex items-center gap-2">
                         <span>➕</span>
-                        <span>Admit New Hospital Patient (MD Station)</span>
+                        <span>Admit New Hospital Patient (Doctor Station)</span>
                     </h3>
                     <button @click="showRegisterModal = false" class="text-slate-400 hover:text-white text-lg">&times;</button>
                 </div>

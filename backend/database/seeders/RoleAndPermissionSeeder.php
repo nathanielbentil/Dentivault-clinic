@@ -160,7 +160,7 @@ class RoleAndPermissionSeeder extends Seeder
             ],
             // 2. Managing Director (Operations Manager)
             [
-                'name' => 'Dr. Bright Ainoo',
+                'name' => 'Dr. Bright Ainoo (Managing Director - MD)',
                 'email' => 'manager@medivault.cloud',
                 'password' => 'Manager@MediVault2026!',
                 'role' => 'Manager',
@@ -168,21 +168,21 @@ class RoleAndPermissionSeeder extends Seeder
             ],
             // 3-5. Attending Doctors (3 Physicians)
             [
-                'name' => 'Dr. Isaac Donkoh, MD',
+                'name' => 'Dr. Isaac Donkoh',
                 'email' => 'doctor@medivault.cloud',
                 'password' => 'Doctor@MediVault2026!',
                 'role' => 'Doctor',
                 'roleModel' => $doctorRole,
             ],
             [
-                'name' => 'Dr. Kofi Mensah, MD',
+                'name' => 'Dr. Kofi Mensah',
                 'email' => 'doctor.kofi@medivault.cloud',
                 'password' => 'Doctor@Kofi2026!',
                 'role' => 'Doctor',
                 'roleModel' => $doctorRole,
             ],
             [
-                'name' => 'Dr. Akua Boateng, MD',
+                'name' => 'Dr. Akua Boateng',
                 'email' => 'doctor.akua@medivault.cloud',
                 'password' => 'Doctor@Akua2026!',
                 'role' => 'Doctor',
@@ -305,7 +305,7 @@ class RoleAndPermissionSeeder extends Seeder
                 'roleModel' => $pharmacistRole,
             ],
             [
-                'name' => 'Dr. Marcus Obeng, MD (Fellowship Rotation)',
+                'name' => 'Dr. Marcus Obeng (Fellowship Rotation)',
                 'email' => 'marcus.obeng@medivault.cloud',
                 'password' => 'Doctor@Archive2026!',
                 'role' => 'Doctor',
@@ -377,9 +377,9 @@ class RoleAndPermissionSeeder extends Seeder
         // 5. Seed 75 Realistic Hospital Patients & Medical Records (Requirement #9)
         // ------------------------------------------------------------------
         $clinicalDoctors = [
-            'Dr. Isaac Donkoh, MD',
-            'Dr. Kofi Mensah, MD',
-            'Dr. Akua Boateng, MD',
+            'Dr. Isaac Donkoh',
+            'Dr. Kofi Mensah',
+            'Dr. Akua Boateng',
         ];
 
         $clinicalNurses = [
@@ -440,7 +440,7 @@ class RoleAndPermissionSeeder extends Seeder
             $status = $statuses[$i % count($statuses)];
             $ward = $status === 'Outpatient' ? 'Outpatient Clinic Room ' . (($i % 6) + 1) : $wards[$i % count($wards)];
 
-            // Clinical Attending Staff: ONLY MDs and Ward Nurses (never Admin/MD)
+            // Clinical Attending Staff: ONLY Doctors and Ward Nurses (never Admin or Managing Director)
             $assignedDoctor = $clinicalDoctors[$i % count($clinicalDoctors)];
             $assignedNurse  = $clinicalNurses[$i % count($clinicalNurses)];
 

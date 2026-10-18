@@ -900,7 +900,7 @@
                         </p>
                     </div>
                     <div class="text-xs text-cyan-400 font-mono bg-cyan-950/60 px-3 py-1.5 rounded-xl border border-cyan-800/60">
-                        Physician: {{ $user->name }} (MD)
+                        Physician: {{ $user->name }}
                     </div>
                 </div>
 
@@ -1045,7 +1045,7 @@
                                 <th class="p-3">Patient</th>
                                 <th class="p-3">Blood & Allergies</th>
                                 <th class="p-3">Prescribed Medication</th>
-                                <th class="p-3">Attending MD</th>
+                                <th class="p-3">Attending Doctor</th>
                                 <th class="p-3">Fulfillment Status</th>
                                 <th class="p-3 text-right">Pharmacy Action</th>
                             </tr>
@@ -1791,7 +1791,7 @@
                     @csrf
                     <div>
                         <label class="block text-slate-300 mb-1">Staff Member Name</label>
-                        <input type="text" name="name" required placeholder="e.g. Dr. John Doe, MD" class="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-white">
+                        <input type="text" name="name" required placeholder="e.g. Dr. John Doe" class="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-white">
                     </div>
                     <div>
                         <label class="block text-slate-300 mb-1">Email Address</label>
@@ -2047,7 +2047,7 @@
                     </div>
                     <div class="p-3 rounded-xl bg-cyan-950/40 border border-cyan-800/40 text-[11px] text-cyan-200 flex items-center gap-2">
                         <span>🛡️</span>
-                        <span>Clinical digital signature attached: <strong>{{ $user->name }} (Attending MD)</strong></span>
+                        <span>Clinical digital signature attached: <strong>{{ $user->name }} (Attending Doctor)</strong></span>
                     </div>
                     <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
                         <button type="button" @click="showDoctorModal = false" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300">Cancel</button>
@@ -2122,7 +2122,7 @@
 
                 <div class="space-y-3 text-xs">
                     <div>
-                        <label class="block text-slate-300 font-semibold mb-1">Prescription Order from MD</label>
+                        <label class="block text-slate-300 font-semibold mb-1">Prescription Order from Attending Doctor</label>
                         <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 font-mono text-cyan-300 text-xs" x-text="selectedPatient.treatment_plan || 'Amoxicillin 500mg TDS x 5/7'"></div>
                     </div>
                     <div class="p-3 rounded-xl bg-emerald-950/40 border border-emerald-800/40 text-emerald-200 text-[11px] space-y-1">
