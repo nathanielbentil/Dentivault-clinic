@@ -112,11 +112,13 @@
                             default => '🩺'
                         };
                     @endphp
-                    <!-- Information Security Report Button -->
-                    <a href="{{ route('security.report.pdf') }}" target="_blank" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-purple-950/80 hover:bg-purple-900 border border-purple-500/50 text-purple-300 shadow-sm transition-all" title="View Information Security Report in Browser">
-                        <span>📄</span>
-                        <span>Information Security Report</span>
-                    </a>
+                    <!-- Information Security Report Button (Admin Only) -->
+                    @if($userRole === 'Admin')
+                        <a href="{{ route('security.report.pdf') }}" target="_blank" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-purple-950/80 hover:bg-purple-900 border border-purple-500/50 text-purple-300 shadow-sm transition-all" title="View Information Security Report in Browser">
+                            <span>📄</span>
+                            <span>Information Security Report</span>
+                        </a>
+                    @endif
 
                     <!-- User Role Badge -->
                     <span class="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold border {{ $badgeColor }}">
