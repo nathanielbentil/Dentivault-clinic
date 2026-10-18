@@ -74,14 +74,33 @@
             this.showDropdown = false;
         },
 
+        selectCategory(cat) {
+            this.selectedCategory = cat;
+            this.showDropdown = true;
+            const matching = this.staffMembers.filter(m => {
+                if (cat === 'admin') return m.role === 'Admin';
+                if (cat === 'md') return m.role === 'Manager';
+                if (cat === 'doctor') return m.role === 'Doctor';
+                if (cat === 'nurse') return m.role === 'Nurse';
+                if (cat === 'pharmacist') return m.role === 'Pharmacist';
+                if (cat === 'auditor') return m.role === 'Auditor';
+                return true;
+            });
+            if (matching.length === 1) {
+                this.selectStaff(matching[0]);
+            }
+        },
+
         filteredStaff() {
             return this.staffMembers.filter(m => {
                 const matchesCategory = 
                     this.selectedCategory === 'all' || 
-                    (this.selectedCategory === 'nurse' && m.role === 'Nurse') ||
+                    (this.selectedCategory === 'admin' && m.role === 'Admin') ||
+                    (this.selectedCategory === 'md' && m.role === 'Manager') ||
                     (this.selectedCategory === 'doctor' && m.role === 'Doctor') ||
-                    (this.selectedCategory === 'leadership' && (m.role === 'Admin' || m.role === 'Manager')) ||
-                    (this.selectedCategory === 'other' && (m.role === 'Pharmacist' || m.role === 'Auditor'));
+                    (this.selectedCategory === 'nurse' && m.role === 'Nurse') ||
+                    (this.selectedCategory === 'pharmacist' && m.role === 'Pharmacist') ||
+                    (this.selectedCategory === 'auditor' && m.role === 'Auditor');
                 
                 const matchesSearch = 
                     this.searchTerm === '' ||
@@ -96,45 +115,72 @@
 
         <!-- Quick Filter Role Tabs -->
         <div>
-            <div class="flex items-center justify-between mb-2">
-                <label class="block text-xs font-bold text-cyan-400 uppercase tracking-wider">
-                    Quick-Fill Personnel Selection:
+            <div class="flex items-center justify-between mb-2.5">
+                <label class="block text-xs font-black text-cyan-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <span>⚡</span>
+                    <span>Quick-Fill Personnel Role Tabs:</span>
                 </label>
-                <span class="text-[10px] px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-800 font-mono">
-                    <span x-text="staffMembers.length"></span> Active Staff (PostgreSQL)
+                <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-800 font-mono font-bold">
+                    <span x-text="staffMembers.length"></span> Active Staff
                 </span>
             </div>
 
-            <!-- Category Pills -->
-            <div class="flex flex-wrap gap-1.5 mb-3">
-                <button type="button" @click="selectedCategory = 'all'"
-                    :class="selectedCategory === 'all' ? 'bg-cyan-500 text-slate-950 font-bold' : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'"
-                    class="px-2.5 py-1 rounded-lg text-xs transition-all">
-                    All Staff (<span x-text="staffMembers.length"></span>)
+            <!-- Highly Visible Separated Category Pills -->
+            <div class="flex flex-wrap gap-2 mb-3.5">
+                <!-- 1. All Staff -->
+                <button type="button" @click="selectCategory('all')"
+                    :class="selectedCategory === 'all' ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-black border-2 border-cyan-200 shadow-lg shadow-cyan-500/40 ring-2 ring-cyan-400/40' : 'bg-slate-800 text-white border-2 border-slate-600 hover:border-cyan-400 hover:bg-slate-700'"
+                    class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-md cursor-pointer">
+                    <span>🌐</span>
+                    <span>All Staff (<span x-text="staffMembers.length"></span>)</span>
                 </button>
-                <button type="button" @click="selectedCategory = 'nurse'"
-                    :class="selectedCategory === 'nurse' ? 'bg-pink-500 text-slate-950 font-bold' : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'"
-                    class="px-2.5 py-1 rounded-lg text-xs transition-all flex items-center gap-1">
-                    <span>💉</span>
-                    <span>Nurses (<span x-text="staffMembers.filter(m => m.role === 'Nurse').length"></span>)</span>
+
+                <!-- 2. Admin (Separated) -->
+                <button type="button" @click="selectCategory('admin')"
+                    :class="selectedCategory === 'admin' ? 'bg-gradient-to-r from-purple-500 to-fuchsia-500 text-white font-black border-2 border-purple-200 shadow-lg shadow-purple-500/40 ring-2 ring-purple-400/40' : 'bg-slate-800 text-purple-200 border-2 border-purple-500/60 hover:border-purple-300 hover:bg-purple-950/50'"
+                    class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-md cursor-pointer">
+                    <span>👑</span>
+                    <span>Admin (<span x-text="staffMembers.filter(m => m.role === 'Admin').length"></span>)</span>
                 </button>
-                <button type="button" @click="selectedCategory = 'doctor'"
-                    :class="selectedCategory === 'doctor' ? 'bg-cyan-500 text-slate-950 font-bold' : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'"
-                    class="px-2.5 py-1 rounded-lg text-xs transition-all flex items-center gap-1">
+
+                <!-- 3. Managing Director - MD (Separated) -->
+                <button type="button" @click="selectCategory('md')"
+                    :class="selectedCategory === 'md' ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 font-black border-2 border-amber-100 shadow-lg shadow-amber-500/40 ring-2 ring-amber-400/40' : 'bg-slate-800 text-amber-200 border-2 border-amber-500/60 hover:border-amber-300 hover:bg-amber-950/50'"
+                    class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-md cursor-pointer">
+                    <span>🏛️</span>
+                    <span>MD (Managing Director) (<span x-text="staffMembers.filter(m => m.role === 'Manager').length"></span>)</span>
+                </button>
+
+                <!-- 4. Doctors (3) -->
+                <button type="button" @click="selectCategory('doctor')"
+                    :class="selectedCategory === 'doctor' ? 'bg-gradient-to-r from-cyan-400 to-teal-400 text-slate-950 font-black border-2 border-cyan-100 shadow-lg shadow-cyan-500/40 ring-2 ring-cyan-400/40' : 'bg-slate-800 text-cyan-200 border-2 border-cyan-500/60 hover:border-cyan-300 hover:bg-cyan-950/50'"
+                    class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-md cursor-pointer">
                     <span>🩺</span>
                     <span>Doctors (<span x-text="staffMembers.filter(m => m.role === 'Doctor').length"></span>)</span>
                 </button>
-                <button type="button" @click="selectedCategory = 'leadership'"
-                    :class="selectedCategory === 'leadership' ? 'bg-purple-500 text-slate-950 font-bold' : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'"
-                    class="px-2.5 py-1 rounded-lg text-xs transition-all flex items-center gap-1">
-                    <span>👑</span>
-                    <span>Admin & MD (Managing Director)</span>
+
+                <!-- 5. Nurses (6) -->
+                <button type="button" @click="selectCategory('nurse')"
+                    :class="selectedCategory === 'nurse' ? 'bg-gradient-to-r from-pink-400 to-rose-400 text-slate-950 font-black border-2 border-pink-100 shadow-lg shadow-pink-500/40 ring-2 ring-pink-400/40' : 'bg-slate-800 text-pink-200 border-2 border-pink-500/60 hover:border-pink-300 hover:bg-pink-950/50'"
+                    class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-md cursor-pointer">
+                    <span>💉</span>
+                    <span>Nurses (<span x-text="staffMembers.filter(m => m.role === 'Nurse').length"></span>)</span>
                 </button>
-                <button type="button" @click="selectedCategory = 'other'"
-                    :class="selectedCategory === 'other' ? 'bg-amber-500 text-slate-950 font-bold' : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'"
-                    class="px-2.5 py-1 rounded-lg text-xs transition-all flex items-center gap-1">
+
+                <!-- 6. Pharmacists (Separated) -->
+                <button type="button" @click="selectCategory('pharmacist')"
+                    :class="selectedCategory === 'pharmacist' ? 'bg-gradient-to-r from-emerald-400 to-teal-500 text-slate-950 font-black border-2 border-emerald-100 shadow-lg shadow-emerald-500/40 ring-2 ring-emerald-400/40' : 'bg-slate-800 text-emerald-200 border-2 border-emerald-500/60 hover:border-emerald-300 hover:bg-emerald-950/50'"
+                    class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-md cursor-pointer">
                     <span>💊</span>
-                    <span>Pharmacy & Audit (4)</span>
+                    <span>Pharmacists (<span x-text="staffMembers.filter(m => m.role === 'Pharmacist').length"></span>)</span>
+                </button>
+
+                <!-- 7. Auditors (Separated) -->
+                <button type="button" @click="selectCategory('auditor')"
+                    :class="selectedCategory === 'auditor' ? 'bg-gradient-to-r from-sky-400 to-blue-500 text-slate-950 font-black border-2 border-sky-100 shadow-lg shadow-sky-500/40 ring-2 ring-sky-400/40' : 'bg-slate-800 text-sky-200 border-2 border-sky-500/60 hover:border-sky-300 hover:bg-sky-950/50'"
+                    class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-md cursor-pointer">
+                    <span>🔍</span>
+                    <span>Auditors (<span x-text="staffMembers.filter(m => m.role === 'Auditor').length"></span>)</span>
                 </button>
             </div>
         </div>
