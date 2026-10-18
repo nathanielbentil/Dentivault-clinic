@@ -131,6 +131,7 @@ class AdminController extends Controller
         $userEmail = $user->email;
 
         // Perform Soft Delete (sets deleted_at = now())
+        $user->update(['status' => 'suspended']);
         $user->delete();
 
         AuditLog::record(
@@ -151,6 +152,7 @@ class AdminController extends Controller
     {
         $user = User::onlyTrashed()->findOrFail($id);
         $user->restore();
+        $user->update(['status' => 'active']);
 
         AuditLog::record(
             eventType: 'user.restored',
